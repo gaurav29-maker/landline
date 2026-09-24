@@ -4541,6 +4541,66 @@
     color: var(--ink-body);
   }
 
+  /*
+     The worked example under the audit section.
+
+     A card, because it is a specimen: one object you can look at, set
+     apart from the page making the argument around it. Same --card fill,
+     radius and padding as an expert record, so the site has one kind of
+     card and not two.
+
+     The flag is not decoration. This is invented content on a page that
+     sells portfolio reviews, so it says so at the top, in the accent, and
+     again at the bottom in different words.
+  */
+  .site .spec {
+    margin-top: 40px;
+    padding: 28px;
+    border-radius: 16px;
+    background: var(--card);
+  }
+  .site .spec-flag {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  /* The accent, so the disclaimer reads before the content does. */
+  .site .spec-flag .eyebrow { color: var(--accent-ink); }
+  .site .spec-note { font-size: 13px; line-height: 20px; color: var(--ink-mute); }
+
+  .site .spec-body {
+    display: grid;
+    /* The record is narrow and fixed; the writing takes what is left. */
+    grid-template-columns: minmax(200px, 260px) 1fr;
+    gap: 40px;
+    margin-top: 22px;
+  }
+  .site .spec-col > .eyebrow { display: block; margin-bottom: 14px; }
+  /* .rec draws its own top rule; the eyebrow above is the divider here. */
+  .site .spec-rec { margin: 0; padding: 0; border-top: 0; }
+
+  .site .spec-findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .site .spec-findings li + li { border-top: 1px solid var(--hairline); padding-top: 18px; }
+  .site .spec-findings h3 { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
+  .site .spec-findings p { font-size: 14px; line-height: 22px; color: var(--ink-mute); }
+  .site .spec-not {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13.5px;
+    line-height: 21px;
+    color: var(--ink-body);
+  }
+
+  /* One column under 760: 200px of labels beside prose stops being a read. */
+  @media (max-width: 760px) {
+    .site .spec { padding: 22px; }
+    .site .spec-body { grid-template-columns: 1fr; gap: 26px; }
+  }
+
   /* ---- the six-step process ---- */
   /*
      Six steps, so the column count has to divide six.

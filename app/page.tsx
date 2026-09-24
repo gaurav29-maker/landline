@@ -52,6 +52,49 @@ const REVIEW_COVERS = [
   "Where it is most vulnerable",
 ];
 
+/*
+ * A worked example, because the page had nothing to look at.
+ *
+ * The whole site was type: no image, no screenshot, no specimen, across
+ * nine screens. It asserted that an expert reads your portfolio and then
+ * listed eight nouns. This is the same claim shown instead of stated.
+ *
+ * INVENTED. There is no client here and the figures describe nobody. That
+ * is said in the markup, not only in this comment, because a reader cannot
+ * see this comment — and a page selling portfolio reviews must never let
+ * an illustration be mistaken for somebody's real holdings or results.
+ *
+ * Every line is STRUCTURAL: what the portfolio is made of and how it is
+ * shaped. Nothing here says buy, sell, hold, or what anything is worth,
+ * because that is the line the terms already draw — a Landline session is
+ * a review and a discussion, never personalised investment advice. The
+ * closing line of the block says so in the reader's words rather than the
+ * lawyer's.
+ */
+const SAMPLE_SHAPE: { label: string; value: string }[] = [
+  { label: "Holdings", value: "14 stocks, 3 funds" },
+  { label: "Largest position", value: "22%" },
+  { label: "Top three", value: "51%" },
+  { label: "Largest sector", value: "Banking, 38%" },
+  { label: "Fund overlap", value: "6 names held twice" },
+  { label: "Cash", value: "4%" },
+];
+
+const SAMPLE_FINDINGS: { head: string; body: string }[] = [
+  {
+    head: "Half the book is in three names",
+    body: "Concentration is a decision, and it is worth knowing whether this one was made on purpose or arrived at one buy at a time.",
+  },
+  {
+    head: "The funds are less diversified than the count suggests",
+    body: "Two of the three hold six of the same companies, and those companies are also held directly. One position is being taken three ways.",
+  },
+  {
+    head: "The portfolio carries a sector tilt",
+    body: "Banking is 38% of the book. That is a view on banking, whether or not it was described as one.",
+  },
+];
+
 /** How far ahead the hero instrument reads, and how many days it shows. */
 const PREVIEW_DAYS = 14;
 const PREVIEW_CELLS = 4;
@@ -288,6 +331,53 @@ export default async function Home() {
               <li key={c}>{c}</li>
             ))}
           </ul>
+
+          {/*
+            The specimen. See the note on SAMPLE_SHAPE: invented, and said
+            to be invented where a reader can see it rather than only in a
+            comment. The label is the first thing in the block and the last
+            line repeats it, because this is the one place on the site where
+            being mistaken for a real client's numbers would matter.
+          */}
+          <div className="spec">
+            <p className="spec-flag">
+              <span className="eyebrow">An example — not a client</span>
+              <span className="spec-note">
+                Invented to show the shape of a review. The figures describe nobody, and no
+                Landline session has been reproduced here.
+              </span>
+            </p>
+
+            <div className="spec-body">
+              <div className="spec-col">
+                <p className="eyebrow">What was sent in</p>
+                <dl className="rec spec-rec">
+                  {SAMPLE_SHAPE.map((r) => (
+                    <div key={r.label}>
+                      <dt>{r.label}</dt>
+                      <dd>{r.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="spec-col">
+                <p className="eyebrow">What the expert said back</p>
+                <ol className="spec-findings">
+                  {SAMPLE_FINDINGS.map((f) => (
+                    <li key={f.head}>
+                      <h3>{f.head}</h3>
+                      <p>{f.body}</p>
+                    </li>
+                  ))}
+                </ol>
+                <p className="spec-not">
+                  What a review does not contain: what to buy, what to sell, or a price target.
+                  That is the difference between a review and a tip.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
