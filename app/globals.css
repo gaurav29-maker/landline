@@ -3047,6 +3047,8 @@
        backgrounds behind it.
     */
     --card: #F4F5F8;
+    --btn-soft: #EFF0F3;
+    --btn-soft-hover: #E5E7EC;
     --nav-hover: rgba(252, 253, 255, 0.92);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -3128,6 +3130,8 @@
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(30, 30, 30, 0.66);
       --card: #181818;
+      --btn-soft: #202020;
+      --btn-soft-hover: #2A2A2A;
       --nav-hover: rgba(43, 43, 43, 0.82);
       --nav-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -3174,6 +3178,8 @@
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(30, 30, 30, 0.66);
     --card: #181818;
+    --btn-soft: #202020;
+    --btn-soft-hover: #2A2A2A;
     --nav-hover: rgba(43, 43, 43, 0.82);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -3461,31 +3467,34 @@
      removing it would make this button 2px shorter than every other .b
      on the site for no reason anybody could see.
   */
+  /*
+     Sign-in, measured off x.ai's "Contact Sales" rather than approximated:
+     40px tall, 10px/18px of padding, 14px type, a fully round radius, and
+     a SOLID soft fill — rgb(32,32,32) on their ground — with no border and
+     no shadow at all.
+
+     That last part is the change. This was glass: translucent, blurred,
+     and carrying --nav-rim. Glass made sense when it floated beside a
+     capsule over the page; in a bar that is itself glass, a second pane
+     of it is a bump on a window. Theirs is a quiet filled shape and that
+     is what a secondary action in a bar should be.
+
+     --btn-soft rather than --card, because a control and a surface should
+     be free to differ, and this one needs a hover that a card never does.
+  */
   .site .nav-aside .b-line {
-    background: var(--nav-bg);
-    -webkit-backdrop-filter: var(--glass-far);
-    backdrop-filter: var(--glass-far);
+    background: var(--btn-soft);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     border-color: transparent;
+    box-shadow: none;
     color: var(--ink);
-    /*
-       Rim, no lift. --nav-lift throws a 30px shadow, which was right when
-       this button floated beside a capsule over the page and is wrong now
-       that it sits in a bar: nothing in a bar is above anything. The rim
-       still separates it from the ground it sits on.
-    */
-    box-shadow: var(--nav-rim);
-    /*
-       46 to match the capsule, not the 34px pills inside it. Left at its
-       own 35.6 it sat at exactly the height of the controls in the
-       capsule, which made it read as one that had fallen out. It is a
-       second object, so it is the size of an object.
-    */
-    min-height: 46px;
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: 14px;
   }
-  /* Glass thickens rather than the edge darkening: .b-line:hover has no
-     border left to act on here, so without this hover would do nothing. */
   .site .nav-aside .b-line:hover {
-    background: var(--nav-hover);
+    background: var(--btn-soft-hover);
     border-color: transparent;
   }
 
@@ -4091,8 +4100,9 @@
     min-height: 32px;
     padding: 0 15px;
     border-radius: var(--radius-btn);
-    background: var(--bg-alt);
-    border: 1px solid var(--rule);
+    /* The same soft button as sign-in: one of these on the site, not two. */
+    background: var(--btn-soft);
+    border: 1px solid transparent;
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.1em;
@@ -4102,7 +4112,7 @@
     transition: color .12s ease, border-color .12s ease;
   }
   .site .back svg { flex: 0 0 auto; }
-  .site .back:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .site .back:hover { color: var(--ink); background: var(--btn-soft-hover); }
 
   /* The label sits on the block it names, so the block's own rule is the gap. */
   .site .facts-h { margin: 40px 0 0; }
