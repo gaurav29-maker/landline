@@ -3120,31 +3120,22 @@
       --ink-mute:   #9AA0A8;
       --ink-faint:  #8B929B;
       --bg:         #000000;
-      --bg-alt:     #0B0D10;
-      --rule:       #262A30;
+      --bg-alt:     #0D0D0D;
+      --rule:       #2A2A2A;
       --hairline:   rgba(255, 255, 255, 0.09);
       --accent-ink: #8AA5F0;
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-      --nav-bg: rgba(26, 30, 38, 0.66);
-      --card: #15181E;
-      --nav-hover: rgba(38, 43, 54, 0.82);
+      --nav-bg: rgba(30, 30, 30, 0.66);
+      --card: #181818;
+      --nav-hover: rgba(43, 43, 43, 0.82);
       --nav-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
         inset 0 0 0 1px rgba(255, 255, 255, 0.07),
         inset 0 -1px 0 rgba(0, 0, 0, 0.4);
       --nav-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
-    --scrim: rgba(0, 0, 0, 0.58);
-    --sheet-bg: rgba(28, 32, 40, 0.86);
-    --sheet-inset: rgba(255, 255, 255, 0.05);
-    --sheet-line: rgba(255, 255, 255, 0.12);
-    --sheet-rim:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.07),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.45);
-    --sheet-lift: 0 30px 74px rgba(0, 0, 0, 0.62), 0 4px 14px rgba(0, 0, 0, 0.42);
       --scrim: rgba(0, 0, 0, 0.58);
-      --sheet-bg: rgba(28, 32, 40, 0.86);
+      --sheet-bg: rgba(32, 32, 32, 0.86);
       --sheet-inset: rgba(255, 255, 255, 0.05);
       --sheet-line: rgba(255, 255, 255, 0.12);
       --sheet-rim:
@@ -3155,18 +3146,18 @@
       --notice-bg: #111621;
 
       /* The panel is barely tinted here; the depth comes from the core. */
-      --glass-sheet-1: rgba(228, 232, 240, 0.070);
-      --glass-sheet-2: rgba(198, 202, 212, 0.035);
+      --glass-sheet-1: rgba(232, 232, 232, 0.070);
+      --glass-sheet-2: rgba(202, 202, 202, 0.035);
       --glass-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.10),
         inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.20),
-        inset -1.5px -1.5px 1px -1px rgba(10, 14, 20, 0.55),
+        inset -1.5px -1.5px 1px -1px rgba(14, 14, 14, 0.55),
         0 18px 44px rgba(0, 0, 0, 0.45),
         0 8px 24px rgba(0, 0, 0, 0.22);
       /* Core up, halo down: on a dark ground the halo lifts the panel
          TOWARDS the text. 0.44 is where the card body clears 4.5:1. */
       --glass-sheen: linear-gradient(126deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 62%, rgba(255,255,255,0.05) 100%);
-      --inst-rule: rgba(168, 174, 188, 0.16);
+      --inst-rule: rgba(174, 174, 174, 0.16);
     }
   }
   :root[data-theme="dark"] .site {
@@ -3175,22 +3166,22 @@
     --ink-mute:   #9AA0A8;
     --ink-faint:  #8B929B;
     --bg:         #000000;
-    --bg-alt:     #0B0D10;
-    --rule:       #262A30;
+    --bg-alt:     #0D0D0D;
+    --rule:       #2A2A2A;
     --hairline:   rgba(255, 255, 255, 0.09);
     --accent-ink: #8AA5F0;
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-    --nav-bg: rgba(26, 30, 38, 0.66);
-    --card: #15181E;
-    --nav-hover: rgba(38, 43, 54, 0.82);
+    --nav-bg: rgba(30, 30, 30, 0.66);
+    --card: #181818;
+    --nav-hover: rgba(43, 43, 43, 0.82);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
       inset 0 0 0 1px rgba(255, 255, 255, 0.07),
       inset 0 -1px 0 rgba(0, 0, 0, 0.4);
     --nav-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
     --scrim: rgba(0, 0, 0, 0.58);
-    --sheet-bg: rgba(28, 32, 40, 0.86);
+    --sheet-bg: rgba(32, 32, 32, 0.86);
     --sheet-inset: rgba(255, 255, 255, 0.05);
     --sheet-line: rgba(255, 255, 255, 0.12);
     --sheet-rim:
@@ -3201,18 +3192,18 @@
     --notice-bg: #111621;
 
     /* The panel is barely tinted here; the depth comes from the core. */
-    --glass-sheet-1: rgba(228, 232, 240, 0.070);
-    --glass-sheet-2: rgba(198, 202, 212, 0.035);
+    --glass-sheet-1: rgba(232, 232, 232, 0.070);
+    --glass-sheet-2: rgba(202, 202, 202, 0.035);
     --glass-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.10),
       inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.20),
-      inset -1.5px -1.5px 1px -1px rgba(10, 14, 20, 0.55),
+      inset -1.5px -1.5px 1px -1px rgba(14, 14, 14, 0.55),
       0 18px 44px rgba(0, 0, 0, 0.45),
       0 8px 24px rgba(0, 0, 0, 0.22);
     /* Core up, halo down: on a dark ground the halo lifts the panel
        TOWARDS the text. 0.44 is where the card body clears 4.5:1. */
     --glass-sheen: linear-gradient(126deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 42%, rgba(255,255,255,0) 62%, rgba(255,255,255,0.05) 100%);
-    --inst-rule: rgba(168, 174, 188, 0.16);
+    --inst-rule: rgba(174, 174, 174, 0.16);
   }
 
   .site h1, .site h2, .site h3 {

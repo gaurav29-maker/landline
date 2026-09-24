@@ -1424,12 +1424,37 @@ async function main() {
     ...onlyIn(systemDark, chosenDark).map((d) => `only when following the OS: ${d}`),
     ...onlyIn(chosenDark, systemDark).map((d) => `only when chosen: ${d}`),
   ];
+  /*
+   * A property declared twice in ONE list is invisible to the drift test
+   * above, because that test asks whether each declaration appears in the
+   * other list at all — and a duplicate does. The whole --scrim/--sheet-*
+   * group sat twice in the system-dark block for a day and this check
+   * reported "34 declarations, identical in both" the entire time.
+   *
+   * It is not cosmetic. Two declarations of one property is one of them
+   * doing nothing, and which one is decided by source order — so editing
+   * the visible one changes nothing and the next person edits a value
+   * that was never being used.
+   */
+  const dupes = (list: string[], where: string): string[] => {
+    const seen = new Map<string, number>();
+    for (const d of list) {
+      const prop = d.split(":")[0].trim();
+      seen.set(prop, (seen.get(prop) ?? 0) + 1);
+    }
+    return [...seen].filter(([, n]) => n > 1).map(([prop, n]) => `${prop} declared ${n}x ${where}`);
+  };
+  const repeated = [
+    ...dupes(systemDark, "when following the OS"),
+    ...dupes(chosenDark, "when chosen"),
+  ];
+
   check(
-    "both dark themes declare exactly the same tokens",
-    systemDark.length > 0 && drift.length === 0,
-    drift.length > 0
-      ? drift.slice(0, 3).join(" | ")
-      : `${systemDark.length} declarations, identical in both`,
+    "both dark themes declare exactly the same tokens, once each",
+    systemDark.length > 0 && drift.length === 0 && repeated.length === 0,
+    drift.length > 0 || repeated.length > 0
+      ? [...drift, ...repeated].slice(0, 3).join(" | ")
+      : `${systemDark.length} declarations, identical in both, none repeated`,
   );
 
   /*
