@@ -117,10 +117,17 @@ export default function NavMenu({
           aria-label="Menu"
           onClick={() => setOpen(true)}
         >
-          <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden focusable="false">
-            <line className="bl" x1="1" y1="1.5" x2="21" y2="1.5" />
-            <line className="bl" x1="1" y1="8" x2="21" y2="8" />
-            <line className="bl" x1="1" y1="14.5" x2="21" y2="14.5" />
+          {/*
+            Three bars, not three strokes. x.ai draws this as a filled path
+            with square ends — 16 wide and 2 deep on a 24 grid, 6 apart —
+            where ours was round-capped lines. A round cap on a 2px line
+            eats a pixel off each end and reads softer than the type beside
+            it; a drawn rectangle is the same weight at any size.
+          */}
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden focusable="false">
+            <rect className="bl" x="4" y="5" width="16" height="2" />
+            <rect className="bl" x="4" y="11" width="16" height="2" />
+            <rect className="bl" x="4" y="17" width="16" height="2" />
           </svg>
         </button>
       </div>

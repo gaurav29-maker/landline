@@ -3517,32 +3517,39 @@
      to be scrolling past, and on the home page that is the hero's badge
      line. A control needs its own ground to stay a control.
   */
+  /*
+     The same soft button as sign-in beside it, not glass.
+
+     It carried --nav-bg and --nav-rim, which made it a translucent pane
+     on a bar that is already a translucent pane — a bump on a window. It
+     is on --btn-soft now, so the two controls at the right-hand end of
+     the bar are made of one thing.
+  */
   .site .nav-burger {
     display: none;
     place-items: center;
     width: 44px;
     height: 44px;
     padding: 0;
-    background: var(--nav-bg);
+    background: var(--btn-soft);
     border: 0;
     border-radius: 999px;
-    /* Same reasoning as the sign-in pill: it is in the bar, not over it. */
-    box-shadow: var(--nav-rim);
+    box-shadow: none;
     color: var(--ink);
     cursor: pointer;
   }
-  .site .nav-burger:hover { background: var(--nav-hover); }
-  .site .nav-burger .bl {
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    transform-origin: 11px 8px;
-    transition: transform .18s ease, opacity .12s ease;
-  }
-  /* Three lines fold into the cross that closes them. */
-  .site .nav-burger[aria-expanded="true"] .bl-1 { transform: translateY(6.5px) rotate(45deg); }
-  .site .nav-burger[aria-expanded="true"] .bl-2 { opacity: 0; }
-  .site .nav-burger[aria-expanded="true"] .bl-3 { transform: translateY(-6.5px) rotate(-45deg); }
+  .site .nav-burger:hover { background: var(--btn-soft-hover); }
+  /* Filled bars. .nav-close sets fill: none and strokes its cross instead. */
+  .site .nav-burger .bl { fill: currentColor; }
+
+  /*
+     The fold-to-a-cross rules that used to live here are gone with the
+     classes they targeted. They animated .bl-1/.bl-2/.bl-3 on the opener,
+     and when the menu became a full screen the opener stopped turning
+     into anything — the sheet carries its own close button. Three rules
+     that matched nothing, kept alive by a transform-origin and a
+     transition on .bl that had nothing left to move.
+  */
 
   /*
      The menu is a screen, not a card.
