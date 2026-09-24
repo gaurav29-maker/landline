@@ -3227,6 +3227,21 @@
   }
   .site .band-head p { max-width: 58ch; color: var(--ink-mute); font-size: 17px; line-height: 26px; }
 
+  /*
+     A head for a section that is an index rather than a pitch.
+
+     Both sections this is on already mixed: the head centred, and then
+     the content underneath — the label and the list, the cards — sat hard
+     left. Two alignments in one section, with the eye asked to start in a
+     different place twice.
+
+     Left, because that is where the content already was. Taken from
+     yuriroga.com, which centres nothing at all: every block on that site
+     is a label and a list flush to one edge, so the reader's eye starts in
+     the same place on every line of the page.
+  */
+  .site .band-head.idx { align-items: flex-start; text-align: left; }
+
   .site .eyebrow {
     font-family: var(--mono);
     font-size: 10px; font-weight: 500;
@@ -3891,7 +3906,8 @@
   .site .rec .rate small { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-faint); }
   .site .unreg { color: var(--ink-mute); }
   .site .xcard .b { width: 100%; margin-top: 20px; }
-  .site .xmore { margin-top: 10px; text-align: center; font-size: 13px; color: var(--ink-mute); text-decoration: none; }
+  /* Left, with everything else in the card. It was the one centred thing in it. */
+  .site .xmore { margin-top: 10px; font-size: 13px; color: var(--ink-mute); text-decoration: none; }
   .site .xmore:hover { color: var(--ink); }
   .site .xlink { text-decoration: none; display: block; }
   .site .xlink:hover h3 { color: var(--accent-ink); }
@@ -4426,27 +4442,33 @@
   /* ---- audit my portfolio ---- */
 
 
+  /*
+     What a review looks at, as an index.
+
+     The em-dash in front of every item is gone. It was standing in for a
+     bullet, and a bullet earns its ink only where a list could be mistaken
+     for prose — eight two-word items in four columns under their own label
+     cannot be. yuriroga.com sets SERVICES and SELECTED CLIENTS exactly this
+     way: the label says what the list is, and then the items are just the
+     items.
+
+     The rule above it is the one .rec already draws over RATE / SESSION /
+     SEBI, so a labelled block of facts looks the same wherever it appears.
+  */
   .site .covers {
     display: grid;
     /* Eight items: four columns, two full rows. */
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px 28px;
+    gap: 14px 28px;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--rule);
   }
   .site .covers li {
     font-size: 14px;
     line-height: 21px;
     color: var(--ink-body);
-    padding-left: 18px;
-    position: relative;
-  }
-  .site .covers li::before {
-    content: "\2014";
-    position: absolute;
-    left: 0;
-    color: var(--ink-faint);
   }
 
   /* ---- the six-step process ---- */

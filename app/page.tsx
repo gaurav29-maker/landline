@@ -263,7 +263,7 @@ export default async function Home() {
 
       <section className="band alt" id="audit">
         <div className="wrap">
-          <div className="band-head">
+          <div className="band-head idx">
             <span className="eyebrow">Audit my portfolio</span>
             <h2>A real expert reads your actual portfolio.</h2>
             <p>
@@ -293,7 +293,7 @@ export default async function Home() {
 
       <section className="band" id="experts">
         <div className="wrap">
-          <div className="band-head">
+          <div className="band-head idx">
             <span className="eyebrow">The expert network</span>
             <h2>
               The right expert changes the <span className="said">conversation</span>.
