@@ -3696,7 +3696,15 @@
        2 — glass with the blue wash. The hero instrument, and only that:
            the one panel on the page reading live data.
        1 — glass, no wash. Panels that stand for a thing you can act on:
-           the three packages, the expert cards, the principle cards.
+           the three packages and the principle cards.
+
+           The expert cards were here and are not any more. A package is
+           an offer — three of them side by side, pick one. The expert
+           grid is a directory: the same four facts about each person,
+           read down a column and compared. Directories are level 0 on
+           this site, which is why the audit list and the FAQ are flat,
+           and the expert cards were the one directory dressed as an
+           offer.
        0 — flat, hairline, 4px. Everything that explains rather than
            offers: the flow steps, the audit steps, what-this-is-not,
            the FAQ, the broker strip, the footer.
@@ -3710,11 +3718,13 @@
      nav keeps its blur, because the page genuinely scrolls under it.
   */
   .site .rung,
+  /* The expert cards are level 0 now — see the note above. */
   .site .xcard {
     border: 0;
-    border-radius: 10px;
-    background: linear-gradient(152deg, var(--glass-sheet-1) 0%, var(--glass-sheet-2) 100%);
-    box-shadow: var(--glass-shadow);
+    border-top: 1px solid var(--rule);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
   }
 
   /*
@@ -3875,28 +3885,29 @@
   .site .strip-in li { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
 
   /* ---- expert cards ---- */
-  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-  .site .xcard { padding: 24px; display: flex; flex-direction: column; }
+  /*
+     Wider columns than the 20px the boxes needed. A box holds itself
+     apart from its neighbour; three columns of plain text need the gap to
+     do it, or the rate of one expert reads as a fourth line of the last.
+  */
+  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 36px; }
+  /* Top only: the rule is the top edge, and there is no box to pad. */
+  .site .xcard { padding: 18px 0 0; display: flex; flex-direction: column; }
   .site .xcard-top { display: flex; align-items: center; gap: 14px; }
   /*
-   * Deep acrylic rather than flat blue. The depth is the gradient and the
-   * rim only — no white wash across the face, because a highlight there
-   * lands on the initials and measured 2.52:1 at its peak. The gradient
-   * alone runs 5.37 to 8.13, better than the 4.82 of the flat colour it
-   * replaced.
-   */
-  .site .xav {
-    width: 46px; height: 46px; flex: 0 0 46px; border-radius: 999px;
-    background: linear-gradient(150deg, var(--glow-deep) 0%, var(--glow-core) 100%);
-    color: var(--on-accent);
-    display: grid; place-items: center;
-    font-family: var(--mono); font-size: 14px; font-weight: 500;
-    box-shadow:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.34),
-      inset 1px 1px 1px -0.5px rgba(255, 255, 255, 0.62),
-      0 6px 14px rgba(20, 40, 110, 0.22),
-      0 3px 10px rgba(70, 160, 255, 0.28);
-  }
+     The initials disc is gone.
+
+     It was a 46px blue gradient carrying "RK" beside a card that already
+     said "Rhea Kulkarni" on the next line — a placeholder for a face we
+     do not have, and the loudest thing in the section. Decoration standing
+     in for information, which is the same fault as the em-dash that used
+     to sit in front of every audit item.
+
+     Its contrast was measured and fine (5.37 to 8.13 on the gradient, over
+     the 4.82 of the flat blue it replaced). Recording that here because a
+     good measurement is not a reason to keep something that should not be
+     on the page. If real photographs ever arrive this is where they go.
+  */
   .site .xrole { font-size: 13px; color: var(--ink-mute); margin-top: 2px; }
   .site .rec { margin: 20px 0 0; padding: 16px 0 4px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
   .site .rec > div { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
@@ -4098,7 +4109,9 @@
     .site .xmore {
       display: block;
       min-height: 44px;
-      padding: 12px 8px 0;
+      /* No side padding: the card is flush left now, and 8px here put this
+         one line 8px right of the name, the rate and the button above it. */
+      padding: 12px 0 0;
       margin-top: 2px;
     }
     /*
@@ -4564,7 +4577,13 @@
     margin: 0 0 16px;
   }
 
-  .site .see-all { margin: 26px 0 0; text-align: center; }
+  /*
+     Left, with the section it belongs to. It was the last centred thing in
+     a section whose head, three records and "Read more about Rhea" had all
+     moved to the left edge — one button in the middle of an otherwise flush
+     column reads as a stray rather than as emphasis.
+  */
+  .site .see-all { margin: 32px 0 0; }
   .site .recruit { text-align: center; }
   .site .recruit h2 { margin: 12px 0 10px; }
   .site .recruit p { max-width: 52ch; margin: 0 auto 24px; font-size: 16px; line-height: 25px; color: var(--ink-mute); }
@@ -4605,7 +4624,6 @@
     animation: sk-pulse 1.5s ease-in-out infinite;
   }
   .sk-lines { display: grid; gap: 9px; flex: 1; min-width: 0; }
-  .sk-av { width: 46px; height: 46px; flex: 0 0 46px; border-radius: 999px; }
   .sk-btn { height: 40px; border-radius: var(--radius-btn); margin-top: 20px; }
   /* A bar is shorter than the line box it stands in for, so a skeleton that
      matches bar-to-text drifts upward. `.sk-box` holds the real element's

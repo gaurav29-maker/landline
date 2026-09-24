@@ -56,13 +56,18 @@ export default function ExpertGrid({
           <article className="xcard" key={e.slug}>
             {/*
               The card is the fast path; the profile is the considered one.
-              Handing someone your portfolio off a headline and two initials
-              is a lot to ask, so the name opens the page that says who they
-              actually are — while "Book a call" still books in one click.
+              Handing someone your portfolio off a headline alone is a lot to
+              ask, so the name opens the page that says who they actually are
+              — while "Book a call" still books in one click.
+
+              The initials disc that used to sit here is gone: it spelled out
+              the first letters of the name printed beside it, and was the
+              loudest thing in the section for doing so. `initials` is still
+              on the expert record and still used elsewhere; nothing about
+              the data changed, only what this card draws.
             */}
             <Link className="xlink" href={`/experts/${e.slug}`}>
               <div className="xcard-top">
-                <div className="xav">{e.initials}</div>
                 <div>
                   <h3>{e.displayName}</h3>
                   <p className="xrole">{e.headline}</p>

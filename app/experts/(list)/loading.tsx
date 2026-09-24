@@ -17,8 +17,10 @@ import SiteFooter from "@/components/SiteFooter";
 function CardSkeleton() {
   return (
     <article className="xcard" aria-hidden="true">
+      {/* No avatar block: the real card stopped drawing one, and a skeleton
+          that promises a shape the card will not produce is a worse flash
+          than no skeleton at all. */}
       <div className="xcard-top">
-        <span className="sk sk-av" />
         <div className="sk-lines">
           <span className="sk" style={{ height: 15, maxWidth: 160 }} />
           <span className="sk" style={{ maxWidth: 210 }} />
