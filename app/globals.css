@@ -3496,18 +3496,28 @@
      mobile nav — it is four links a phone cannot reach. "How it works" was
      only findable by scrolling past it to the footer.
   */
+  /*
+     A round filled button, as on x.ai, rather than three bare lines.
+
+     Not only for the look. This bar is transparent and sticky, so the
+     page runs underneath it — the icon was landing on whatever happened
+     to be scrolling past, and on the home page that is the hero's badge
+     line. A control needs its own ground to stay a control.
+  */
   .site .nav-burger {
     display: none;
     place-items: center;
     width: 44px;
     height: 44px;
     padding: 0;
-    background: transparent;
+    background: var(--nav-bg);
     border: 0;
-    border-radius: 12px;
+    border-radius: 999px;
+    box-shadow: var(--nav-rim), var(--nav-lift);
     color: var(--ink);
     cursor: pointer;
   }
+  .site .nav-burger:hover { background: var(--nav-hover); }
   .site .nav-burger .bl {
     stroke: currentColor;
     stroke-width: 2;
@@ -4186,8 +4196,28 @@
   @media (max-width: 900px) {
     .site .nav-mid { display: none; }
 
-    /* The bar is the page now, not an object sitting on it. */
+    /*
+       The bar gets a ground, because the page scrolls under it.
+
+       On ::before rather than on .nav itself, and that is load-bearing:
+       backdrop-filter makes an element a containing block for fixed
+       descendants, and .nav-scrim is position: fixed inset: 0 inside this
+       nav. Put the filter on .nav and the scrim stops covering the
+       viewport and covers the 68px bar instead — the menu would dim its
+       own header and nothing else.
+    */
     .site .nav { padding: 12px; align-items: center; }
+    .site .nav::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--nav-bg);
+      -webkit-backdrop-filter: var(--glass-near);
+      backdrop-filter: var(--glass-near);
+      -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    }
     .site .nav-in {
       flex: 1;
       padding: 0;
