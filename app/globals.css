@@ -3078,6 +3078,7 @@
      * still; this one has the page moving under it and has to look like it.
      */
     --nav-bg: rgba(252, 253, 255, 0.72);
+    --nav-hover: rgba(252, 253, 255, 0.92);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.95),
       inset 0 0 0 1px rgba(255, 255, 255, 0.5),
@@ -3158,6 +3159,7 @@
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(26, 30, 38, 0.66);
+      --nav-hover: rgba(38, 43, 54, 0.82);
       --nav-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
         inset 0 0 0 1px rgba(255, 255, 255, 0.07),
@@ -3212,6 +3214,7 @@
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(26, 30, 38, 0.66);
+    --nav-hover: rgba(38, 43, 54, 0.82);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
       inset 0 0 0 1px rgba(255, 255, 255, 0.07),
@@ -3336,8 +3339,8 @@
   */
   /*
      Measured off the reference rather than approximated: its capsule is a
-     fixed 675 centred in a full-width bar, 6px of padding, a 23px radius —
-     a soft rectangle, not a pill — and blur(40px).
+     fixed 675 centred in a full-width bar, 6px of padding, a 23px radius
+     and blur(40px).
 
      Two of those are copied exactly (the radius and the blur). Two are not:
 
@@ -3357,7 +3360,14 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border-radius: 23px;
+    /*
+       999, not the reference's 23. On the desktop capsule 23 IS half the
+       46px height, so the two agree there — but the touch rules below take
+       the capsule to 56 and 23 stops being half, so one object would be a
+       pill on a laptop and a soft rectangle on a phone. A radius that
+       can't reach says the same thing at every height.
+    */
+    border-radius: 999px;
     background: var(--nav-bg);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     backdrop-filter: blur(40px) saturate(180%);
@@ -3481,6 +3491,41 @@
   .site .b-fill:hover { background: var(--accent-ink); color: var(--on-accent); }
   .site .b-line { background: transparent; color: var(--ink); border-color: var(--ink-mute); }
   .site .b-line:hover { border-color: var(--ink); }
+  /*
+     Sign-in, made of the same glass as the capsule.
+
+     It was a transparent pill with a hairline border, which is what a
+     button drawn ON a surface looks like. This one is not on anything:
+     it floats beside the capsule with the page scrolling under it, and
+     an outline with nothing behind it reads as a stray rule rather than
+     an object. Same tokens as .nav-in, so the two things beside each
+     other are one substance rather than two that merely match.
+
+     border-color rather than border: 0 — .b sets 1px all round, and
+     removing it would make this button 2px shorter than every other .b
+     on the site for no reason anybody could see.
+  */
+  .site .nav-aside .b-line {
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(180%);
+    border-color: transparent;
+    color: var(--ink);
+    box-shadow: var(--nav-rim), var(--nav-lift);
+    /*
+       46 to match the capsule, not the 34px pills inside it. Left at its
+       own 35.6 it sat at exactly the height of the controls in the
+       capsule, which made it read as one that had fallen out. It is a
+       second object, so it is the size of an object.
+    */
+    min-height: 46px;
+  }
+  /* Glass thickens rather than the edge darkening: .b-line:hover has no
+     border left to act on here, so without this hover would do nothing. */
+  .site .nav-aside .b-line:hover {
+    background: var(--nav-hover);
+    border-color: transparent;
+  }
   .site .b-sm { min-width: 0; padding: 8px 16px; font-size: 13px; }
   .site .b-pair { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   /* Inside a document the text is left-aligned, so the buttons under it are too. */
@@ -3940,7 +3985,6 @@
 
   @media (max-width: 860px) {
     .site .split { grid-template-columns: 1fr; gap: 32px; }
-    .site .nav-mid { display: none; }
     .site h1 { font-size: 32px; line-height: 39px; }
     .site .band { padding: 60px 0; }
 
@@ -3959,6 +4003,9 @@
     */
     .site .b { min-height: 44px; }
     .site .b-sm { min-height: 44px; }
+    /* The capsule goes to 56 here for the same reason, so its sibling does
+       too — 3 classes against the 2 above, which is why this has to say it. */
+    .site .nav-aside .b-line { min-height: 56px; }
     /* .nav-end .theme-btn is three classes and this is two, and a media
        query adds no specificity — so without matching it here the desktop
        34px wins inside the phone layout and the tap target silently goes
@@ -3986,6 +4033,30 @@
   }
 
   /*
+     Position matters as much as the query: .site .nav-mid { display: flex }
+     is two classes and so is this, and a media query adds no specificity —
+     so this has to come after it in the file or it silently loses. It was
+     1,200 lines earlier for one round, which is exactly what that looks
+     like: valid CSS, no warning, no effect.
+  */
+  /*
+     The links go at 900, not at 860 with the rest of the phone layout.
+
+     Measured: the capsule holding all four links is 714 wide and the
+     sign-in button is 108, so the row needs 16 + 714 + gap + 108 + 16 —
+     about 886 with a scrollbar. Between 860 and 886 there was nowhere
+     for them to go, so they went flush against each other and "Landline
+     OS" wrapped to two lines. That band existed before this button was
+     glass; glass is what made it impossible not to see.
+
+     Its own query because it is about how wide four English words are,
+     which has nothing to do with whether a finger is doing the tapping.
+  */
+  @media (max-width: 900px) {
+    .site .nav-mid { display: none; }
+  }
+
+  /*
      The aside comes out of absolute positioning below 1000px.
 
      Centring the capsule on the PAGE only works while there is room either
@@ -4005,7 +4076,8 @@
      and this one is about whether a 714px object fits between two buttons.
   */
   @media (max-width: 1000px) {
-    .site .nav { justify-content: space-between; align-items: center; }
+    /* gap, so that even if something grows the two can never end up flush. */
+    .site .nav { justify-content: space-between; align-items: center; gap: 12px; }
     .site .nav-in { margin: 0; }
     .site .nav-aside { position: static; height: auto; }
   }
