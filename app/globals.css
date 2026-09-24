@@ -3004,6 +3004,17 @@
        the reference uses clear white but not its own grey band, and
        half this page's small text sits on that band. */
     --ink-faint:  #676A6E;
+    /*
+       Dark is black. It was #0E1013, a cool near-black.
+
+       The grounds under it move with it rather than staying where they
+       were, because this is a ladder and a ladder is relative: --bg-alt
+       sat +8 a channel above the old base and sits +11 above this one,
+       and --card keeps a clear step above both so it still reads as a
+       surface on a plain band AND on an alt band. Leaving those two
+       where they were would have made every band and every card a
+       bigger jump than it was ever drawn to be.
+    */
     --bg:         #FFFFFF;
     --bg-alt:     #F4F4F4;
     --rule:       #E3E4E6;
@@ -3108,15 +3119,15 @@
       --ink-body:   #D3D6DA;
       --ink-mute:   #9AA0A8;
       --ink-faint:  #8B929B;
-      --bg:         #0E1013;
-      --bg-alt:     #16191D;
+      --bg:         #000000;
+      --bg-alt:     #0B0D10;
       --rule:       #262A30;
       --hairline:   rgba(255, 255, 255, 0.09);
       --accent-ink: #8AA5F0;
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(26, 30, 38, 0.66);
-      --card: #171B21;
+      --card: #15181E;
       --nav-hover: rgba(38, 43, 54, 0.82);
       --nav-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -3163,15 +3174,15 @@
     --ink-body:   #D3D6DA;
     --ink-mute:   #9AA0A8;
     --ink-faint:  #8B929B;
-    --bg:         #0E1013;
-    --bg-alt:     #16191D;
+    --bg:         #000000;
+    --bg-alt:     #0B0D10;
     --rule:       #262A30;
     --hairline:   rgba(255, 255, 255, 0.09);
     --accent-ink: #8AA5F0;
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(26, 30, 38, 0.66);
-    --card: #171B21;
+    --card: #15181E;
     --nav-hover: rgba(38, 43, 54, 0.82);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
