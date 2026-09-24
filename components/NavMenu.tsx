@@ -3,26 +3,33 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
+import Wordmark from "@/components/Wordmark";
 
 export type NavLink = { href: string; label: string };
+
+/** Where a phone goes when it is not going anywhere on this page. */
+const META: NavLink[] = [
+  { href: "/legal/terms", label: "Terms" },
+  { href: "/legal/privacy", label: "Privacy" },
+  { href: "/legal/refunds", label: "Refunds" },
+];
 
 /**
  * The phone nav: a wordmark, and a way to everything else.
  *
- * On a wide screen the capsule holds four links, a theme toggle and a call to
- * action, and sign-in floats beside it. None of that fits a 375px row, so
- * until now the links were simply `display: none` below 900 — which is not a
- * mobile nav, it is four links nobody on a phone could reach. The only route
- * to "How it works" was scrolling past it to the footer.
+ * The menu is a full screen rather than a card hanging off the bar, after
+ * x.ai — its own header with the wordmark and a close button, the
+ * destinations as full-width rows divided by hairlines, and a footer with
+ * the one thing we actually want pressed.
  *
- * Everything the capsule holds moves in here, so there is exactly one place
- * to look rather than some-of-it-in-the-bar-and-some-of-it-gone.
+ * A sheet that covers the page needs no scrim behind it and has no outside
+ * to press, so both are gone: what closes it is the button, Escape, or
+ * choosing somewhere to go.
  *
- * This owns `.nav-aside` rather than sitting inside it because the button and
- * the panel share one piece of state and have to be siblings in different
- * places — the button in the right-hand slot, the panel positioned against
- * the whole bar. A fragment cannot straddle two parents, so the slot comes
- * with it.
+ * This owns `.nav-aside` rather than sitting inside it because the button
+ * and the panel share one piece of state and belong in different places —
+ * the button in the bar's right-hand slot, the panel over the whole screen.
+ * A fragment cannot straddle two parents, so the slot comes with it.
  */
 export default function NavMenu({
   links,
@@ -35,13 +42,13 @@ export default function NavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  const closerRef = useRef<HTMLButtonElement>(null);
 
   const close = () => setOpen(false);
 
   /*
-   * Escape closes it, and the focus goes back to the button that opened it.
+   * Escape closes, and the focus goes back to the button that opened it.
    * Without that second half, dismissing the menu drops the caret at the top
    * of the document and a keyboard user starts the page again.
    */
@@ -50,7 +57,7 @@ export default function NavMenu({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setOpen(false);
-        buttonRef.current?.focus();
+        openerRef.current?.focus();
       }
     };
     document.addEventListener("keydown", onKey);
@@ -58,19 +65,12 @@ export default function NavMenu({
   }, [open]);
 
   /*
-   * A press anywhere outside closes it. The scrim catches most of that, but
-   * not the bar itself — which is above the scrim, because the button has to
-   * stay pressable while the menu is open.
+   * Opening moves focus into the sheet. It covers the page, so leaving the
+   * caret behind it would let a keyboard tab through a screenful of links
+   * nobody can see.
    */
   useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      const t = e.target as Node;
-      if (panelRef.current?.contains(t) || buttonRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    document.addEventListener("pointerdown", onDown);
-    return () => document.removeEventListener("pointerdown", onDown);
+    if (open) closerRef.current?.focus();
   }, [open]);
 
   /*
@@ -87,63 +87,90 @@ export default function NavMenu({
     };
   }, [open]);
 
+  /* A same-page hash stays a bare anchor: through Link it navigates instead
+     of scrolling, which is the note SiteNav already carries. */
+  const row = (l: NavLink, className: string) =>
+    l.href.startsWith("#") ? (
+      <a key={l.href} className={className} href={l.href} onClick={close}>
+        {l.label}
+      </a>
+    ) : (
+      <Link key={l.href} className={className} href={l.href} onClick={close}>
+        {l.label}
+      </Link>
+    );
+
   return (
     <>
       <div className="nav-aside">
-        {/* Above 860 this is the floating glass button; below, it moves inside. */}
+        {/* Above 900 this is a button in the bar; below, it opens the sheet. */}
         <Link className="b b-line b-sm" href={signInHref}>
           Landline OS
         </Link>
 
         <button
-          ref={buttonRef}
+          ref={openerRef}
           type="button"
           className="nav-burger"
           aria-expanded={open}
           aria-controls={panelId}
-          aria-label={open ? "Close menu" : "Menu"}
-          onClick={() => setOpen((v) => !v)}
+          aria-label="Menu"
+          onClick={() => setOpen(true)}
         >
-          {/*
-            Three lines becoming a cross. Drawn rather than swapped, so the
-            shape that was pressed is the shape that closes it.
-          */}
           <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden focusable="false">
-            <line className="bl bl-1" x1="1" y1="1.5" x2="21" y2="1.5" />
-            <line className="bl bl-2" x1="1" y1="8" x2="21" y2="8" />
-            <line className="bl bl-3" x1="1" y1="14.5" x2="21" y2="14.5" />
+            <line className="bl" x1="1" y1="1.5" x2="21" y2="1.5" />
+            <line className="bl" x1="1" y1="8" x2="21" y2="8" />
+            <line className="bl" x1="1" y1="14.5" x2="21" y2="14.5" />
           </svg>
         </button>
       </div>
 
-      <div className="nav-scrim" data-open={open} onClick={close} aria-hidden />
+      <div className="nav-panel" id={panelId} data-open={open} role="dialog" aria-modal="true" aria-label="Menu">
+        {/*
+          The sheet's header is the bar's measurements exactly — same height,
+          same gutter — so the wordmark does not move when the menu opens.
+        */}
+        <div className="nav-panel-top">
+          <Wordmark className="mark" href="/" />
+          <div className="nav-panel-top-end">
+            <ThemeToggle />
+            <button
+              ref={closerRef}
+              type="button"
+              className="nav-burger nav-close"
+              aria-label="Close menu"
+              onClick={close}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden focusable="false">
+                <path className="bl" d="M6 6L18 18M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
-      <div className="nav-panel" id={panelId} data-open={open} ref={panelRef}>
-        {links.map((l) =>
-          /*
-           * A same-page hash stays a bare anchor, for the reason SiteNav
-           * gives: routed through Link it navigates instead of scrolling.
-           */
-          l.href.startsWith("#") ? (
-            <a key={l.href} className="nav-panel-link" href={l.href} onClick={close}>
-              {l.label}
-            </a>
-          ) : (
-            <Link key={l.href} className="nav-panel-link" href={l.href} onClick={close}>
-              {l.label}
-            </Link>
-          ),
-        )}
-
-        <Link className="nav-panel-link" href={signInHref} onClick={close}>
-          Landline OS
-        </Link>
+        <div className="nav-panel-links">
+          <ul>
+            {links.map((l) => (
+              <li key={l.href}>{row(l, "nav-panel-link")}</li>
+            ))}
+            <li>{row({ href: signInHref, label: "Landline OS" }, "nav-panel-link")}</li>
+          </ul>
+        </div>
 
         <div className="nav-panel-foot">
-          <Link className="b b-fill b-sm" href={ctaHref} onClick={close}>
+          <Link className="b b-fill" href={ctaHref} onClick={close}>
             Find an expert
           </Link>
-          <ThemeToggle />
+          <div className="nav-panel-meta">
+            {META.map((m, i) => (
+              <span key={m.href}>
+                {i > 0 ? <span aria-hidden>·</span> : null}
+                <Link href={m.href} onClick={close}>
+                  {m.label}
+                </Link>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </>

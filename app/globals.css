@@ -3283,10 +3283,10 @@
   /*
      The ground is on ::before rather than on .nav, and that is
      load-bearing rather than tidy. backdrop-filter makes an element a
-     containing block for fixed-position descendants, and .nav-scrim is
+     containing block for fixed-position descendants, and .nav-panel is
      position: fixed; inset: 0 inside this nav. Put the filter on .nav and
-     the menu's scrim stops covering the viewport and covers the 64px bar
-     instead — it would dim its own header and nothing else.
+     the phone menu stops covering the viewport and covers the 64px bar
+     instead — a full-screen sheet 64px tall, over its own header.
   */
   .site .nav::before {
     content: "";
@@ -3520,29 +3520,32 @@
   .site .nav-burger[aria-expanded="true"] .bl-3 { transform: translateY(-6.5px) rotate(-45deg); }
 
   /*
-     The panel hangs off the bar rather than the viewport: .site .nav is
-     sticky, so it is already the containing block, and top: 100% means the
-     panel meets the bar at whatever height the bar happens to be.
+     The menu is a screen, not a card.
+
+     It hung off the bar as a rounded panel with the page showing round it
+     behind a scrim. This is x.ai's shape instead: the whole viewport, its
+     own header carrying the wordmark and the way out, the destinations as
+     full-width rows, and the one thing worth pressing at the bottom.
+
+     A sheet that covers everything needs no scrim and has no outside to
+     press, so both are gone along with the pointerdown listener that
+     watched for it. What closes it is the button, Escape, or choosing
+     somewhere to go.
+
+     position: fixed resolves against the viewport here only because the
+     bar keeps its backdrop-filter on ::before — on .nav itself the filter
+     would make it the containing block and this sheet would be 64px tall.
   */
   .site .nav-panel {
-    position: absolute;
-    top: 100%;
-    left: 24px;
-    right: 24px;
-    z-index: 2;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
     display: none;
-    grid-template-columns: 1fr;
-    gap: 2px;
-    padding: 10px;
-    border-radius: 22px;
-    background: var(--nav-bg);
-    -webkit-backdrop-filter: var(--glass-far);
-    backdrop-filter: var(--glass-far);
-    box-shadow: var(--nav-rim), var(--nav-lift);
+    grid-template-rows: auto 1fr auto;
+    background: var(--bg);
     opacity: 0;
-    transform: translateY(-8px);
     /*
-       visibility, not just opacity. A panel at opacity 0 still takes
+       visibility, not just opacity. A sheet at opacity 0 still takes
        clicks and still holds every link in the tab order, so a keyboard
        reaching the end of the bar would walk into a menu nobody opened.
        Zero-duration and delayed, so it waits for the fade out and does
@@ -3550,57 +3553,61 @@
     */
     visibility: hidden;
     pointer-events: none;
-    transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
+    transition: opacity .18s ease, visibility 0s linear .18s;
   }
   .site .nav-panel[data-open="true"] {
     opacity: 1;
-    transform: none;
     visibility: visible;
     pointer-events: auto;
-    transition: opacity .16s ease, transform .16s ease, visibility 0s;
+    transition: opacity .18s ease, visibility 0s;
   }
+
+  /* The bar's own measurements, so the wordmark does not move on opening. */
+  .site .nav-panel-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 64px;
+    padding: 0 24px;
+  }
+  .site .nav-panel-top-end { display: flex; align-items: center; gap: 8px; }
+
+  .site .nav-panel-links { padding: 18px 24px 0; overflow-y: auto; }
+  .site .nav-panel-links ul { list-style: none; margin: 0; padding: 0; }
+  /* Hairline between rows, none above the first or below the last. */
+  .site .nav-panel-links li + li { border-top: 1px solid var(--hairline); }
   .site .nav-panel-link {
     display: flex;
     align-items: center;
-    min-height: 46px;
-    padding: 0 14px;
-    border-radius: 14px;
+    justify-content: space-between;
+    min-height: 56px;
     color: var(--ink);
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 500;
     text-decoration: none;
   }
-  .site .nav-panel-link:hover { background: var(--hairline); }
-  .site .nav-panel-foot {
+  .site .nav-panel-link:hover { color: var(--accent-ink); }
+
+  .site .nav-panel-foot { padding: 16px 24px 32px; }
+  .site .nav-panel-foot .b-fill { width: 100%; }
+  .site .nav-panel-meta {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    margin-top: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--hairline);
+    margin-top: 16px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
   }
-  /* The button takes the row; the toggle is a setting, so it takes a corner. */
-  .site .nav-panel-foot .b-fill { flex: 1; }
+  .site .nav-panel-meta span { display: inline-flex; align-items: center; gap: 10px; }
+  .site .nav-panel-meta a { color: var(--ink-mute); text-decoration: none; }
+  .site .nav-panel-meta a:hover { color: var(--ink); }
 
-  .site .nav-scrim {
-    position: fixed;
-    inset: 0;
-    z-index: 1;
-    display: none;
-    background: var(--scrim);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity .16s ease, visibility 0s linear .16s;
-  }
-  .site .nav-scrim[data-open="true"] {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity .16s ease, visibility 0s;
-  }
-
+  /* The way out: the same circle as the way in, drawn as a cross. */
+  .site .nav-close .bl { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
   @media (prefers-reduced-motion: reduce) {
     .site .nav-panel,
-    .site .nav-scrim,
     .site .nav-burger .bl { transition: none; }
   }
   .site .b-sm { min-width: 0; padding: 8px 16px; font-size: 13px; }
@@ -4191,7 +4198,6 @@
 
     .site .nav-burger { display: inline-grid; }
     .site .nav-panel { display: grid; }
-    .site .nav-scrim { display: block; }
 
     /*
        Finger-sized from here, not from 860.
