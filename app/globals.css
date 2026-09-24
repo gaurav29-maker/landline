@@ -3250,87 +3250,69 @@
   }
 
   /* ---- nav ---- */
+  /*
+     A bar again, after x.ai: full width, pinned to the top, the page
+     running underneath it behind a blur, one hairline along the bottom.
+
+     This replaces the floating capsule, which came from a portfolio site
+     — where the nav is a small object lying on a page of images. This is
+     a product site: the nav is the frame the product sits in, and it wants
+     to be the width of the page rather than an object on it.
+
+     What survives the change is the material. The tint and the blur are
+     the same tokens the capsule used, so the bar is made of what the rest
+     of the site is made of rather than of what x.ai is made of.
+  */
   .site .nav {
-    /* No height. The capsule sets it; a fixed 56 here would clip the lift. */
-    position: sticky; top: 0; z-index: 50;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     background: transparent;
     border-bottom: 0;
-    padding: 12px 16px 0;
-    display: flex;
-    justify-content: center;
-  }
-  /*
-     Absolute, so the capsule is centred on the PAGE rather than on what is
-     left after this. In flow it would push the capsule left by half the
-     button's width, and the amount it shifted would change with the label.
-  */
-  .site .nav-aside {
-    position: absolute;
-    right: 16px;
-    top: 12px;
-    display: flex;
-    align-items: center;
-    height: 46px;
-  }
-  /*
-     The nav as a floating pane of glass rather than a bar.
-
-     The bar ran the full width, was opaque enough to be a surface, and was
-     separated from the page by a hairline. This is an object lying ON the
-     page: edges on all four sides, light along the top, a shadow underneath,
-     and the page sliding beneath it in full view.
-
-     .nav is now only the sticky frame and shows nothing — transparent, no
-     border, padding to lift the capsule off the top edge. Everything visible
-     is .nav-in.
-
-     The material is three things:
-
-       backdrop-filter   what it does to the page behind. saturate(180%) is
-                         the half people notice without being able to name it
-                         — blur alone reads as frosting; blur with saturation
-                         reads as something with substance in it.
-       --nav-rim         light caught on the edges: brightest along the top, a
-                         faint line all the way round, a dark underside so the
-                         capsule has thickness instead of being a sticker.
-       --nav-lift        what it throws on the page below.
-  */
-  /*
-     Measured off the reference rather than approximated: its capsule is a
-     fixed 675 centred in a full-width bar, 6px of padding, a 23px radius
-     and blur(40px).
-
-     Two of those are copied exactly (the radius and the blur). Two are not:
-
-       width   theirs is a hard 675px, which works because their label set is
-               fixed. Ours holds a wordmark whose file is still coming and
-               four links whose words may change, so it sizes to content and
-               stays centred. Same result, one less thing to break.
-
-       ends    6px all round put their logo hard against the edge. The logo
-               side gets 14 here, because ours is type rather than a 28px
-               image and type needs the room its own sidebearing does not
-               give it.
-  */
-  .site .nav-in {
-    margin: 0 auto;
-    padding: 6px 6px 6px 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
     /*
-       999, not the reference's 23. On the desktop capsule 23 IS half the
-       46px height, so the two agree there — but the touch rules below take
-       the capsule to 56 and 23 stops being half, so one object would be a
-       pill on a laptop and a soft rectangle on a phone. A radius that
-       can't reach says the same thing at every height.
+       The row holds the page's own 1140 while the ground runs edge to
+       edge: ::before is inset: 0 on this box, so it covers the padding
+       too. No wrapper element, and one number to keep level with .wrap.
     */
-    border-radius: 999px;
-    background: var(--nav-bg);
-    -webkit-backdrop-filter: var(--glass-far);
-    backdrop-filter: var(--glass-far);
-    box-shadow: var(--nav-rim), var(--nav-lift);
+    padding: 0 max(24px, calc((100% - 1140px) / 2));
   }
+  /*
+     The ground is on ::before rather than on .nav, and that is
+     load-bearing rather than tidy. backdrop-filter makes an element a
+     containing block for fixed-position descendants, and .nav-scrim is
+     position: fixed; inset: 0 inside this nav. Put the filter on .nav and
+     the menu's scrim stops covering the viewport and covers the 64px bar
+     instead — it would dim its own header and nothing else.
+  */
+  .site .nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: var(--glass-near);
+    backdrop-filter: var(--glass-near);
+    border-bottom: 1px solid var(--hairline);
+  }
+  /* Both above the ground, and above the scrim when the menu is open. */
+  .site .nav-in,
+  .site .nav-aside { position: relative; z-index: 3; }
+  .site .nav-in {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .site .nav-in .mark { flex: 0 0 auto; }
+  /* Links sit with the wordmark; everything that acts goes to the far end. */
+  .site .nav-mid { margin-right: auto; }
+  .site .nav-aside { display: flex; align-items: center; }
+
   .site .mark { font-family: var(--font-mark); font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--ink); text-decoration: none; }
   .site .mark span { color: var(--accent); }
 
@@ -3469,7 +3451,13 @@
     backdrop-filter: var(--glass-far);
     border-color: transparent;
     color: var(--ink);
-    box-shadow: var(--nav-rim), var(--nav-lift);
+    /*
+       Rim, no lift. --nav-lift throws a 30px shadow, which was right when
+       this button floated beside a capsule over the page and is wrong now
+       that it sits in a bar: nothing in a bar is above anything. The rim
+       still separates it from the ground it sits on.
+    */
+    box-shadow: var(--nav-rim);
     /*
        46 to match the capsule, not the 34px pills inside it. Left at its
        own 35.6 it sat at exactly the height of the controls in the
@@ -3513,7 +3501,8 @@
     background: var(--nav-bg);
     border: 0;
     border-radius: 999px;
-    box-shadow: var(--nav-rim), var(--nav-lift);
+    /* Same reasoning as the sign-in pill: it is in the bar, not over it. */
+    box-shadow: var(--nav-rim);
     color: var(--ink);
     cursor: pointer;
   }
@@ -3538,8 +3527,8 @@
   .site .nav-panel {
     position: absolute;
     top: 100%;
-    left: 12px;
-    right: 12px;
+    left: 24px;
+    right: 24px;
     z-index: 2;
     display: none;
     grid-template-columns: 1fr;
@@ -4196,42 +4185,7 @@
   @media (max-width: 900px) {
     .site .nav-mid { display: none; }
 
-    /*
-       The bar gets a ground, because the page scrolls under it.
-
-       On ::before rather than on .nav itself, and that is load-bearing:
-       backdrop-filter makes an element a containing block for fixed
-       descendants, and .nav-scrim is position: fixed inset: 0 inside this
-       nav. Put the filter on .nav and the scrim stops covering the
-       viewport and covers the 68px bar instead — the menu would dim its
-       own header and nothing else.
-    */
-    .site .nav { padding: 12px; align-items: center; }
-    .site .nav::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      background: var(--nav-bg);
-      -webkit-backdrop-filter: var(--glass-near);
-      backdrop-filter: var(--glass-near);
-      -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
-      mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
-    }
-    .site .nav-in {
-      flex: 1;
-      padding: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
-    /* Both stay above the scrim so the button that opened it can close it. */
-    .site .nav-in,
-    .site .nav-aside { position: relative; z-index: 3; }
-
-    /* Everything the capsule carried is in the panel instead. */
+    /* Everything the bar carried on a wide screen is in the panel instead. */
     .site .nav-end { display: none; }
     .site .nav-aside .b-line { display: none; }
 
@@ -4253,31 +4207,6 @@
     .site .nav-panel-foot .theme-btn { width: 44px; height: 44px; }
   }
 
-  /*
-     The aside comes out of absolute positioning below 1000px.
-
-     Centring the capsule on the PAGE only works while there is room either
-     side of it for the sign-in button — and the button is out of flow, so
-     nothing stops the two meeting. They did. At 375 the button sat 5px over
-     the capsule's right edge; at 885, where the links still show and the
-     capsule is at its full 714, the overlap measured 38px and the two labels
-     ran into one another.
-
-     1000 is that arithmetic rather than a round number: capsule 714, plus the
-     button's 108 twice because centring needs the same room on both sides,
-     plus margins — 994. Below it the two share the row, capsule left and
-     button right, and flex keeps them apart at every width instead of at the
-     ones I happened to check.
-
-     Its own query, not folded into the 860 above: that one is about a finger
-     and this one is about whether a 714px object fits between two buttons.
-  */
-  @media (max-width: 1000px) {
-    /* gap, so that even if something grows the two can never end up flush. */
-    .site .nav { justify-content: space-between; align-items: center; gap: 12px; }
-    .site .nav-in { margin: 0; }
-    .site .nav-aside { position: static; height: auto; }
-  }
 
   @media (max-width: 460px) {
     .site .b { min-width: 0; width: 100%; }
