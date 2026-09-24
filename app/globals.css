@@ -3024,6 +3024,18 @@
      * still; this one has the page moving under it and has to look like it.
      */
     --nav-bg: rgba(252, 253, 255, 0.72);
+    /*
+       A surface that lifts off the page without a border, measured off
+       x.ai: their card is rgb(26,26,26) on a rgb(10,10,10) page — about
+       +16 of lift and no outline at all. These are the same move against
+       our own grounds rather than their values copied across.
+
+       Its own token rather than --bg-alt, which is the band tint: a card
+       coloured with that would disappear the moment it sat on an alt
+       band, and the expert grid appears on two pages with different
+       backgrounds behind it.
+    */
+    --card: #F4F5F8;
     --nav-hover: rgba(252, 253, 255, 0.92);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.95),
@@ -3104,6 +3116,7 @@
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(26, 30, 38, 0.66);
+      --card: #171B21;
       --nav-hover: rgba(38, 43, 54, 0.82);
       --nav-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -3158,6 +3171,7 @@
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(26, 30, 38, 0.66);
+    --card: #171B21;
     --nav-hover: rgba(38, 43, 54, 0.82);
     --nav-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
@@ -3711,6 +3725,12 @@
            this site, which is why the audit list and the FAQ are flat,
            and the expert cards were the one directory dressed as an
            offer.
+
+           Level 0 is not the same as undrawn, which is worth stating
+           since the expert cards now carry a --card fill and a 16px
+           radius. These levels are about GLASS — about what a surface
+           does to the page behind it. A flat tint does nothing to it,
+           so a filled card is still level 0 however solid it looks.
        0 — flat, hairline, 4px. Everything that explains rather than
            offers: the flow steps, the audit steps, what-this-is-not,
            the FAQ, the broker strip, the footer.
@@ -3724,12 +3744,29 @@
      nav keeps its blur, because the page genuinely scrolls under it.
   */
   .site .rung,
-  /* The expert cards are level 0 now — see the note above. */
+  /*
+     The expert card, after x.ai's "Choose how to get started" panels.
+
+     Measured off theirs rather than guessed: card rgb(26,26,26) on a
+     rgb(10,10,10) page, 16px radius, 40px of padding, no border at all,
+     and a pill button spanning the full width between the paddings. The
+     lift is the whole device — nothing is outlined, things are simply
+     nearer.
+
+     Two of those are taken as-is (the radius and the borderless fill) and
+     two are not. The padding is 28 rather than 40 because their card is
+     609px wide and ours is about 350 in a three-column grid; 40 there is
+     6.5% of the width, and 28 here is 8. The colours are our own --card
+     against our own grounds.
+
+     Still not glass: no backdrop-filter, so the levels note above stays
+     true. A tinted surface and a pane of glass are different claims — one
+     says nearer, the other says floating over.
+  */
   .site .xcard {
     border: 0;
-    border-top: 1px solid var(--rule);
-    border-radius: 0;
-    background: none;
+    border-radius: 16px;
+    background: var(--card);
     box-shadow: none;
   }
 
@@ -3892,13 +3929,13 @@
 
   /* ---- expert cards ---- */
   /*
-     Wider columns than the 20px the boxes needed. A box holds itself
-     apart from its neighbour; three columns of plain text need the gap to
-     do it, or the rate of one expert reads as a fourth line of the last.
+     20 again. The 36 was for plain columns of text, which need the gap to
+     hold them apart because nothing else does. A filled card holds itself
+     apart, and the same 36 between two of them reads as the grid falling
+     open.
   */
-  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 36px; }
-  /* Top only: the rule is the top edge, and there is no box to pad. */
-  .site .xcard { padding: 18px 0 0; display: flex; flex-direction: column; }
+  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .site .xcard { padding: 28px; display: flex; flex-direction: column; }
   .site .xcard-top { display: flex; align-items: center; gap: 14px; }
   /*
      The initials disc is gone.
@@ -3915,14 +3952,17 @@
      on the page. If real photographs ever arrive this is where they go.
   */
   .site .xrole { font-size: 13px; color: var(--ink-mute); margin-top: 2px; }
-  .site .rec { margin: 20px 0 0; padding: 16px 0 4px; border-top: 1px solid var(--rule); display: grid; gap: 10px; }
+  /* The one rule inside the card: it separates who from what, as x.ai's
+     hairline separates the lede from the ticked list under it. */
+  .site .rec { margin: 20px 0 0; padding: 18px 0 4px; border-top: 1px solid var(--hairline); display: grid; gap: 10px; }
   .site .rec > div { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
   .site .rec dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
   .site .rec dd { margin: 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
   .site .rec .rate { font-size: 15px; font-weight: 500; }
   .site .rec .rate small { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-faint); }
   .site .unreg { color: var(--ink-mute); }
-  .site .xcard .b { width: 100%; margin-top: 20px; }
+  /* Full width between the paddings, like theirs: the card's one action. */
+  .site .xcard .b { width: 100%; margin-top: 22px; }
   /* Left, with everything else in the card. It was the one centred thing in it. */
   .site .xmore { margin-top: 10px; font-size: 13px; color: var(--ink-mute); text-decoration: none; }
   .site .xmore:hover { color: var(--ink); }
