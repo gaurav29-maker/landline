@@ -38,6 +38,32 @@
 
     /* Buttons are pills. Cards and inputs are not — they keep their own. */
     --radius-btn: 999px;
+
+    /*
+       The glass depth scale.
+
+       Blur is distance: the further a surface floats above the page, the
+       more of the page it disturbs. Saturation is the material, so it does
+       NOT vary with distance. It used to — 125%, 140% and 180% depending on
+       which surface was written when, across five different blurs and seven
+       declarations, not one of them named.
+
+         --glass-near   lies on the page: the instrument panel in the hero,
+                        and the scrim that covers the page behind a dialog
+         --glass-mid    floats above the page: the booking sheet
+         --glass-far    floats above everything: the nav capsule and the
+                        sign-in button beside it
+
+       In :root rather than in .site because .bp-dialog is not reliably
+       inside .site, and a token a surface cannot see is precisely the bug
+       this scale exists to prevent.
+
+       Blur does not vary by theme. Only the tint does, and that is what
+       --glass-sheet-1/2 and --sheet-bg are for.
+    */
+    --glass-near: blur(18px) saturate(180%);
+    --glass-mid: blur(30px) saturate(180%);
+    --glass-far: blur(40px) saturate(180%);
     --white: #FFFFFF;
     --canvas: #FFFFFF;
     --surface: #F4F4F4;
@@ -86,43 +112,31 @@
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
   a { text-decoration: none; color: inherit; }
 
-  /* ================= NAV ================= */
-  nav {
-    border-bottom: 1px solid var(--line);
-    position: sticky;
-    top: 0;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
-    z-index: 50;
-  }
-  .nav-inner {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  /*
+     What is left of the old nav.
+
+     There was an unscoped `nav { position: sticky; top: 0; background:
+     rgba(255,255,255,0.92); backdrop-filter: blur(8px); z-index: 50 }` here,
+     from the design before SiteNav. It matched EVERY nav element on the
+     site, and the three that exist now all draw themselves:
+
+       .site .nav    was inheriting blur(8px), so the full-width strip
+                     frosted a band across the top of every page and the
+                     capsule's own blur(40px) filtered an already-blurred
+                     backdrop.
+       .legal-nav    a row of footer links, was being given position:
+                     sticky, z-index 50 and a hard white background. On a
+                     dark legal page that is a white bar with 2.64:1 links.
+       .ops-nav      sits inside .ops-bar, which already provides the bar.
+                     It was drawing a second one inside the first.
+
+     Its companions — .nav-inner, .nav-links, .nav-right, .nav-login,
+     .nav-cta, .nav-os — are gone with it; no JSX has referenced any of
+     them since SiteNav replaced that markup.
+  */
   /* 15px matches .ops-logo, the only other place this base size is seen. */
   .logo { font-family: var(--font-mark); font-weight: 800; font-size: 15px; letter-spacing: 0; }
   .logo span { color: var(--blue); }
-  .nav-links {
-    display: flex;
-    gap: 30px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--ink);
-  }
-  .nav-right { display: flex; align-items: center; gap: 14px; }
-  .nav-login { font-size: 14px; font-weight: 500; color: var(--ink-soft); }
-  .nav-cta {
-    background: var(--blue);
-    color: var(--on-accent);
-    padding: 9px 20px;
-    border-radius: var(--radius-btn);
-    font-size: 13.5px;
-    font-weight: 600;
-  }
 
   /* ================= HERO ================= */
   .hero {
@@ -411,7 +425,6 @@
   .footer-bottom { border-top: 1px solid var(--line); padding-top: 20px; font-size: 12.5px; color: var(--ink-soft); }
 
   @media (max-width: 860px) {
-    .nav-links { display: none; }
     .hero { grid-template-columns: 1fr; }
     .expert-grid, .process-steps, .features-grid, .pricing-grid, .testi-grid { grid-template-columns: 1fr; }
     .stats-bar { grid-template-columns: 1fr; gap: 24px; }
@@ -457,8 +470,8 @@
     inset: 0;
     /* The page recedes rather than merely dimming. */
     background: var(--scrim, rgba(26, 26, 26, 0.45));
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: var(--glass-near);
+    backdrop-filter: var(--glass-near);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -480,8 +493,8 @@
   */
   .bp-dialog {
     background: var(--sheet-bg, var(--white));
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: var(--glass-mid);
+    backdrop-filter: var(--glass-mid);
     border-radius: 20px;
     border: 0;
     width: 100%;
@@ -1279,42 +1292,6 @@
     min-height: 100vh;
   }
 
-  /* ---------- floating pill nav ---------- */
-
-  .site-dark nav {
-    position: sticky;
-    top: 14px;
-    z-index: 60;
-    background: transparent;
-    border-bottom: none;
-    backdrop-filter: none;
-    padding: 0 20px;
-  }
-  .site-dark .nav-inner {
-    max-width: 940px;
-    margin: 0 auto;
-    padding: 9px 10px 9px 22px;
-    border-radius: 999px;
-    background: rgba(18, 22, 29, 0.82);
-    border: 1px solid var(--sheet-line, var(--line));
-    backdrop-filter: blur(14px);
-    gap: 28px;
-  }
-  .site-dark .nav-links { gap: 26px; font-size: 13.5px; }
-  .site-dark .nav-links a { color: var(--ink); }
-  .site-dark .nav-links a:hover { color: var(--ink, var(--ink-dark)); }
-  .site-dark .nav-right { display: flex; align-items: center; gap: 14px; }
-  .site-dark .nav-login { color: var(--ink-mute, var(--ink-soft)); font-size: 13.5px; }
-  .site-dark .nav-login:hover { color: var(--ink, var(--ink-dark)); }
-  .site-dark .nav-cta {
-    background: var(--blue);
-    color: var(--on-accent);
-    border-radius: var(--radius-btn);
-    padding: 9px 20px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .site-dark .nav-cta:hover { background: var(--blue-deep); }
   .site-dark .logo { color: var(--ink, var(--ink-dark)); }
 
   /* ---------- display type ---------- */
@@ -1374,7 +1351,6 @@
   /* ---------- pill buttons ---------- */
 
   .site-dark .btn-primary,
-  .site-dark .nav-cta,
   .site-dark .price-cta,
   .site-dark .expert-book {
     border-radius: var(--radius-btn);
@@ -1803,7 +1779,6 @@
   .site-dark .btn-ghost { border-color: var(--hair-strong); }
   .site-dark .btn-ghost:hover { border-color: rgba(255, 255, 255, 0.24); }
   .site-dark .price-card:not(.popular) .price-cta { border-color: var(--hair-strong); }
-  .site-dark .nav-inner { border-color: var(--hair-strong); }
 
   /* ---- the serif carries one whole heading ---- */
   /*
@@ -2172,20 +2147,6 @@
   .os .receipt-table tfoot td { color: var(--ink, var(--ink-dark)); }
   .os .receipt-refs code, .os .ops-empty code { background: var(--blue-tint); color: var(--blue-deep); }
 
-  /* ---------- the door, on the marketing page ---------- */
-
-  .site-dark .nav-os {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink);
-    border: 1px solid var(--hair-strong);
-    border-radius: 4px;
-    padding: 8px 15px;
-    white-space: nowrap;
-  }
-  .site-dark .nav-os:hover { border-color: var(--blue); color: var(--blue-deep); }
 
   @media (max-width: 640px) {
     .os-status { font-size: 10.5px; gap: 7px; }
@@ -2630,21 +2591,6 @@
     .site-dark .xprof-photo { width: 52px; height: 52px; flex-basis: 52px; font-size: 15px; }
   }
 
-  /*
-     The nav pills wrapped their own labels to three lines under ~430px: the
-     nav-links are hidden by then, but the logo, "Landline OS" and the CTA
-     still compete for the row. Pre-existing on the home page and now shared
-     by every public page, so it is fixed in the one place rather than
-     tolerated on more of them.
-  */
-  .nav-cta, .nav-os { white-space: nowrap; }
-
-  @media (max-width: 430px) {
-    .nav-inner { padding: 14px 18px; gap: 10px; }
-    .site-dark .nav-right { gap: 9px; }
-    .site-dark .nav-os { font-size: 11px; padding: 7px 11px; letter-spacing: 0.06em; }
-    .site-dark .nav-cta { font-size: 12.5px; padding: 8px 14px; }
-  }
 
   /* status pills for the application queue */
   .pill.s-new { background: #FDF1DC; color: #8A5C10; }
@@ -3109,7 +3055,6 @@
     */
     --glass-sheet-1: rgba(252, 253, 255, 0.94);
     --glass-sheet-2: rgba(236, 238, 243, 0.90);
-    --glass-blur: blur(14px) saturate(140%);
     --glass-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.92),
       inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1),
@@ -3188,7 +3133,6 @@
       /* The panel is barely tinted here; the depth comes from the core. */
       --glass-sheet-1: rgba(228, 232, 240, 0.070);
       --glass-sheet-2: rgba(198, 202, 212, 0.035);
-      --glass-blur: blur(20px) saturate(125%);
       --glass-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.10),
         inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.20),
@@ -3234,7 +3178,6 @@
     /* The panel is barely tinted here; the depth comes from the core. */
     --glass-sheet-1: rgba(228, 232, 240, 0.070);
     --glass-sheet-2: rgba(198, 202, 212, 0.035);
-    --glass-blur: blur(20px) saturate(125%);
     --glass-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.10),
       inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.20),
@@ -3369,8 +3312,8 @@
     */
     border-radius: 999px;
     background: var(--nav-bg);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: var(--glass-far);
+    backdrop-filter: var(--glass-far);
     box-shadow: var(--nav-rim), var(--nav-lift);
   }
   .site .mark { font-family: var(--font-mark); font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--ink); text-decoration: none; }
@@ -3507,8 +3450,8 @@
   */
   .site .nav-aside .b-line {
     background: var(--nav-bg);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: var(--glass-far);
+    backdrop-filter: var(--glass-far);
     border-color: transparent;
     color: var(--ink);
     box-shadow: var(--nav-rim), var(--nav-lift);
@@ -3660,8 +3603,8 @@
        the rim, not from the page showing through.
     */
     background: linear-gradient(152deg, var(--glass-sheet-1) 0%, var(--glass-sheet-2) 100%);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-near);
+    backdrop-filter: var(--glass-near);
     border: 0;
     box-shadow: var(--glass-shadow);
   }
