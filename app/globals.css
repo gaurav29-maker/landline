@@ -3469,6 +3469,126 @@
     background: var(--nav-hover);
     border-color: transparent;
   }
+
+  /*
+     ---- the phone nav ----
+
+     Above 860 none of this exists. Below it the capsule stops being an
+     object and the bar becomes what a phone nav actually is: the wordmark,
+     and one way to everything else.
+
+     The links were `display: none` below 900 before this, which is not a
+     mobile nav — it is four links a phone cannot reach. "How it works" was
+     only findable by scrolling past it to the footer.
+  */
+  .site .nav-burger {
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .site .nav-burger .bl {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    transform-origin: 11px 8px;
+    transition: transform .18s ease, opacity .12s ease;
+  }
+  /* Three lines fold into the cross that closes them. */
+  .site .nav-burger[aria-expanded="true"] .bl-1 { transform: translateY(6.5px) rotate(45deg); }
+  .site .nav-burger[aria-expanded="true"] .bl-2 { opacity: 0; }
+  .site .nav-burger[aria-expanded="true"] .bl-3 { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /*
+     The panel hangs off the bar rather than the viewport: .site .nav is
+     sticky, so it is already the containing block, and top: 100% means the
+     panel meets the bar at whatever height the bar happens to be.
+  */
+  .site .nav-panel {
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    right: 12px;
+    z-index: 2;
+    display: none;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 10px;
+    border-radius: 22px;
+    background: var(--nav-bg);
+    -webkit-backdrop-filter: var(--glass-far);
+    backdrop-filter: var(--glass-far);
+    box-shadow: var(--nav-rim), var(--nav-lift);
+    opacity: 0;
+    transform: translateY(-8px);
+    /*
+       visibility, not just opacity. A panel at opacity 0 still takes
+       clicks and still holds every link in the tab order, so a keyboard
+       reaching the end of the bar would walk into a menu nobody opened.
+       Zero-duration and delayed, so it waits for the fade out and does
+       not cut it short on the way in.
+    */
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
+  }
+  .site .nav-panel[data-open="true"] {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .16s ease, transform .16s ease, visibility 0s;
+  }
+  .site .nav-panel-link {
+    display: flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 14px;
+    border-radius: 14px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .site .nav-panel-link:hover { background: var(--hairline); }
+  .site .nav-panel-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--hairline);
+  }
+  /* The button takes the row; the toggle is a setting, so it takes a corner. */
+  .site .nav-panel-foot .b-fill { flex: 1; }
+
+  .site .nav-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    background: var(--scrim);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .16s ease, visibility 0s linear .16s;
+  }
+  .site .nav-scrim[data-open="true"] {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .16s ease, visibility 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site .nav-panel,
+    .site .nav-scrim,
+    .site .nav-burger .bl { transition: none; }
+  }
   .site .b-sm { min-width: 0; padding: 8px 16px; font-size: 13px; }
   .site .b-pair { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   /* Inside a document the text is left-aligned, so the buttons under it are too. */
@@ -3946,17 +4066,19 @@
     */
     .site .b { min-height: 44px; }
     .site .b-sm { min-height: 44px; }
-    /* The capsule goes to 56 here for the same reason, so its sibling does
-       too — 3 classes against the 2 above, which is why this has to say it. */
-    .site .nav-aside .b-line { min-height: 56px; }
-    /* .nav-end .theme-btn is three classes and this is two, and a media
-       query adds no specificity — so without matching it here the desktop
-       34px wins inside the phone layout and the tap target silently goes
-       back under 44. The pill beside it survived only because min-height
-       clamps whatever height says. */
-    .site .theme-btn,
-    .site .nav-end .theme-btn { width: 44px; height: 44px; }
-    .site .mark { display: inline-flex; align-items: center; min-height: 44px; }
+    /*
+       The nav's own targets are NOT here any more, they are in the 900
+       block with the rest of the phone nav. Below 900 the capsule, the
+       sign-in button and .nav-end do not exist, so sizing them for a
+       finger at 860 was sizing things nobody can touch. The wordmark and
+       the menu's theme toggle moved there because they are the two things
+       a phone can actually press, and they have to be 44 from 900 down
+       rather than from 860 down.
+
+       This one stays: any theme toggle on a touch-sized page wants a
+       finger-sized hit area, wherever it is drawn.
+    */
+    .site .theme-btn { width: 44px; height: 44px; }
     .site .xmore {
       display: block;
       min-height: 44px;
@@ -3983,20 +4105,60 @@
      like: valid CSS, no warning, no effect.
   */
   /*
-     The links go at 900, not at 860 with the rest of the phone layout.
+     ---- 900: the bar stops being a capsule and becomes a menu ----
 
-     Measured: the capsule holding all four links is 714 wide and the
-     sign-in button is 108, so the row needs 16 + 714 + gap + 108 + 16 —
-     about 886 with a scrollbar. Between 860 and 886 there was nowhere
-     for them to go, so they went flush against each other and "Landline
-     OS" wrapped to two lines. That band existed before this button was
-     glass; glass is what made it impossible not to see.
+     900 is measured, not round. The capsule holding all four links is 714
+     wide and the sign-in button is 108, so the row needs 16 + 714 + gap +
+     108 + 16 — about 886 with a scrollbar. Below that there is nowhere for
+     the links to go.
 
-     Its own query because it is about how wide four English words are,
-     which has nothing to do with whether a finger is doing the tapping.
+     It is the same number the links used to merely hide at, and that was
+     the bug: hiding them left four destinations with no route to them on
+     any phone. Now the same width that takes them out of the bar puts them
+     in the panel, so there is never a width where they are simply gone.
+
+     Not folded into the 860 block: that one is about the size of a
+     fingertip and applies to the whole page. This one is about whether
+     four English words fit between two buttons.
   */
   @media (max-width: 900px) {
     .site .nav-mid { display: none; }
+
+    /* The bar is the page now, not an object sitting on it. */
+    .site .nav { padding: 12px; align-items: center; }
+    .site .nav-in {
+      flex: 1;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    /* Both stay above the scrim so the button that opened it can close it. */
+    .site .nav-in,
+    .site .nav-aside { position: relative; z-index: 3; }
+
+    /* Everything the capsule carried is in the panel instead. */
+    .site .nav-end { display: none; }
+    .site .nav-aside .b-line { display: none; }
+
+    .site .nav-burger { display: inline-grid; }
+    .site .nav-panel { display: grid; }
+    .site .nav-scrim { display: block; }
+
+    /*
+       Finger-sized from here, not from 860.
+
+       The page's touch sweep is at 860 because that is about a fingertip
+       on a whole page. These two are about this bar: below 900 the
+       wordmark and the menu are the only things in it, and between 861
+       and 900 the wordmark measured 23px tall — a phone-shaped nav with a
+       mouse-sized logo in it. The burger sets its own 44 for the same
+       reason, in the rule that draws it.
+    */
+    .site .mark { display: inline-flex; align-items: center; min-height: 44px; }
+    .site .nav-panel-foot .theme-btn { width: 44px; height: 44px; }
   }
 
   /*
