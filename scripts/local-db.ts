@@ -15,6 +15,30 @@ import path from "node:path";
  * backup, no concurrency to speak of, and no durability guarantee. Production
  * still needs a real Postgres — Neon or Supabase.
  *
+ * KNOWN DEFECT IN THIS SETUP, measured rather than suspected: the socket
+ * server loses the statement issued immediately after an error response on
+ * the same connection. Provoke a constraint violation, catch it, and run one
+ * more statement, and that statement is silently dropped — no error, an
+ * empty result, and sometimes a result belonging to a different query.
+ *
+ *   insert / provoke 23505 / update, 40 runs   5 updates lost
+ *   the same without the provoked error        0 lost
+ *   the same against PGlite in-process         0 lost (19/25 over the socket)
+ *
+ * The rate moves run to run — 1 in 40 to 8 in 40 — so a clean run proves
+ * nothing; only repetition does.
+ *
+ * So it is this socket layer, not PGlite and not Postgres. Version 0.2.11,
+ * which is the latest published; there is nothing to upgrade to.
+ *
+ * It matters because eight route handlers catch 23505 deliberately — the
+ * double-booking guards, the bundle and membership holds, the Razorpay
+ * webhook de-duplication and the apply form. In development, whatever those
+ * do next may quietly not happen. It cannot affect production, which talks
+ * to a real Postgres over a real wire protocol; that is exactly why no
+ * workaround for it lives in lib/db. scripts/verify-flow.ts handles it
+ * where it provokes one, and explains the measurements in full.
+ *
  *   npm run db:local     (leave running)
  *   npm run db:push      (in another terminal)
  *   npm run db:seed

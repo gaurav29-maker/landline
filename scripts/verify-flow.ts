@@ -86,6 +86,57 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 /**
+ * Mark an application rejected, and do not continue until the database
+ * agrees that it is.
+ *
+ * Against a real Postgres the first attempt always wins and the confirming
+ * SELECT costs one round trip. Against the local development database it
+ * sometimes does not, and that is what this exists for: PGlite behind
+ * @electric-sql/pglite-socket (scripts/local-db.ts) can silently drop a
+ * statement issued after an error response on the same connection. Nothing
+ * reports a problem — the UPDATE succeeds and changes nothing.
+ *
+ * Measured on this exact code path, 40 runs of the sequence below:
+ *
+ *   plain update        5/40 and 1/40 runs left the row un-rejected
+ *   update + confirm    0/40 and 0/40, never needing more than one retry
+ *
+ * The same sequence against PGlite IN-PROCESS, no socket, loses nothing
+ * (0/25, against 19/25 over the socket), so the fault is the socket server
+ * and not PGlite, Postgres or this codebase. Production talks to a real
+ * Postgres over a real wire protocol and cannot do this, which is why the
+ * confirmation is here — in the one place that provokes an error and then
+ * depends on the next statement — rather than in lib/db.
+ *
+ * Two things to know if this ever looks wrong again. It presents as an
+ * UPDATE matching zero rows against a row a SELECT returns one line later,
+ * which sends you to the index, the collation and the parameter binding;
+ * all three are fine, and the fault is in the statement BEFORE the one
+ * that looks wrong. And a throwaway `select 1` after the error does clear
+ * it for raw postgres.js but NOT through Drizzle — measured at 5/40 either
+ * way — so confirming the write is the thing that actually works.
+ */
+async function rejectAndConfirm(email: string): Promise<void> {
+  const ATTEMPTS = 5;
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    await db
+      .update(expertApplications)
+      .set({ status: "rejected", reviewedAt: new Date() })
+      .where(eq(expertApplications.email, email));
+
+    const rows = await db
+      .select({ status: expertApplications.status })
+      .from(expertApplications)
+      .where(sql`lower(email) = lower(${email})`);
+
+    if (rows.length > 0 && rows.every((r) => r.status === "rejected")) return;
+  }
+  throw new Error(
+    `could not reject ${email} after ${ATTEMPTS} attempts — the database is accepting writes and not applying them`,
+  );
+}
+
+/**
  * Change a base64url value by exactly one BYTE.
  *
  * tamper() above flips the last character, which is right for hex and wrong
@@ -1242,10 +1293,7 @@ async function main() {
   }
   check("a second open application from one address is refused", secondRefused);
 
-  await db
-    .update(expertApplications)
-    .set({ status: "rejected", reviewedAt: new Date() })
-    .where(eq(expertApplications.email, applicant.email));
+  await rejectAndConfirm(applicant.email);
 
   let reapplyAllowed = true;
   try {
