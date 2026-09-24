@@ -20,11 +20,16 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
    * forgotten in the menu is a link no phone can reach, which is exactly the
    * state this nav was already in.
    */
+  /*
+   * In the order the page runs. They disagreed before — the nav listed
+   * Packages third and the page put it first — so following the nav jumped
+   * you backwards past two sections you had not read.
+   */
   const links: NavLink[] = [
     { href: "/experts", label: "Find an expert" },
     { href: to("#audit"), label: "Audit my portfolio" },
-    { href: to("#ways"), label: "Packages" },
     { href: to("#how"), label: "How it works" },
+    { href: to("#ways"), label: "Packages" },
   ];
 
   return (

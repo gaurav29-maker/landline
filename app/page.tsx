@@ -261,11 +261,130 @@ export default async function Home() {
         </div>
       </div>
 
+      <section className="band alt" id="audit">
+        <div className="wrap">
+          <div className="band-head">
+            <span className="eyebrow">Audit my portfolio</span>
+            <h2>A real expert reads your actual portfolio.</h2>
+            <p>
+              Not an automated score. A person who has run money looks at what you hold and tells
+              you what they see in it.
+            </p>
+          </div>
+
+          {/*
+            The five steps that stood here were the six in "How it works"
+            again, a thousand pixels apart, down to "Live availability"
+            appearing verbatim in both. One process, told once.
+
+            The section stays: the hero's second button points at #audit, and
+            what a review actually looks at exists nowhere else on the page.
+          */}
+          <p className="eyebrow" style={{ marginBottom: 16 }}>
+            What a review looks at
+          </p>
+          <ul className="covers">
+            {REVIEW_COVERS.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="band" id="experts">
+        <div className="wrap">
+          <div className="band-head">
+            <span className="eyebrow">The expert network</span>
+            <h2>
+              The right expert changes the <span className="said">conversation</span>.
+            </h2>
+            <p>Every expert shows their SEBI registration, or says plainly that they have none.</p>
+          </div>
+          <ExpertGrid experts={experts} dbReady={dbReady} />
+          {/*
+            The homepage shows everyone while there are three. The page it
+            links to is the one that filters, sorts and shows when each of
+            them is next free — and it is where this section stops scaling.
+          */}
+          {experts.length > 0 ? (
+            <p className="see-all">
+              <Link className="b b-line" href="/experts">
+                See all experts
+              </Link>
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="band alt" id="how">
+        <div className="wrap">
+          <div className="band-head">
+            <span className="eyebrow">How it works</span>
+            <h2>
+              From a question to a <span className="said">conversation</span>.
+            </h2>
+            {/*
+              Was "your review, effortlessly", which promised ease two lines
+              above the one bit of work we ask for. Naming that work is more
+              persuasive than hiding it: people who will not write down what
+              they hold are people this product cannot help.
+            */}
+            <p>Six steps. One piece of work on your side.</p>
+          </div>
+          <div className="flow">
+            <div className="flow-step">
+              <p className="n">01</p>
+              <h3>Your question</h3>
+              <p>A holding, a company, a sector. However it arrives.</p>
+            </div>
+            <div className="flow-step">
+              <p className="n">02</p>
+              <h3>Your choice of expert</h3>
+              <p>A person, not a matching algorithm.</p>
+            </div>
+            <div className="flow-step">
+              <p className="n">03</p>
+              <h3>A real slot</h3>
+              <p>Live availability. Nobody emails you back.</p>
+            </div>
+            <div className="flow-step">
+              <p className="n">04</p>
+              <h3>Your holdings, written down</h3>
+              <p>Five minutes. The only work on your side.</p>
+            </div>
+            <div className="flow-step">
+              <p className="n">05</p>
+              <h3>{SLOT_MINUTES} minutes</h3>
+              <p>One to one, with somebody who has read it.</p>
+            </div>
+            <div className="flow-step">
+              <p className="n">06</p>
+              <h3>It stops</h3>
+              <p>Nothing renews. Nobody follows up.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/*
-        The ladder comes before the expert grid on purpose. A visitor has to
-        understand what they can buy before a list of people means anything.
+        Pricing sits after the people, not before them.
+
+        It used to lead, on the reasoning that a list of names means nothing
+        until you know what you can buy. The page argued the opposite of
+        itself: this section's own button says "Find an expert", and it
+        pointed DOWN at #experts — asking for a decision between 5,499 and
+        2,45,000 and then sending the reader off to see who they would be
+        talking to.
+
+        The nav had the better order all along — Audit, How it works,
+        Packages — while the page ran Packages first, so clicking "Packages"
+        in the nav jumped backwards past two sections nobody had read.
+
+        What it is, who it is, how it works, then how much. A premium number
+        is earned by the three sections above it; leading with it asks people
+        to price something they have not been shown.
       */}
-      <section className="band alt" id="ways">
+      <section className="band" id="ways">
         <div className="wrap">
           <div className="band-head">
             <span className="eyebrow">Three ways to work with us</span>
@@ -285,7 +404,8 @@ export default async function Home() {
                 <li>A second opinion</li>
               </ul>
               <div className="rung-foot">
-                <a className="b b-line" href="#experts">
+                {/* Forward to the full list: the three cards are above this now. */}
+                <a className="b b-line" href="/experts">
                   Find an expert
                 </a>
                 <p className="rung-also">
@@ -340,111 +460,6 @@ export default async function Home() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      <section className="band" id="audit">
-        <div className="wrap">
-          <div className="band-head">
-            <span className="eyebrow">Audit my portfolio</span>
-            <h2>A real expert reads your actual portfolio.</h2>
-            <p>
-              Not an automated score. A person who has run money looks at what you hold and tells
-              you what they see in it.
-            </p>
-          </div>
-
-          {/*
-            The five steps that stood here were the six in "How it works"
-            again, a thousand pixels apart, down to "Live availability"
-            appearing verbatim in both. One process, told once.
-
-            The section stays: the hero's second button points at #audit, and
-            what a review actually looks at exists nowhere else on the page.
-          */}
-          <p className="eyebrow" style={{ marginBottom: 16 }}>
-            What a review looks at
-          </p>
-          <ul className="covers">
-            {REVIEW_COVERS.map((c) => (
-              <li key={c}>{c}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="band alt" id="experts">
-        <div className="wrap">
-          <div className="band-head">
-            <span className="eyebrow">The expert network</span>
-            <h2>
-              The right expert changes the <span className="said">conversation</span>.
-            </h2>
-            <p>Every expert shows their SEBI registration, or says plainly that they have none.</p>
-          </div>
-          <ExpertGrid experts={experts} dbReady={dbReady} />
-          {/*
-            The homepage shows everyone while there are three. The page it
-            links to is the one that filters, sorts and shows when each of
-            them is next free — and it is where this section stops scaling.
-          */}
-          {experts.length > 0 ? (
-            <p className="see-all">
-              <Link className="b b-line" href="/experts">
-                See all experts
-              </Link>
-            </p>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="band" id="how">
-        <div className="wrap">
-          <div className="band-head">
-            <span className="eyebrow">How it works</span>
-            <h2>
-              From a question to a <span className="said">conversation</span>.
-            </h2>
-            {/*
-              Was "your review, effortlessly", which promised ease two lines
-              above the one bit of work we ask for. Naming that work is more
-              persuasive than hiding it: people who will not write down what
-              they hold are people this product cannot help.
-            */}
-            <p>Six steps. One piece of work on your side.</p>
-          </div>
-          <div className="flow">
-            <div className="flow-step">
-              <p className="n">01</p>
-              <h3>Your question</h3>
-              <p>A holding, a company, a sector. However it arrives.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">02</p>
-              <h3>Your choice of expert</h3>
-              <p>A person, not a matching algorithm.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">03</p>
-              <h3>A real slot</h3>
-              <p>Live availability. Nobody emails you back.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">04</p>
-              <h3>Your holdings, written down</h3>
-              <p>Five minutes. The only work on your side.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">05</p>
-              <h3>{SLOT_MINUTES} minutes</h3>
-              <p>One to one, with somebody who has read it.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">06</p>
-              <h3>It stops</h3>
-              <p>Nothing renews. Nobody follows up.</p>
-            </div>
-          </div>
         </div>
       </section>
 
