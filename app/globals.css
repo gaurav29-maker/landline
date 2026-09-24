@@ -4024,8 +4024,41 @@
 
   /* ---- profile + apply, on the same system ---- */
   .site .doc { max-width: 720px; margin: 0 auto; padding: 48px 0 24px; }
-  .site .back { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); text-decoration: none; }
-  .site .back:hover { color: var(--ink); }
+  /*
+     The way back, as a control rather than a caption.
+
+     It was 11px grey mono with an arrow glyph, which read as a label —
+     the one thing on the page that was pressable and did not look it.
+     yuriroga.com draws the same link as a short filled capsule with a
+     triangle; this is that, in our own pill radius and on the band tint
+     the site already uses for a raised surface.
+
+     Not glass. Glass has a documented meaning here — see the levels note
+     — and this is a control on the page, not a panel floating over it.
+  */
+  .site .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 32px;
+    padding: 0 15px;
+    border-radius: var(--radius-btn);
+    background: var(--bg-alt);
+    border: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-decoration: none;
+    transition: color .12s ease, border-color .12s ease;
+  }
+  .site .back svg { flex: 0 0 auto; }
+  .site .back:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  /* The label sits on the block it names, so the block's own rule is the gap. */
+  .site .facts-h { margin: 40px 0 0; }
+  .site .facts-h + .facts { margin-top: 12px; }
   .site .doc-head { display: flex; align-items: center; gap: 18px; margin: 22px 0 0; }
   .site .doc-av { width: 62px; height: 62px; flex: 0 0 62px; border-radius: 999px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-family: var(--mono); font-size: 17px; }
   .site .doc-head h1 { font-size: 28px; line-height: 36px; margin: 0 0 3px; }

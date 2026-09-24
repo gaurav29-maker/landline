@@ -117,8 +117,20 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
 
       <div className="wrap">
         <div className="doc">
+          {/*
+            A pill, not a bare line of type.
+
+            yuriroga.com puts "Back to Overview" in exactly this shape on
+            every project page: a short capsule with the direction drawn
+            rather than typed. The arrow here was a "←" glyph, which is a
+            character borrowed from whichever face happens to load; a drawn
+            triangle is the same mark at every weight and never falls back.
+          */}
           <Link className="back" href="/#experts">
-            ← All experts
+            <svg viewBox="0 0 7 10" width="7" height="10" aria-hidden focusable="false">
+              <polygon points="6.5,0.5 0.5,5 6.5,9.5" fill="currentColor" />
+            </svg>
+            All experts
           </Link>
 
           <header className="doc-head">
@@ -155,6 +167,13 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
             one case a reader most needs to see — and the terms already promise
             it is shown.
           */}
+          {/*
+            Labelled, like Background and In a session above it. The block
+            was the one set of facts on this page that started with a bare
+            rule and left the reader to work out what they were looking at —
+            yuriroga heads the identical dl with INFORMATION.
+          */}
+          <h2 className="doc-h2 facts-h">Details</h2>
           <dl className="facts">
             {expert.specialties.length > 0 ? (
               <div>
