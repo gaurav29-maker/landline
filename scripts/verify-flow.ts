@@ -43,7 +43,31 @@ import { recordPayout, voidPayout, totalsForExpert } from "../lib/payouts";
  */
 
 const BASE = process.env.VERIFY_BASE ?? "http://localhost:3000";
-const EXPERT = "rhea-kulkarni";
+/**
+ * Whoever is live, rather than whoever was live the day this was written.
+ *
+ * This was pinned to "rhea-kulkarni", and it broke the moment she was set
+ * to draft: every booking check in this file books against this slug, a
+ * draft expert serves no slots, and the first call got undefined back —
+ * the run died before check one. The suite should follow the panel rather
+ * than a person.
+ *
+ * Resolved once at startup from the same endpoint the site reads, so it is
+ * always somebody the public could actually book.
+ */
+let EXPERT = "";
+
+async function resolveExpert(): Promise<void> {
+  const r = await fetch(`${BASE}/api/experts`);
+  const j = (await r.json()) as { experts?: { slug: string }[] };
+  const first = j.experts?.[0];
+  if (!first) {
+    throw new Error(
+      "no live expert to verify against — seed one, or set a real person to status 'live'",
+    );
+  }
+  EXPERT = first.slug;
+}
 
 let passed = 0;
 let failed = 0;
@@ -194,6 +218,9 @@ async function post(path: string, body: unknown, cookie?: string) {
 
 async function main() {
   console.log(`\nVerifying against ${BASE}\n`);
+
+  await resolveExpert();
+  console.log(`  booking against ${EXPERT}`);
 
   // Start from a clean slate so reruns are meaningful.
   /*

@@ -9,11 +9,22 @@ import { availabilityRules, experts } from "../lib/db/schema";
 let db: ReturnType<typeof scriptDb>;
 
 /**
- * Demo seed for phase 1.
+ * The seed.
  *
- * These are the placeholder people from the original mockup. Before real money
- * is switched on, replace them with experts who have actually agreed to be
- * listed, and fill in real SEBI registration numbers where they apply.
+ * `status` is per person now, and that is the whole point of this change.
+ * Two of these three are inventions from the original mockup — made-up
+ * people with made-up careers, made-up years and @example.com addresses —
+ * and they were being written as `live`, which put fictional financial
+ * professionals on a public page as bookable, priced, and carrying a stated
+ * SEBI position. On a site that sells portfolio reviews to retail investors
+ * in India, that is the most serious thing the repository contained.
+ *
+ * They are `draft` now: still here, still reseedable, invisible to the site
+ * and unbookable. The one real person stays live.
+ *
+ * To add a real expert: a person who has agreed to be listed, their actual
+ * background, their real SEBI registration number where they have one, and
+ * `status: "live"`. Nobody goes live because a fixture said so.
  */
 const SEED = [
   {
@@ -29,6 +40,8 @@ const SEED = [
     pricePaise: 549900,
     contactEmail: "rhea@example.com",
     meetingUrl: "https://meet.google.com/placeholder-rhea",
+    /* Invented. Not a person. */
+    status: "draft" as const,
   },
   {
     slug: "gaurav-khona",
@@ -43,6 +56,8 @@ const SEED = [
     pricePaise: 549900,
     contactEmail: "gauravkhona29@gmail.com",
     meetingUrl: "https://meet.google.com/placeholder-gaurav",
+    /* A real person, who can answer for what this says about him. */
+    status: "live" as const,
   },
   {
     slug: "arjun-mehta",
@@ -57,6 +72,8 @@ const SEED = [
     pricePaise: 549900,
     contactEmail: "arjun@example.com",
     meetingUrl: "https://meet.google.com/placeholder-arjun",
+    /* Invented. Not a person. */
+    status: "draft" as const,
   },
 ];
 
@@ -72,7 +89,7 @@ async function main() {
   for (const e of SEED) {
     const [row] = await db
       .insert(experts)
-      .values({ ...e, specialties: [...e.specialties], status: "live" })
+      .values({ ...e, specialties: [...e.specialties] })
       /*
        * Refresh everything the seed defines, not a subset.
        *
@@ -99,7 +116,12 @@ async function main() {
            * not blow away a registration a person verified by hand for a real
            * expert who happens to share a slug.
            */
-          status: "live",
+          /*
+           * From the record, not a constant. It was hard-coded to "live",
+           * so a reseed would have put the invented two back on the site
+           * however carefully somebody had drafted them.
+           */
+          status: e.status,
           updatedAt: new Date(),
         },
       })
