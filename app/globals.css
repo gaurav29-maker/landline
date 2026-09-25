@@ -3036,6 +3036,18 @@
      */
     --nav-bg: rgba(252, 253, 255, 0.72);
     /*
+       TWO CARDS, ONE RULE. Dark draws a filled panel; light draws a rule
+       and some air. That is not two moods, it is the same idea expressed
+       the way each ground allows: on black you cannot show elevation with
+       a shadow, so a lighter fill is the only device left — which is what
+       x.ai does. On white a hairline and whitespace separate things
+       better than a grey box, which is what yuriroga.com does, and it
+       draws no boxes at all.
+
+       So the card is five tokens rather than five hard-coded values, and
+       .xcard, .spec and .voice all read them. Nothing below this line
+       knows which theme it is in.
+
        A surface that lifts off the page without a border, measured off
        x.ai: their card is rgb(26,26,26) on a rgb(10,10,10) page — about
        +16 of lift and no outline at all. These are the same move against
@@ -3046,7 +3058,11 @@
        band, and the expert grid appears on two pages with different
        backgrounds behind it.
     */
-    --card: #F4F5F8;
+    --card: transparent;
+    --card-radius: 0;
+    --card-edge: 1px solid var(--rule);
+    --card-pad: 18px 0 0;
+    --card-gap: 36px;
     --btn-soft: #EFF0F3;
     --btn-soft-hover: #E5E7EC;
     --nav-hover: rgba(252, 253, 255, 0.92);
@@ -3130,6 +3146,11 @@
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(30, 30, 30, 0.66);
       --card: #181818;
+      --card-radius: 16px;
+      --card-edge: 0;
+      --card-pad: 28px;
+      --card-pad-sm: 22px;
+      --card-gap: 20px;
       --btn-soft: #202020;
       --btn-soft-hover: #2A2A2A;
       --nav-hover: rgba(43, 43, 43, 0.82);
@@ -3178,6 +3199,11 @@
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(30, 30, 30, 0.66);
     --card: #181818;
+    --card-radius: 16px;
+    --card-edge: 0;
+    --card-pad: 28px;
+    --card-pad-sm: 22px;
+    --card-gap: 20px;
     --btn-soft: #202020;
     --btn-soft-hover: #2A2A2A;
     --nav-hover: rgba(43, 43, 43, 0.82);
@@ -3783,7 +3809,8 @@
   */
   .site .xcard {
     border: 0;
-    border-radius: 16px;
+    border-top: var(--card-edge);
+    border-radius: var(--card-radius);
     background: var(--card);
     box-shadow: none;
   }
@@ -3952,8 +3979,9 @@
      apart, and the same 36 between two of them reads as the grid falling
      open.
   */
-  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-  .site .xcard { padding: 28px; display: flex; flex-direction: column; }
+  /* Filled cards hold themselves apart; ruled columns need the gap to. */
+  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--card-gap); }
+  .site .xcard { padding: var(--card-pad); display: flex; flex-direction: column; }
   .site .xcard-top { display: flex; align-items: center; gap: 14px; }
   /*
      The initials disc is gone.
@@ -4527,8 +4555,9 @@
   */
   .site .spec {
     margin-top: 40px;
-    padding: 28px;
-    border-radius: 16px;
+    padding: var(--card-pad);
+    border-top: var(--card-edge);
+    border-radius: var(--card-radius);
     background: var(--card);
   }
   .site .spec-flag {
@@ -4569,7 +4598,8 @@
 
   /* One column under 760: 200px of labels beside prose stops being a read. */
   @media (max-width: 760px) {
-    .site .spec { padding: 22px; }
+    /* Dark tightens its padding here; light has none to tighten. */
+    .site .spec { padding: var(--card-pad-sm, var(--card-pad)); }
     .site .spec-body { grid-template-columns: 1fr; gap: 26px; }
   }
 
@@ -4588,12 +4618,13 @@
   .site .voices {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    gap: var(--card-gap);
   }
   .site .voice {
     margin: 0;
-    padding: 28px;
-    border-radius: 16px;
+    padding: var(--card-pad);
+    border-top: var(--card-edge);
+    border-radius: var(--card-radius);
     background: var(--card);
     display: flex;
     flex-direction: column;
