@@ -4573,6 +4573,53 @@
     .site .spec-body { grid-template-columns: 1fr; gap: 26px; }
   }
 
+  /*
+     What people said.
+
+     Same card as an expert record — --card, 16px, 28px of padding — so
+     the site has one card and not three. The quote leads and the name
+     follows it, which is the order editlobby.com uses and the right one:
+     a stranger's name means nothing until you have read what they said.
+
+     No quotation marks drawn in CSS. The blockquote already says what
+     this is, and a 60px open-quote glyph is the decoration a page that
+     has just cut its selling does not need.
+  */
+  .site .voices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .site .voice {
+    margin: 0;
+    padding: 28px;
+    border-radius: 16px;
+    background: var(--card);
+    display: flex;
+    flex-direction: column;
+    /* The name sits on the floor of the card however long the quote is. */
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .site .voice blockquote {
+    margin: 0;
+    font-size: 15px;
+    line-height: 24px;
+    color: var(--ink-body);
+  }
+  .site .voice figcaption {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  /* The qualifier is quieter than the name and on its own line. */
+  .site .voice figcaption span {
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+    color: var(--ink-mute);
+  }
+
   /* ---- the six-step process ---- */
   /*
      Six steps, so the column count has to divide six.

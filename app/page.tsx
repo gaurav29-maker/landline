@@ -19,6 +19,7 @@ import PassPurchase from "@/components/PassPurchase";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
+import { TESTIMONIALS } from "@/lib/testimonials";
 
 export const dynamic = "force-dynamic";
 
@@ -517,6 +518,43 @@ export default async function Home() {
 
         </div>
       </section>
+
+      {/*
+        What people said — absent until anybody has said anything.
+
+        Here because the reference puts it here and the reason is sound:
+        editlobby.com runs its three named quotes at roughly 70% of the
+        page, after the price and before the objections. That is the moment
+        a reader has seen a number and wants to know whether anyone has
+        paid it.
+
+        `band` rather than `band alt`, and that is not a coin toss. The
+        bands alternate their stripe, so a section that appears only when
+        data exists would shift every stripe after it the day the first
+        quote lands. Transparent, it costs nothing in either state: empty
+        it renders no element at all, and full it sits in the page colour
+        with its own heading and the band padding either side.
+      */}
+      {TESTIMONIALS.length > 0 ? (
+        <section className="band">
+          <div className="wrap">
+            <div className="band-head idx">
+              <span className="eyebrow">What people said</span>
+            </div>
+            <div className="voices">
+              {TESTIMONIALS.map((t) => (
+                <figure className="voice" key={t.name + t.quote.slice(0, 24)}>
+                  <blockquote>{t.quote}</blockquote>
+                  <figcaption>
+                    {t.name}
+                    {t.note ? <span>{t.note}</span> : null}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="band alt">
         <div className="wrap">
