@@ -404,6 +404,17 @@ export default async function MemberConsole({
                     <a className="ops-link" href={`/booking/${b.id}`}>
                       What you shared
                     </a>
+                    {/*
+                      Their copy, because ours expires. The intake and the
+                      note are both deleted on the retention clock, and this
+                      was the only output of the session with nowhere to save
+                      it from. A plain <a>, not a fetch: the route answers
+                      with a Content-Disposition and the browser does the
+                      rest, so there is no state here to get wrong.
+                    */}
+                    <a className="ops-link" href={`/member/sessions/${b.id}/record`}>
+                      Download record
+                    </a>
                     <a className="ops-link" href={rebookHref(b.expertSlug)}>
                       {`Book ${b.expertName.split(" ")[0]} again`}
                     </a>

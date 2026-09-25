@@ -958,6 +958,59 @@ async function main() {
     "still on its original slot",
   );
 
+  /*
+   * The session record download.
+   *
+   * This file carries what somebody wrote about their own money — holdings,
+   * percentages, what they were worried about — so the interesting assertion
+   * is not that it downloads, it is that it downloads to exactly one person.
+   * /api/bookings/[id] next door is guarded by the uuid alone, which makes
+   * it easy to write this one the same way by accident.
+   */
+  await db
+    .update(bookings)
+    .set({ expertNote: "We went through the concentration and then the overlap." })
+    .where(eq(bookings.id, movable.id));
+
+  const recordPath = `/member/sessions/${movable.id}/record`;
+
+  const mineRec = await fetch(`${BASE}${recordPath}`, {
+    headers: { cookie: memberCookie(member.id) },
+  });
+  const mineBody = await mineRec.text();
+  check(
+    "a member can download the record of their own session",
+    mineRec.status === 200 &&
+      (mineRec.headers.get("content-disposition") ?? "").includes("attachment") &&
+      mineBody.includes("concentration") &&
+      mineBody.includes(movable.id),
+    `status ${mineRec.status}, ${mineBody.length} bytes`,
+  );
+
+  const strangerRec = await fetch(`${BASE}${recordPath}`, {
+    headers: { cookie: memberCookie(stranger.id) },
+  });
+  const strangerBody = await strangerRec.text();
+  check(
+    "another member cannot download that record",
+    strangerRec.status === 404 && !strangerBody.includes("concentration"),
+    `status ${strangerRec.status}`,
+  );
+
+  /*
+   * redirect: manual, because following it turns the middleware's bounce to
+   * the sign-in page into a 200 and the check passes on the login HTML.
+   */
+  const anonRec = await fetch(`${BASE}${recordPath}`, { redirect: "manual" });
+  const anonBody = await anonRec.text();
+  check(
+    "a signed-out request gets no record at all",
+    anonRec.status !== 200 && !anonBody.includes("concentration"),
+    `status ${anonRec.status} -> ${anonRec.headers.get("location") ?? "no redirect"}`,
+  );
+
+  await db.update(bookings).set({ expertNote: null }).where(eq(bookings.id, movable.id));
+
   // The owner, moving it properly.
   const moved = await post(
     "/api/member/bookings/reschedule",
