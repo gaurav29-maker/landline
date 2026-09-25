@@ -4512,34 +4512,6 @@
   /* ---- audit my portfolio ---- */
 
 
-  /*
-     What a review looks at, as an index.
-
-     The em-dash in front of every item is gone. It was standing in for a
-     bullet, and a bullet earns its ink only where a list could be mistaken
-     for prose — eight two-word items in four columns under their own label
-     cannot be. yuriroga.com sets SERVICES and SELECTED CLIENTS exactly this
-     way: the label says what the list is, and then the items are just the
-     items.
-
-     The rule above it is the one .rec already draws over RATE / SESSION /
-     SEBI, so a labelled block of facts looks the same wherever it appears.
-  */
-  .site .covers {
-    display: grid;
-    /* Eight items: four columns, two full rows. */
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px 28px;
-    list-style: none;
-    margin: 0;
-    padding: 16px 0 0;
-    border-top: 1px solid var(--rule);
-  }
-  .site .covers li {
-    font-size: 14px;
-    line-height: 21px;
-    color: var(--ink-body);
-  }
 
   /*
      The worked example under the audit section.
@@ -4625,7 +4597,6 @@
 
   @media (max-width: 460px) {
     .site .rung { padding: 20px; }
-    .site .covers { grid-template-columns: 1fr; }
   }
   .ops-application .ops-app-bg { max-width: 68ch; margin-top: 10px; }
   .ops-application .ops-app-bg b { color: var(--ink-dark); }
@@ -4709,7 +4680,6 @@
   @media (max-width: 900px) {
     /* Six into two, eight into two — still whole rows. */
     .site .flow { grid-template-columns: repeat(2, 1fr); }
-    .site .covers { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 560px) {
     .site .flow { grid-template-columns: 1fr; }

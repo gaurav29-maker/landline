@@ -34,25 +34,6 @@ const BROKERS = [
 ];
 
 /*
- * What a portfolio review actually covers.
- *
- * Everything here is something an expert can look at and discuss. Notably
- * absent, and absent on purpose: thesis development, hedging and derivative
- * strategy. Those are advisory activities, and this platform is not a
- * registered adviser — see the terms.
- */
-const REVIEW_COVERS = [
-  "Concentration",
-  "Diversification",
-  "Sector exposure",
-  "Position sizing",
-  "Overlap between holdings",
-  "How the portfolio is built",
-  "Downside risk",
-  "Where it is most vulnerable",
-];
-
-/*
  * A worked example, because the page had nothing to look at.
  *
  * The whole site was type: no image, no screenshot, no specimen, across
@@ -65,11 +46,14 @@ const REVIEW_COVERS = [
  * an illustration be mistaken for somebody's real holdings or results.
  *
  * Every line is STRUCTURAL: what the portfolio is made of and how it is
- * shaped. Nothing here says buy, sell, hold, or what anything is worth,
- * because that is the line the terms already draw — a Landline session is
- * a review and a discussion, never personalised investment advice. The
- * closing line of the block says so in the reader's words rather than the
- * lawyer's.
+ * shaped. Nothing says buy, sell, hold, or what anything is worth, because
+ * that is the line the terms already draw — a Landline session is a review
+ * and a discussion, never personalised investment advice. The closing line
+ * of the block says so in the reader's words rather than the lawyer's.
+ *
+ * Absent on purpose, as they were from the list of eight this replaced:
+ * thesis development, hedging and derivative strategy. Those are advisory
+ * activities and this platform is not a registered adviser.
  */
 const SAMPLE_SHAPE: { label: string; value: string }[] = [
   { label: "Holdings", value: "14 stocks, 3 funds" },
@@ -309,28 +293,9 @@ export default async function Home() {
           <div className="band-head idx">
             <span className="eyebrow">Audit my portfolio</span>
             <h2>A real expert reads your actual portfolio.</h2>
-            <p>
-              Not an automated score. A person who has run money looks at what you hold and tells
-              you what they see in it.
-            </p>
+            <p>Not an automated score.</p>
           </div>
 
-          {/*
-            The five steps that stood here were the six in "How it works"
-            again, a thousand pixels apart, down to "Live availability"
-            appearing verbatim in both. One process, told once.
-
-            The section stays: the hero's second button points at #audit, and
-            what a review actually looks at exists nowhere else on the page.
-          */}
-          <p className="eyebrow" style={{ marginBottom: 16 }}>
-            What a review looks at
-          </p>
-          <ul className="covers">
-            {REVIEW_COVERS.map((c) => (
-              <li key={c}>{c}</li>
-            ))}
-          </ul>
 
           {/*
             The specimen. See the note on SAMPLE_SHAPE: invented, and said
