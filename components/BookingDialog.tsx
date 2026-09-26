@@ -193,7 +193,7 @@ export default function BookingDialog({
           startsAt: chosen.startsAt,
           name,
           email,
-          phone: phone || undefined,
+          phone,
           disclaimerAccepted: true,
         }),
       });
@@ -354,11 +354,32 @@ export default function BookingDialog({
                 autoComplete="email"
               />
             </label>
+            {/*
+              Required, and no longer just a way to reach somebody.
+
+              This number is how they sign in afterwards. Asked for here it
+              is one more field on a form they are already filling in; asked
+              for later it is asked of somebody who is already locked out of
+              a session they paid for.
+
+              Prefix fixed at +91 for the same reason the sign-in page fixes
+              it: one country is sold to, so a picker would have one usable
+              option.
+            */}
             <label className="bp-field">
-              <span>
-                Phone <em>optional</em>
-              </span>
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+              <span>Mobile number</span>
+              <div className="bp-phone">
+                <span className="bp-phone-cc">+91</span>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/D/g, "").slice(0, 10))}
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder="98765 43210"
+                  required
+                />
+              </div>
+              <em className="bp-phone-why">You will use this number to sign in.</em>
             </label>
 
             <label className="bp-check">

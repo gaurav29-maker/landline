@@ -155,7 +155,46 @@ export const customers = pgTable(
     lastLinkSentAt: timestamp("last_link_sent_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex("customers_email_idx").on(sql`lower(${t.email})`)],
+  (t) => [
+    uniqueIndex("customers_email_idx").on(sql`lower(${t.email})`),
+    /*
+       Phone is how you sign in, so two people cannot share one.
+
+       Unique, not notNull: Postgres treats NULLs as distinct, so every
+       member who booked before phone was asked for keeps their row and
+       their email link. The column fills in the first time they sign in
+       by phone or book again.
+    */
+    uniqueIndex("customers_phone_idx").on(t.phone),
+  ],
+);
+
+/**
+ * A sign-in code, stored the way a secret is stored.
+ *
+ * Never the digits themselves — an HMAC of them. A leaked table read should
+ * not hand anybody a working code, and this table is read by every sign-in.
+ *
+ * Six digits is a million possibilities, which is minutes of work unattended.
+ * Three things make that safe rather than fast: it expires, it is consumed on
+ * first success, and wrong guesses are counted against a cap. Any of the three
+ * alone is not enough; the cap is the one that actually stops a guesser.
+ */
+export const signInCodes = pgTable(
+  "sign_in_codes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customers.id),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: smallint("attempts").notNull().default(0),
+    /** Set on the one success. A consumed code is refused like a wrong one. */
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("sign_in_codes_customer_idx").on(t.customerId)],
 );
 
 export const bundles = pgTable("bundles", {

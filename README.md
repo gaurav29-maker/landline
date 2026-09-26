@@ -55,9 +55,41 @@ still needs a real Postgres.
 | `RAZORPAY_WEBHOOK_SECRET` | Razorpay dashboard → Settings → Webhooks. **Not** the key secret. |
 | `RESEND_API_KEY` | Resend dashboard. Point `EMAIL_FROM` at your own inbox in phase 1. |
 | `TOKEN_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `SMS_PROVIDER` / `SMS_API_KEY` / `SMS_SENDER_ID` / `SMS_TEMPLATE_SIGNIN` | Your SMS provider, **after** DLT registration (see below). Leave unset in development: the code is printed to the server console. |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare dashboard → Turnstile → Add site. Optional; set both or neither. |
 | `CRON_SECRET` | Any long random string. Guards the Cron endpoints. |
 | `OPS_PASSWORD` | Your own choice. The single password for `/ops`. |
 | `EXPERT_PAYOUT_PAISE` | What an expert is paid per session. Only used to estimate margin in `/ops/members`; defaults to ₹2,200, which is a **placeholder**. |
+
+### Phone sign-in, and the paperwork in front of it
+
+Members sign in with their mobile number and a six-digit code. The whole
+flow works locally with nothing configured — with no `SMS_PROVIDER` set, a
+development server prints the code to its own console and sign-in completes
+end to end. Production with no provider throws rather than silently
+dropping the message.
+
+Delivering to a real Indian handset is gated on **DLT registration**, which
+TRAI's TCCCPR requires of every commercial sender. Three registrations, in
+order, through a telecom DLT platform:
+
+1. **Entity** — PAN, GST and business proof. Needs the company to exist, so
+   this is blocked behind the same thing as live Razorpay keys.
+2. **Header** — a six-character sender ID (e.g. `LNDLNE`). A sign-in code
+   must go out on a *transactional* header, approved separately from a
+   promotional one.
+3. **Template** — the exact message body with `{#var#}` placeholders,
+   approved one template at a time and issued a template id. What is sent
+   must match what was approved; an edited word is a rejected message.
+
+Operators drop unregistered traffic and there is no test mode that reaches
+a real phone, so this cannot be finished early. The provider call itself is
+one function in `lib/sms.ts`, deliberately left as a stub — every provider
+wants a different body shape, and one written from memory typechecks,
+deploys, and delivers nothing.
+
+Members who predate phone sign-in, or who have no number on file, still
+sign in by emailed link at `/member/login?email=1`.
 
 ### Testing payment locally
 

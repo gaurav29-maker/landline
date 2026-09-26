@@ -642,6 +642,51 @@
     background: var(--sheet-inset, var(--white));
   }
   .bp-field textarea { resize: vertical; line-height: 1.55; }
+
+  /*
+     The mobile field, which wears its country code inside the box.
+
+     The border and the focus ring belong to the wrapper, not the input, so
+     the prefix and the digits light up as the one control they look like.
+     An input that highlights while the +91 beside it stays dark reads as
+     two fields, one of them broken.
+  */
+  .bp-phone {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--sheet-line, var(--line));
+    border-radius: 8px;
+    background: var(--sheet-inset, var(--white));
+    overflow: hidden;
+  }
+  .bp-phone:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-tint);
+  }
+  .bp-phone-cc {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-right: 1px solid var(--sheet-line, var(--line));
+    font-size: 14px;
+    color: var(--ink-mute, var(--ink-soft));
+    font-variant-numeric: tabular-nums;
+  }
+  .bp-phone input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .bp-phone input:focus { outline: none; box-shadow: none; border-color: transparent; }
+  .bp-phone-why {
+    display: block;
+    margin-top: 5px;
+    font-style: normal;
+    font-size: 11.5px;
+    color: var(--ink-mute, var(--ink-soft));
+  }
   .bp-field input:focus,
   .bp-field textarea:focus,
   .bp-field select:focus {
@@ -3057,6 +3102,19 @@
     --lift: 0 8px 16px rgba(0, 0, 0, 0.16);
     --notice-bg: #F1F5FD;
     --err:        #C0392B;
+    /*
+       The display serif, declared here as well as in .site-dark so the
+       sign-in page can reach it. Same face, same one-heading-per-page
+       rule: this token being available is not permission to spend it.
+    */
+    --display:    "Instrument Serif", Georgia, serif;
+    /*
+       Fields are not buttons. --radius-btn is 999px because every button here
+       is a pill; an input wearing that reads as a control you press rather
+       than one you type into. 8px matches the booking dialog's fields, so the
+       two forms on this site agree with each other.
+    */
+    --radius-field: 8px;
 
     /*
      * The floating nav. Three tokens because the material is three things:
@@ -4777,6 +4835,229 @@
   }
   @media (max-width: 560px) {
     .site .flow { grid-template-columns: 1fr; }
+  }
+
+  /* ---- signing in ---- */
+  /*
+     The front door, and the only page here that is one screen and one job.
+
+     It carries .site for the tokens, so both themes come for free and the
+     button, the rules and the greys are the ones the rest of the site uses.
+     Everything below is layout: nothing invents a colour.
+
+     Narrow on purpose. 340px is about as wide as a column of one input and
+     one button should ever be — past that the eye has to travel back across
+     dead space to find the next thing, and this is a screen where somebody
+     is already slightly unsure they are in the right place.
+  */
+  .site.signin {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: var(--bg);
+  }
+  .site .signin-col { width: 100%; max-width: 340px; }
+  .site .signin-mark { margin: 0 0 40px; }
+
+  /*
+     The serif, used once.
+
+     The rule elsewhere is that the display face carries one whole heading per
+     page and never a second — used twice it stops being an accent. This page
+     has exactly one heading, so this is that one use, and it is the right
+     one: it is the first thing a returning member reads and the only moment
+     the brand is doing the reassuring by itself.
+  */
+  .site .signin-h {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.14;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    margin: 0;
+  }
+  .site .signin-sub {
+    margin: 12px 0 0;
+    font-size: 15px;
+    line-height: 23px;
+    color: var(--ink-mute);
+  }
+
+  .site .signin-form { display: flex; flex-direction: column; margin-top: 28px; }
+
+  /* Present for a screen reader, absent for everyone else: the placeholder
+     and the prefix already say what the field is, and a visible label above
+     a single obvious input is furniture. */
+  .site .signin-label {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /*
+     The number field: one box that happens to contain two things.
+
+     The focus ring goes on the wrapper rather than the input, so the prefix
+     and the digits light up as the single control they look like. An input
+     that highlights while the +91 beside it stays dark reads as two fields,
+     one of which is broken.
+  */
+  .site .signin-phone {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-field);
+    background: var(--bg);
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .site .signin-phone:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--notice-bg);
+  }
+  .site .signin-cc {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 11px 0 12px;
+    margin-right: 11px;
+    height: 24px;
+    border-right: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-mute);
+    white-space: nowrap;
+  }
+  .site .signin-flag { display: block; border-radius: 2px; }
+
+  .site .signin-num {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: none;
+    padding: 0 14px 0 0;
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .site .signin-num:focus { outline: none; }
+  .site .signin-num::placeholder { color: var(--ink-faint); }
+
+  /*
+     The email field has no prefix beside it, so it wears the box itself.
+
+     flex: none matters and is not tidying. This shares .signin-num with the
+     phone input, which carries flex: 1 so it fills the row beside the +91.
+     Inside .signin-form — a COLUMN flex container — that same flex: 1 means
+     flex-basis: 0%, and on a column the basis is the height: the box
+     collapsed to 20px of text with its own height: 48px ignored, because
+     flex-basis beats height on the main axis. One class, two axes.
+  */
+  .site .signin-solo {
+    flex: none;
+    height: 48px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-field);
+    padding: 0 14px;
+    font-family: inherit;
+    letter-spacing: normal;
+  }
+  .site .signin-solo:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--notice-bg);
+  }
+
+  /*
+     The code box. Wide digits, spaced, because six characters typed from
+     memory are read back at least once before the button is pressed.
+  */
+  .site .signin-code {
+    height: 56px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-field);
+    background: var(--bg);
+    padding: 0 16px;
+    font-family: var(--mono);
+    font-size: 26px;
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .site .signin-code:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--notice-bg);
+  }
+  .site .signin-code::placeholder { color: var(--ink-faint); letter-spacing: 0.34em; }
+
+  .site .signin-legal {
+    margin: 16px 0 0;
+    font-size: 12.5px;
+    line-height: 19px;
+    color: var(--ink-faint);
+  }
+  .site .signin-legal a { color: var(--ink-mute); text-decoration: underline; }
+  .site .signin-legal a:hover { color: var(--ink); }
+
+  .site .signin-go { width: 100%; margin-top: 20px; }
+  .site .signin-go:disabled { opacity: 0.55; cursor: default; }
+
+  .site .signin-error {
+    margin: 12px 0 0;
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--err);
+  }
+  .site .signin-note {
+    margin: 0 0 24px;
+    padding: 11px 13px;
+    border-radius: var(--radius-field);
+    background: var(--notice-bg);
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--ink-body);
+  }
+
+  .site .signin-alt {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 22px 0 0;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+  .site .signin-dot { color: var(--ink-faint); }
+  .site .signin-wait { font-variant-numeric: tabular-nums; }
+  .site .signin-link {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    color: var(--ink-mute);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .site .signin-link:hover { color: var(--ink); }
+
+  /* Turnstile draws its own 300px box; give it room but never let it push
+     the column wider than the button it sits above. */
+  .site .signin-form .cf-turnstile { margin-top: 18px; max-width: 100%; overflow: hidden; }
+
+  @media (max-width: 420px) {
+    .site.signin { padding: 32px 20px; align-items: flex-start; }
+    .site .signin-h { font-size: 30px; }
+    .site .signin-code { font-size: 22px; letter-spacing: 0.26em; text-indent: 0.26em; }
   }
 
   .member-nopass-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }

@@ -17,7 +17,10 @@ import {
   payments,
   webhookEvents,
   expertPayouts,
+  signInCodes,
 } from "../lib/db/schema";
+import { CODE_MAX_ATTEMPTS, hashCode } from "../lib/member-auth";
+import { toE164 } from "../lib/phone";
 import { MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
 import { openSlotsFor, openSlotsForMany } from "../lib/availability";
 import { runtimeConnection } from "../lib/db/connection";
@@ -250,6 +253,7 @@ async function main() {
     startsAt: slotA,
     name: "Meera Raghavan",
     email: "meera@example.in",
+    phone: "9876543210",
     disclaimerAccepted: true,
   });
   check("holding a slot succeeds", hold.status === 200, `status ${hold.status}`);
@@ -262,6 +266,7 @@ async function main() {
       startsAt: slotB,
       name: "Racer One",
       email: "one@example.in",
+      phone: "9811100001",
       disclaimerAccepted: true,
     }),
     post("/api/bookings/hold", {
@@ -269,6 +274,7 @@ async function main() {
       startsAt: slotB,
       name: "Racer Two",
       email: "two@example.in",
+      phone: "9811100002",
       disclaimerAccepted: true,
     }),
   ]);
@@ -304,6 +310,7 @@ async function main() {
     startsAt: slotB,
     name: "Third Person",
     email: "three@example.in",
+    phone: "9811100003",
     disclaimerAccepted: true,
   });
   check("the freed slot can be re-held", rebook.status === 200, `status ${rebook.status}`);
@@ -731,6 +738,7 @@ async function main() {
       startsAt: hookSlot,
       name: "Webhook Test",
       email: `webhook-${Date.now()}@example.in`,
+      phone: `9${String(Date.now()).slice(-9)}`,
       disclaimerAccepted: true,
     });
     const heldId = String(held.json.bookingId);
@@ -2113,6 +2121,186 @@ async function main() {
   } finally {
     if (savedRate === undefined) delete process.env.EXPERT_PAYOUT_PAISE;
     else process.env.EXPERT_PAYOUT_PAISE = savedRate;
+  }
+
+
+  /* ------------------------------------------------------------------
+     Signing in with a phone and a code.
+
+     Six digits is a million guesses, which is not many. What makes that
+     safe is three separate things — the code expires, it dies on first
+     use, and wrong guesses are counted — plus a send throttle and an
+     endpoint that answers a stranger exactly as it answers a member.
+     Each is checked here, because any one of them quietly failing leaves
+     the other two looking fine.
+     ------------------------------------------------------------------ */
+
+  const signInPhone = toE164(`98${String(Date.now()).slice(-8)}`) ?? `+919876500000`;
+  const [signInCustomer] = await db
+    .insert(customers)
+    .values({
+      email: `signin-${Date.now()}@example.in`,
+      name: "Sign In Tester",
+      phone: signInPhone,
+    })
+    .returning();
+
+  const askForCode = (phone: string) =>
+    fetch(`${BASE}/api/member/code`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone }),
+    });
+
+  const tryCode = (phone: string, code: string) =>
+    fetch(`${BASE}/api/member/code/verify`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone, code }),
+    });
+
+  /*
+     A code whose digits we know, without reading them back out of the
+     database — the row holds a hash, so the hash is what we write.
+  */
+  const plantCode = async (
+    customerId: string,
+    code: string,
+    opts: { minutesLeft?: number } = {},
+  ) => {
+    await db
+      .update(signInCodes)
+      .set({ consumedAt: new Date() })
+      .where(eq(signInCodes.customerId, customerId));
+    const [row] = await db
+      .insert(signInCodes)
+      .values({
+        customerId,
+        codeHash: await hashCode(customerId, code),
+        expiresAt: new Date(Date.now() + (opts.minutesLeft ?? 10) * 60_000),
+      })
+      .returning();
+    return row;
+  };
+
+  {
+    const known = await askForCode(signInPhone);
+    const stranger = await askForCode("+919000000001");
+    const rubbish = await askForCode("not-a-number");
+    const bodies = await Promise.all([known, stranger, rubbish].map((r) => r.text()));
+    check(
+      "asking for a code says the same thing about a member and a stranger",
+      known.status === stranger.status &&
+        known.status === rubbish.status &&
+        bodies[0] === bodies[1] &&
+        bodies[1] === bodies[2],
+      `${known.status} and ${bodies[0]} for all three`,
+    );
+  }
+
+  {
+    /*
+       The ask above already stamped the throttle, so this one must issue
+       nothing. Counted in rows rather than taken from the answer: the
+       endpoint says 200 either way, on purpose.
+    */
+    const before = await db
+      .select({ id: signInCodes.id })
+      .from(signInCodes)
+      .where(eq(signInCodes.customerId, signInCustomer.id));
+    await askForCode(signInPhone);
+    const after = await db
+      .select({ id: signInCodes.id })
+      .from(signInCodes)
+      .where(eq(signInCodes.customerId, signInCustomer.id));
+    check(
+      "a second request inside the throttle window sends no second code",
+      after.length === before.length,
+      `${before.length} code(s) before, ${after.length} after`,
+    );
+  }
+
+  {
+    await plantCode(signInCustomer.id, "424242");
+    const wrong = await tryCode(signInPhone, "000000");
+    const right = await tryCode(signInPhone, "424242");
+    const replay = await tryCode(signInPhone, "424242");
+    const cookie = right.headers.get("set-cookie") ?? "";
+    check(
+      "a code signs you in exactly once",
+      wrong.status === 400 &&
+        right.status === 200 &&
+        cookie.includes("bp_member=") &&
+        replay.status === 400,
+      `wrong ${wrong.status}, right ${right.status} with a cookie, replay ${replay.status}`,
+    );
+  }
+
+  {
+    const planted = await plantCode(signInCustomer.id, "313131");
+    const refused: number[] = [];
+    for (let i = 0; i < CODE_MAX_ATTEMPTS; i++) {
+      refused.push((await tryCode(signInPhone, "999999")).status);
+    }
+    const capped = await tryCode(signInPhone, "999999");
+    const cappedBody = (await capped.json()) as { error?: string };
+    /*
+       And the real digits are dead too. The cap burns the code rather than
+       pausing it, so it cannot simply be waited out.
+    */
+    const afterCap = await tryCode(signInPhone, "313131");
+    const [row] = await db.select().from(signInCodes).where(eq(signInCodes.id, planted.id));
+    check(
+      "wrong guesses are counted, and the code dies at the cap",
+      refused.every((code) => code === 400) &&
+        cappedBody.error === "attempts" &&
+        afterCap.status === 400 &&
+        row.consumedAt !== null,
+      `${CODE_MAX_ATTEMPTS} refused, then capped; the correct code then failed too`,
+    );
+  }
+
+  {
+    await plantCode(signInCustomer.id, "565656", { minutesLeft: -1 });
+    const expired = await tryCode(signInPhone, "565656");
+    check("an expired code is refused", expired.status === 400, `status ${expired.status}`);
+  }
+
+  {
+    /*
+       The hash is bound to the customer as well as the digits, so the same
+       six digits minted for somebody else must not open this account.
+    */
+    const [other] = await db
+      .insert(customers)
+      .values({
+        email: `signin-other-${Date.now()}@example.in`,
+        name: "Someone Else",
+        phone: toE164(`97${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+    await db.insert(signInCodes).values({
+      customerId: signInCustomer.id,
+      codeHash: await hashCode(other.id, "787878"),
+      expiresAt: new Date(Date.now() + 10 * 60_000),
+    });
+    const crossed = await tryCode(signInPhone, "787878");
+    check(
+      "a code minted for one member cannot sign in another",
+      crossed.status === 400,
+      `status ${crossed.status}`,
+    );
+  }
+
+  {
+    const bad = ["9876543", "12345678901", "5876543210", ""];
+    const good = ["+91 98765 43210", "09876543210", "919876543210", "98765-43210"];
+    check(
+      "one number, however it is typed, is one number",
+      bad.every((n) => toE164(n) === null) &&
+        good.every((n) => toE164(n) === "+919876543210"),
+      `${good.length} spellings agree, ${bad.length} malformed refused`,
+    );
   }
 
 

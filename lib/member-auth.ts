@@ -138,3 +138,63 @@ export async function memberConsoleUrl(customerId: string): Promise<string> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   return `${base}/api/member/session?t=${await mintLink(customerId)}`;
 }
+
+/* ---------------------------------------------------------------- codes -- */
+
+/** Six digits, because that is what people expect to be asked for. */
+export const CODE_DIGITS = 6;
+/** How long a code stays usable. Short: it is retyped from a lock screen. */
+export const CODE_MINUTES = 10;
+/**
+ * Wrong guesses before the code is dead.
+ *
+ * Six digits is a million possibilities, so expiry alone is not protection —
+ * a script can cover a good fraction of a million in ten minutes. Five tries
+ * makes the odds 5 in a million per code issued, and issuing codes is itself
+ * throttled. This is the number that does the work.
+ */
+export const CODE_MAX_ATTEMPTS = 5;
+
+/**
+ * A code, from the CSPRNG and with an even distribution.
+ *
+ * Rejection sampling rather than `% 1_000_000`: the modulo of a 32-bit value
+ * favours the low end of the range, and a code generator with a bias is a
+ * code generator somebody can guess better than chance. The loop runs once
+ * in almost every case.
+ */
+export function generateCode(): string {
+  const ceiling = 10 ** CODE_DIGITS;
+  /* Largest multiple of the range that fits in 32 bits; above it, resample. */
+  const limit = Math.floor(0x1_0000_0000 / ceiling) * ceiling;
+
+  const buf = new Uint32Array(1);
+  let n: number;
+  do {
+    crypto.getRandomValues(buf);
+    n = buf[0];
+  } while (n >= limit);
+
+  return String(n % ceiling).padStart(CODE_DIGITS, "0");
+}
+
+/**
+ * What goes in the database in place of the code.
+ *
+ * Bound to the customer id as well as the digits, so a hash lifted from one
+ * member's row cannot be replayed against another's — the same reason the
+ * link and session tokens carry a scope.
+ */
+export async function hashCode(customerId: string, code: string): Promise<string> {
+  const payload = `code:${customerId}:${code}`;
+  return toHex(await crypto.subtle.sign("HMAC", await key(), encoder.encode(payload)));
+}
+
+/** Constant-time, so a timing difference cannot leak a digit at a time. */
+export async function codeMatches(
+  customerId: string,
+  code: string,
+  storedHash: string,
+): Promise<boolean> {
+  return constantTimeEqual(await hashCode(customerId, code), storedHash);
+}

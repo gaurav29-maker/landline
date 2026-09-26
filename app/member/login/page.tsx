@@ -6,17 +6,32 @@ import { customers } from "@/lib/db/schema";
 import { mintLink } from "@/lib/member-auth";
 import { SIGN_IN_THROTTLE_SECONDS } from "@/lib/constants";
 import { memberSignInLink, sendRaw } from "@/lib/email";
+import { turnstileSiteKey } from "@/lib/turnstile";
+import PhoneSignIn from "@/components/PhoneSignIn";
 import Wordmark from "@/components/Wordmark";
 
 export const metadata: Metadata = { title: "Sign in — Landline", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
+/**
+ * The front door.
+ *
+ * A phone number and a code by default; the emailed link kept behind ?email=1
+ * for members who predate phone sign-in and for anyone whose number has
+ * changed. Two routes to one session cookie — nothing downstream of here can
+ * tell which door somebody came through.
+ *
+ * Dressed as the site rather than as the console. The console is dense on
+ * purpose because it is operated, but this page is read once by somebody who
+ * is not yet certain they are in the right place, and it is the only screen
+ * where the brand has to do that reassuring on its own.
+ */
 export default async function MemberLogin({
   searchParams,
 }: {
-  searchParams: Promise<{ sent?: string }>;
+  searchParams: Promise<{ sent?: string; email?: string; expired?: string }>;
 }) {
-  const { sent } = await searchParams;
+  const { sent, email: emailRoute, expired } = await searchParams;
 
   async function requestLink(formData: FormData) {
     "use server";
@@ -55,34 +70,62 @@ export default async function MemberLogin({
 
     // Always the same answer, whether or not the address is known — otherwise
     // this page tells a stranger who your customers are.
-    redirect("/member/login?sent=1");
+    redirect("/member/login?email=1&sent=1");
   }
 
   return (
-    <div className="ops-login">
-      <form action={requestLink} className="ops-login-card">
-        <Wordmark className="logo os-mark" as="p" sub="os" />
-        <h1>Landline OS</h1>
-        <p className="ops-login-sub">
-          Enter the email your pass was bought with. We will send a link — no password.
-        </p>
+    <main className="site signin">
+      <div className="signin-col">
+        <Wordmark className="logo signin-mark" as="p" sub="os" />
 
-        {sent ? (
-          <p className="bp-chosen" style={{ display: "block" }}>
-            If that address has a Landline pass, a sign-in link is on its way. It expires in 30
-            minutes.
+        {expired ? (
+          <p className="signin-note" role="status">
+            That sign-in link has expired. Links last 30 minutes — here is a fresh way in.
           </p>
         ) : null}
 
-        <label className="bp-field">
-          <span>Email</span>
-          <input type="email" name="email" autoFocus autoComplete="email" required />
-        </label>
+        {emailRoute ? (
+          <div className="signin-body">
+            <h1 className="signin-h">Sign in by email</h1>
+            <p className="signin-sub">
+              Enter the address you booked with. We will send a link — no password.
+            </p>
 
-        <button className="btn-primary bp-full" type="submit">
-          Send me a link
-        </button>
-      </form>
-    </div>
+            {sent ? (
+              <p className="signin-note" role="status">
+                If that address has a Landline account, a sign-in link is on its way. It expires in
+                30 minutes.
+              </p>
+            ) : null}
+
+            <form action={requestLink} className="signin-form">
+              <label className="signin-label" htmlFor="email">
+                Email address
+              </label>
+              <input
+                id="email"
+                className="signin-num signin-solo"
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="you@example.in"
+                required
+              />
+              <button className="b b-fill signin-go" type="submit">
+                Send me a link
+              </button>
+            </form>
+
+            <p className="signin-alt">
+              <a className="signin-link" href="/member/login">
+                Sign in with your phone instead
+              </a>
+            </p>
+          </div>
+        ) : (
+          <PhoneSignIn siteKey={turnstileSiteKey()} />
+        )}
+      </div>
+    </main>
   );
 }
