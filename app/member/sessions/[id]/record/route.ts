@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, experts, intakeSubmissions } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { readSession } from "@/lib/member-session";
 import { INTAKE_RETENTION_DAYS } from "@/lib/constants";
 import { istDayLabel, istTime, rupees } from "@/lib/format";
 
@@ -51,9 +50,34 @@ function head(title: string): string[] {
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const jar = await cookies();
-  const customerId = await verifySession(jar.get(MEMBER_COOKIE)?.value);
-  if (!customerId) return new Response("Not found", { status: 404 });
+  const session = await readSession();
+  if (!session) return new Response("Not found", { status: 404 });
+
+  /*
+     A VALID SESSION IS NOT ENOUGH FOR THIS ONE.
+
+     Everything else behind /member is a list of your own bookings, and a
+     thirty-day cookie is the right bar for that. This is the file with
+     somebody's holdings in it and an expert's written opinion of them — the
+     single most valuable thing the platform holds about a person, and the
+     first thing worth taking.
+
+     Signing in proves possession of a phone number. So does taking one over,
+     which is neither difficult nor rare, and a stolen session stays good for
+     a month. Asking for a code again costs a member fifteen seconds once in
+     fifteen minutes and costs somebody holding a swapped SIM the one thing
+     they were relying on: time, and the member not noticing.
+
+     A redirect rather than a 403, because this is reached by clicking a
+     download link in a browser — the member should land on the box that
+     asks, not on an error telling them to find it.
+  */
+  if (!session.fresh) {
+    const next = encodeURIComponent(`/member/sessions/${id}/record`);
+    return Response.redirect(new URL(`/member/verify?next=${next}`, _req.url), 303);
+  }
+
+  const customerId = session.customerId;
 
   /*
    * Scoped to the signed-in member, not just to the id.

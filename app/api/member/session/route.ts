@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MEMBER_COOKIE, mintSession, verifyLink } from "@/lib/member-auth";
+import { MEMBER_COOKIE, verifyLink } from "@/lib/member-auth";
+import { startSession } from "@/lib/member-session";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${base}/member/login?expired=1`);
   }
 
-  const { value, expiresAt } = await mintSession(customerId);
+  const { value, expiresAt } = await startSession(customerId);
   const res = NextResponse.redirect(`${base}/member`);
   res.cookies.set(MEMBER_COOKIE, value, {
     httpOnly: true,

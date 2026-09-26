@@ -10,7 +10,7 @@ import {
   customers,
   experts,
 } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { canReschedule } from "@/lib/cancellation";
 import { computeSlots, SLOT_MINUTES } from "@/lib/slots";
 import { occupiesSlot, releaseStaleHold } from "@/lib/bookings";
@@ -36,7 +36,7 @@ function isUniqueViolation(err: unknown): boolean {
  * intake form, consent record and payment stay attached to it.
  */
 export async function POST(req: NextRequest) {
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));

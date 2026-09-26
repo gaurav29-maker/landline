@@ -1,10 +1,5 @@
-import { and, eq, isNull } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { customers, signInCodes } from "@/lib/db/schema";
-import { CODE_MINUTES, generateCode, hashCode } from "@/lib/member-auth";
-import { SIGN_IN_THROTTLE_SECONDS } from "@/lib/constants";
 import { toE164 } from "@/lib/phone";
-import { sendSms, signInSms } from "@/lib/sms";
+import { issueCode } from "@/lib/member-code";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +15,8 @@ export const dynamic = "force-dynamic";
  * with a list of numbers and learn which of them pay for portfolio advice.
  * Every branch below ends at the same 200.
  *
- * The work that varies is all on the inside: unknown numbers do nothing,
- * known ones get a code, and a throttled one is quietly skipped.
+ * The work that varies lives in issueCode, which the step-up screen shares and
+ * which refuses to distinguish a stranger from a member for the same reason.
  */
 export async function POST(req: Request) {
   let body: { phone?: unknown; turnstile?: unknown };
@@ -48,54 +43,7 @@ export async function POST(req: Request) {
   if (!phone) return ok();
 
   try {
-    const [customer] = await db
-      .select()
-      .from(customers)
-      .where(eq(customers.phone, phone))
-      .limit(1);
-
-    if (!customer) return ok();
-
-    /*
-       One send per minute per number, the same throttle the emailed link
-       uses and the same column. Without it, this endpoint is a button that
-       makes a stranger's phone buzz as often as somebody likes.
-    */
-    const recent =
-      customer.lastLinkSentAt &&
-      Date.now() - customer.lastLinkSentAt.getTime() < SIGN_IN_THROTTLE_SECONDS * 1000;
-    if (recent) return ok();
-
-    /*
-       Retire every code this member is still holding before issuing another.
-
-       Otherwise asking twice leaves two live codes, and a member who asks
-       three times because the first was slow has tripled the number of
-       guesses that work. Newest code only, always.
-    */
-    await db
-      .update(signInCodes)
-      .set({ consumedAt: new Date() })
-      .where(and(eq(signInCodes.customerId, customer.id), isNull(signInCodes.consumedAt)));
-
-    const code = generateCode();
-    await db.insert(signInCodes).values({
-      customerId: customer.id,
-      codeHash: await hashCode(customer.id, code),
-      expiresAt: new Date(Date.now() + CODE_MINUTES * 60_000),
-    });
-
-    /*
-       Stamp the throttle before sending, not after. A provider that hangs
-       must not leave the throttle unset — that turns a slow send into an
-       unlimited one.
-    */
-    await db
-      .update(customers)
-      .set({ lastLinkSentAt: new Date() })
-      .where(eq(customers.id, customer.id));
-
-    await sendSms({ to: phone, ...signInSms(code, CODE_MINUTES) });
+    await issueCode(phone);
   } catch (err) {
     /*
        Logged, not returned. A member who genuinely cannot be sent a code sees

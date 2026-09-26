@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { customers } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { receiptsForCustomer } from "@/lib/receipts";
 import { istDateTime, rupees } from "@/lib/format";
 import { rethrowIfNavigation } from "@/lib/nav";
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Receipts — Landline", robots: { in
 export const dynamic = "force-dynamic";
 
 export default async function Receipts() {
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) redirect("/member/login");
 
   let rows;

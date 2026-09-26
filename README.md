@@ -182,6 +182,49 @@ handler or server action, never during a page render.
 form and payments, mark-complete, cancel and refund, and pausing or repricing
 an expert.
 
+### A phone is an account, not a person
+
+Signing in proves possession of a number. So does taking one over, which is
+neither difficult nor rare, and portfolio data is worth the trouble. Three
+things narrow that, none of which involve collecting identity documents —
+under the **DPDP Act 2023**, papers you do not need are a liability you chose
+to carry.
+
+**Sessions are rows, so they can be ended.** The cookie used to carry the
+customer id and nothing else: complete on its own, valid for thirty days, and
+impossible to revoke because there was nothing to revoke. It names a session
+now, and `member_sessions` says whose it is, what device it was opened from
+and whether it is still allowed. `/member/profile` lists them — "Chrome on
+Windows, two minutes ago" — and ends any of them. A member is the only person
+who can look at that list and know whether it was them.
+
+**The screens worth stealing ask again.** A session carries two clocks: it
+expires in thirty days, and `verifiedAt` moves only when somebody types a
+code. Reading your bookings needs the first; downloading a session record —
+your holdings, and an expert's written opinion of them — needs the second,
+within 15 minutes. Changing the phone number needs it too, because that is
+the credential itself.
+
+**Changing the number proves the new number.** It used to be a field on the
+profile form: type anything, press Save. Anyone holding a session could point
+the account at their own number and keep it, and the owner could not undo it,
+because the way back in was the number just taken away. It now takes a fresh
+session *and* a code sent to the new number, and signs out every other device
+when it lands.
+
+**And the one identity signal that was already there.** A captured payment
+means a bank or a UPI app authenticated somebody against an instrument in
+their name — a far stronger claim than a SIM, made by an institution that
+does it for a living. It always arrived in `payments.raw` and sat in a blob
+nobody queried, which is the same as not having it. The method, the last four
+digits or UPI handle, and the verified contact are columns now, shown on the
+ops booking page where a dispute is actually handled. A payer contact that
+differs from the account's number is **not** fraud — people pay for their
+parents — it is just the first thing worth looking at.
+
+The card number, the CVV and the bank credentials are deliberately not taken.
+Razorpay holds those and is certified to.
+
 ### Who did it
 
 The console used to take one shared password. That answered the question

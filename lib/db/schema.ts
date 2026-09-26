@@ -186,7 +186,9 @@ export const signInCodes = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     customerId: uuid("customer_id")
       .notNull()
-      .references(() => customers.id),
+      /* Dies with the customer: a session or a code that outlives the person
+         it belongs to is not a record, it is a dangling key. */
+      .references(() => customers.id, { onDelete: "cascade" }),
     codeHash: text("code_hash").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     attempts: smallint("attempts").notNull().default(0),
@@ -322,6 +324,36 @@ export const payments = pgTable(
     razorpayPaymentId: text("razorpay_payment_id"),
     amountPaise: integer("amount_paise").notNull(),
     status: paymentStatus("status").notNull().default("created"),
+
+    /*
+       WHO PAID, as somebody other than us checked.
+
+       A phone number proves possession of a SIM. A captured payment proves
+       that a bank or a UPI app authenticated somebody against an instrument
+       in their name, which is a materially stronger claim about a person and
+       one Landline neither performs nor stores the hard parts of.
+
+       All of this already arrived in `raw`. It sat in a jsonb blob nobody
+       queried, which is the same as not having it: the question these
+       answer — is the person disputing this charge the person who made it —
+       gets asked months later by somebody who will not be writing json
+       path expressions to find out.
+
+       Deliberately NOT stored: the card number, the CVV, the bank
+       credentials. Razorpay holds those and is certified to; last four
+       digits and a UPI handle are what a human needs to recognise their own
+       instrument, and nothing here is enough to charge anybody.
+    */
+    payerMethod: text("payer_method"),
+    /** Last four of the card, or the UPI handle. Recognisable, not usable. */
+    payerInstrument: text("payer_instrument"),
+    /*
+       The contact Razorpay verified, in E.164 where we could parse it.
+       Compared against the account's own number: equal is corroboration,
+       different is not fraud but is the first thing worth looking at.
+    */
+    payerContact: text("payer_contact"),
+    payerEmail: text("payer_email"),
     raw: jsonb("raw"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -656,4 +688,61 @@ export const opsEvents = pgTable(
     index("ops_events_entity_idx").on(t.entity, t.entityId),
     index("ops_events_actor_idx").on(t.actorId),
   ],
+);
+
+
+/**
+ * A member's signed-in devices.
+ *
+ * The session used to be a signed token and nothing else: the cookie said
+ * "customer X, expires on this date", and the server checked the signature.
+ * Stateless, cheap, and unanswerable in exactly the way the ops console was —
+ * there was no record that a session existed, so there was nothing to show a
+ * member and nothing to revoke. Somebody who took over a phone number stayed
+ * signed in for thirty days and neither we nor the member could see it, let
+ * alone end it.
+ *
+ * So the token now names a SESSION rather than a customer, and this table
+ * says whose it is. That indirection is the whole feature: a row that can be
+ * revoked is a session that can be ended, and a row with a device and an IP
+ * on it is a session a member can recognise as theirs or not.
+ *
+ * The cost is a database read where there was none. It is paid in the server
+ * route, not in middleware — the edge still checks only the signature, which
+ * is enough to bounce a stranger and cheap enough to do on every request.
+ */
+export const memberSessions = pgTable(
+  "member_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      /* Dies with the customer: a session or a code that outlives the person
+         it belongs to is not a record, it is a dangling key. */
+      .references(() => customers.id, { onDelete: "cascade" }),
+    /*
+       WHEN IDENTITY WAS LAST PROVEN — not when the cookie was last sent.
+
+       Presenting a cookie proves possession of a cookie. This is stamped only
+       when somebody typed a code, which is what the sensitive screens ask
+       for: reading a portfolio back, or moving the account onto a different
+       number. A thirty-day session is right for looking at your bookings and
+       wrong for downloading what you own, and one timestamp is the
+       difference between those two.
+    */
+    verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    /*
+       How the member recognises it. An IP is not a person and a user agent is
+       self-reported, so neither decides anything — they exist so that "Chrome
+       on Windows, Mumbai, two minutes ago" can be read by the one human who
+       knows whether that was them.
+    */
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    /** Set, never deleted: a revoked session is evidence that it existed. */
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("member_sessions_customer_idx").on(t.customerId)],
 );

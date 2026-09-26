@@ -16,7 +16,7 @@ import { computeSlots, SLOT_MINUTES } from "@/lib/slots";
 import { DISCLAIMER_VERSION } from "@/lib/constants";
 import { occupiesSlot, releaseStaleHold } from "@/lib/bookings";
 import { customerConfirmation, expertNotification, sendOnce } from "@/lib/email";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { ensureMeetingLink } from "@/lib/google";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ function isUniqueViolation(err: unknown): boolean {
 export async function POST(req: NextRequest) {
   // Identity comes from the signed member cookie, never from the body —
   // otherwise knowing an address would be enough to spend someone's credits.
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));

@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { customers } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { receiptForCustomer } from "@/lib/receipts";
 import { istDateTime, rupees } from "@/lib/format";
 import PrintButton from "@/components/member/PrintButton";
@@ -20,7 +20,7 @@ const TODO = ({ children }: { children: React.ReactNode }) => (
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) redirect("/member/login");
 
   let customer;

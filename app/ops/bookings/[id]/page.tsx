@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { contactMatches } from "@/lib/payer";
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -149,6 +150,48 @@ export default async function OpsBooking({ params }: { params: Promise<{ id: str
                     </span>
                   ))}
             </dd>
+            {/*
+              WHO PAID, which is a different question from who booked.
+
+              Everything above this line is self-reported: a name typed into
+              a form, an address, a number that proves somebody holds a SIM.
+              This line is the one fact on the page that an institution
+              checked — a bank or a UPI app authenticated a person against an
+              instrument in their name before the money moved.
+
+              It is here because this is the page somebody opens when a
+              charge is disputed, and that conversation goes differently when
+              the answer is on screen instead of inside a jsonb column.
+            */}
+            {captured?.payerMethod || captured?.payerContact ? (
+              <>
+                <dt>Paid by</dt>
+                <dd>
+                  {[captured.payerMethod, captured.payerInstrument]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  {captured.payerContact ? (
+                    <>
+                      {" · "}
+                      {captured.payerContact}{" "}
+                      {/*
+                        A mismatch is NOT fraud and must not be read as an
+                        accusation. People pay for their parents, spouses pay
+                        for each other, somebody pays from a work UPI handle.
+                        It is the first thing worth looking at when a charge
+                        is disputed and nothing at all when it is not — so it
+                        is labelled as what it is, a match or a difference.
+                      */}
+                      {contactMatches(captured.payerContact, customer.phone) === true ? (
+                        <span className="pill ok">matches the account</span>
+                      ) : contactMatches(captured.payerContact, customer.phone) === false ? (
+                        <span className="pill">paid from another number</span>
+                      ) : null}
+                    </>
+                  ) : null}
+                </dd>
+              </>
+            ) : null}
             <dt>Disclaimer</dt>
             <dd>
               {consent

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, experts, intakeSubmissions, memberships } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { MEMBERSHIP_TIERS, RENEWAL_WINDOW_DAYS } from "@/lib/constants";
 import { istDateTime, rupees } from "@/lib/format";
 import MemberBooking, { type BookableExpert } from "@/components/member/MemberBooking";
@@ -28,7 +28,7 @@ export default async function MemberConsole({
   const { rebook } = await searchParams;
   const jar = await cookies();
 
-  const customerId = await verifySession(jar.get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) redirect("/member/login");
 
   let data;

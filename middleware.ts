@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OPS_COOKIE, sessionValid } from "@/lib/ops-auth";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { MEMBER_COOKIE, readSessionToken } from "@/lib/member-auth";
 import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
 
 /**
@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
   if (path === "/member" || path === "/member/login") return NextResponse.next();
 
   if (path.startsWith("/member")) {
-    if (await verifySession(req.cookies.get(MEMBER_COOKIE)?.value)) {
+    if (await readSessionToken(req.cookies.get(MEMBER_COOKIE)?.value)) {
       return NextResponse.next();
     }
     const url = req.nextUrl.clone();

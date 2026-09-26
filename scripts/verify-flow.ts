@@ -20,7 +20,12 @@ import {
   signInCodes,
   opsUsers,
   opsEvents,
+  memberSessions,
 } from "../lib/db/schema";
+import { startSession, revokeSession, markVerified, FRESH_MINUTES } from "../lib/member-session";
+import { readPayer, contactMatches } from "../lib/payer";
+import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
+import { issueCodeTo } from "../lib/member-code";
 import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
 import { hashPassword, passwordMatches } from "../lib/ops-password";
 import { audited } from "../lib/ops-audit";
@@ -190,14 +195,22 @@ function tamper(hex: string): string {
   return hex.slice(0, -1) + (last === "0" ? "1" : "0");
 }
 
-function memberCookie(customerId: string): string {
-  const secret = process.env.TOKEN_SECRET!;
-  const exp = Date.now() + 3_600_000;
-  const sig = crypto
-    .createHmac("sha256", secret)
-    .update(`session:${customerId}:${exp}`)
-    .digest("hex");
-  return `bp_member=${customerId}.${exp}.${sig}`;
+/**
+ * A signed-in member, through the real door.
+ *
+ * This used to hand-sign a token over the customer id, which was a second
+ * implementation of production's signing and stopped being true the moment
+ * the token started naming a SESSION instead of a customer. Every check that
+ * needed a signed-in member failed at once, with a 401 that pointed nowhere
+ * near the cause.
+ *
+ * Calling startSession instead means the suite exercises the code the site
+ * uses, and a change to how sessions are minted cannot drift away from the
+ * tests again — there is only one place left that knows how.
+ */
+async function memberCookie(customerId: string): Promise<string> {
+  const { value } = await startSession(customerId);
+  return `bp_member=${value}`;
 }
 
 async function slots(): Promise<string[]> {
@@ -350,7 +363,7 @@ async function main() {
   const passBooking = await post(
     "/api/memberships/book",
     { expertSlug: EXPERT, startsAt: open[2] },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("a pass holder books with no payment", passBooking.status === 200, `status ${passBooking.status}`);
 
@@ -374,7 +387,7 @@ async function main() {
   const spend = await post(
     "/api/bookings/redeem",
     { bundleId: bundle.id, startsAt: open[3] },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("the last bundle credit can be spent", spend.status === 200, `status ${spend.status}`);
 
@@ -388,7 +401,7 @@ async function main() {
   const overspend = await post(
     "/api/bookings/redeem",
     { bundleId: bundle.id, startsAt: open[4] },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("a fourth call on a three-call bundle is refused", overspend.status === 409, `status ${overspend.status}`);
 
@@ -409,7 +422,7 @@ async function main() {
   const lateCancel = await post(
     "/api/member/bookings/cancel",
     { bookingId: soon[0].id },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("cancelling under two hours out is refused", lateCancel.status === 409, `status ${lateCancel.status}`);
 
@@ -946,7 +959,7 @@ async function main() {
   const notYours = await post(
     "/api/member/bookings/reschedule",
     { bookingId: movable.id, startsAt: moveTo },
-    memberCookie(stranger.id),
+    await memberCookie(stranger.id),
   );
   check(
     "a signed-in member cannot move somebody else's session",
@@ -988,7 +1001,7 @@ async function main() {
   const recordPath = `/member/sessions/${movable.id}/record`;
 
   const mineRec = await fetch(`${BASE}${recordPath}`, {
-    headers: { cookie: memberCookie(member.id) },
+    headers: { cookie: await memberCookie(member.id) },
   });
   const mineBody = await mineRec.text();
   check(
@@ -1001,7 +1014,7 @@ async function main() {
   );
 
   const strangerRec = await fetch(`${BASE}${recordPath}`, {
-    headers: { cookie: memberCookie(stranger.id) },
+    headers: { cookie: await memberCookie(stranger.id) },
   });
   const strangerBody = await strangerRec.text();
   check(
@@ -1028,7 +1041,7 @@ async function main() {
   const moved = await post(
     "/api/member/bookings/reschedule",
     { bookingId: movable.id, startsAt: moveTo },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("the owner can move their own session", moved.status === 200, `status ${moved.status}`);
 
@@ -1055,7 +1068,7 @@ async function main() {
   const secondMove = await post(
     "/api/member/bookings/reschedule",
     { bookingId: movable.id, startsAt: alsoOpen },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check("a second move is refused", secondMove.status === 409, `status ${secondMove.status}`);
 
@@ -1076,7 +1089,7 @@ async function main() {
   const lateMove = await post(
     "/api/member/bookings/reschedule",
     { bookingId: tooSoon.id, startsAt: alsoOpen },
-    memberCookie(member.id),
+    await memberCookie(member.id),
   );
   check(
     "a move inside 24 hours is refused",
@@ -1813,7 +1826,7 @@ async function main() {
    * has an annual pass, so his link must stay inside the console.
    */
   const consoleHtml = await (
-    await fetch(`${BASE}/member`, { headers: { cookie: memberCookie(member.id) } })
+    await fetch(`${BASE}/member`, { headers: { cookie: await memberCookie(member.id) } })
   ).text();
 
   const intakeLinks = [...consoleHtml.matchAll(/\/booking\/([0-9a-f-]{36})\/intake\?t=([0-9a-f]+)/g)];
@@ -1846,7 +1859,7 @@ async function main() {
   const rebookHtml = rebookSlug
     ? await (
         await fetch(`${BASE}/member?rebook=${rebookSlug}`, {
-          headers: { cookie: memberCookie(member.id) },
+          headers: { cookie: await memberCookie(member.id) },
         })
       ).text()
     : "";
@@ -2485,7 +2498,7 @@ async function main() {
     check(
       "the record of who did it cannot be rewritten",
       updateBlocked && afterUpdate.actorEmail === actor.email,
-      `update refused, actor still ${afterUpdate.actorEmail}`,
+      `refusal reported: ${updateBlocked}; actor still ${afterUpdate.actorEmail}`,
     );
   }
 
@@ -2508,10 +2521,326 @@ async function main() {
       .from(opsEvents)
       .where(eq(opsEvents.id, victim.id));
 
+    /*
+       Judged on the outcome, not on the exception.
+
+       This asserted that the DELETE threw, and failed intermittently — the
+       UPDATE check above deliberately provokes an error, and a failed
+       statement leaves the pglite socket unable to report the next one. The
+       same defect made an earlier hand-probe claim DELETE was permitted when
+       it was not.
+
+       What actually matters is that the row is still there. That is true
+       whether or not the refusal made it back up the wire, and it is the
+       property an audit trail needs.
+    */
     check(
       "the record of who did it cannot be deleted",
-      deleteBlocked && survivors.length === 1,
-      `delete refused, row still there`,
+      survivors.length === 1,
+      `row survived; refusal reported: ${deleteBlocked}`,
+    );
+  }
+
+
+  /* ------------------------------------------------------------------
+     A phone gets you an account, not a person.
+
+     Signing in proves possession of a number, and so does taking one over.
+     Three things answer that: a session is a row that can be ended, the
+     screens worth stealing ask again, and a captured payment carries an
+     identity somebody else verified.
+     ------------------------------------------------------------------ */
+
+  {
+    const [sessionCustomer] = await db
+      .insert(customers)
+      .values({
+        email: `sess-${Date.now()}@example.in`,
+        name: "Session Tester",
+        phone: toE164(`96${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    const { value } = await startSession(sessionCustomer.id);
+    const jar = { cookie: `bp_member=${value}` };
+
+    const console1 = await fetch(`${BASE}/member`, {
+      headers: jar,
+      redirect: "manual",
+    });
+
+    /*
+       Revoked, then the very same cookie again. It still verifies
+       cryptographically — that is the point. Before sessions were rows there
+       was nothing to revoke and this second request would have succeeded for
+       thirty days.
+    */
+    const [row] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, sessionCustomer.id))
+      .limit(1);
+    await revokeSession(sessionCustomer.id, row.id);
+
+    const console2 = await fetch(`${BASE}/member`, {
+      headers: jar,
+      redirect: "manual",
+    });
+
+    check(
+      "ending a session ends it, with the same cookie still in hand",
+      console1.status === 200 && console2.status === 307,
+      `${console1.status} before, ${console2.status} after`,
+    );
+  }
+
+  {
+    /* One member must not be able to end another's session by id. */
+    const [a] = await db
+      .insert(customers)
+      .values({
+        email: `sess-a-${Date.now()}@example.in`,
+        name: "Member A",
+        phone: toE164(`95${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+    const [b] = await db
+      .insert(customers)
+      .values({
+        email: `sess-b-${Date.now()}@example.in`,
+        name: "Member B",
+        phone: toE164(`94${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    await startSession(a.id);
+    const [aRow] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, a.id))
+      .limit(1);
+
+    /* B asks for A's session id to be revoked. */
+    await revokeSession(b.id, aRow.id);
+
+    const [after] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.id, aRow.id));
+
+    check(
+      "one member cannot end another member's session",
+      after.revokedAt === null,
+      `A's session is still open`,
+    );
+  }
+
+  {
+    /*
+       The console and the record download ask different questions of the
+       same session: one wants to know whose it is, the other wants to know
+       how recently they proved it. A thirty-day cookie is right for reading
+       your bookings and wrong for downloading your holdings.
+    */
+    const [recordCustomer] = await db
+      .select({ id: customers.id })
+      .from(bookings)
+      .innerJoin(customers, eq(bookings.customerId, customers.id))
+      .limit(1);
+
+    const [booking] = await db
+      .select({ id: bookings.id })
+      .from(bookings)
+      .where(eq(bookings.customerId, recordCustomer.id))
+      .limit(1);
+
+    const { value } = await startSession(recordCustomer.id);
+    const jar = { cookie: `bp_member=${value}` };
+    const url = `${BASE}/member/sessions/${booking.id}/record`;
+
+    const fresh = await fetch(url, { headers: jar, redirect: "manual" });
+
+    /* Push the proof of identity back past the window and ask again. */
+    const [row] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, recordCustomer.id))
+      .orderBy(desc(memberSessions.createdAt))
+      .limit(1);
+    await db
+      .update(memberSessions)
+      .set({ verifiedAt: new Date(Date.now() - (FRESH_MINUTES + 5) * 60_000) })
+      .where(eq(memberSessions.id, row.id));
+
+    const stale = await fetch(url, { headers: jar, redirect: "manual" });
+    const staleConsole = await fetch(`${BASE}/member`, { headers: jar, redirect: "manual" });
+    const sentTo = stale.headers.get("location") ?? "";
+
+    check(
+      "the record download asks again when identity is stale, the console does not",
+      fresh.status === 200 &&
+        stale.status === 303 &&
+        sentTo.includes("/member/verify") &&
+        staleConsole.status === 200,
+      `fresh ${fresh.status}, stale ${stale.status} -> verify, console still ${staleConsole.status}`,
+    );
+
+    /* And typing a code opens it again, without a new sign-in. */
+    await markVerified(row.id);
+    const again = await fetch(url, { headers: jar, redirect: "manual" });
+    check(
+      "proving identity again reopens it, without signing in again",
+      again.status === 200,
+      `status ${again.status} on the same session`,
+    );
+  }
+
+  {
+    /*
+       An open redirect on the page whose whole job is to be trusted would be
+       a gift: ask somebody to confirm it is them, then send them somewhere
+       else with the confidence already spent. Protocol-relative is the one
+       that slips past a naive startsWith("/").
+    */
+    const escapes = [
+      "//evil.example/steal",
+      "https://evil.example",
+      "/ops",
+    ];
+    const results = await Promise.all(
+      escapes.map(async (next) => {
+        const res = await fetch(
+          `${BASE}/member/verify?next=${encodeURIComponent(next)}`,
+          { redirect: "manual" },
+        );
+        const to = res.headers.get("location") ?? "";
+        return !to.includes("evil.example") && !to.includes("/ops");
+      }),
+    );
+
+    check(
+      "the confirm-it-is-you page cannot be pointed off the site",
+      results.every(Boolean),
+      `${escapes.length} escape attempts, none followed`,
+    );
+  }
+
+  {
+    /*
+       Who paid, read out of Razorpay's own payload. Shapes differ by method
+       — a UPI payment has no card object — so every field is optional and a
+       missing one must be null rather than a crash in a webhook.
+    */
+    const card = readPayer({
+      method: "card",
+      card: { last4: "4242", network: "Visa" },
+      contact: "+919876543210",
+      email: "someone@example.in",
+    });
+    const upi = readPayer({ method: "upi", vpa: "someone@okhdfcbank", contact: "9876543210" });
+    const empty = readPayer(null);
+
+    check(
+      "who paid is read out of the payment, not guessed",
+      card.instrument === "Visa ····4242" &&
+        card.contact === "+919876543210" &&
+        upi.instrument === "someone@okhdfcbank" &&
+        upi.contact === "+919876543210" &&
+        empty.method === null &&
+        contactMatches("9876543210", "+919876543210") === true &&
+        contactMatches("+919000000001", "+919876543210") === false &&
+        contactMatches(null, "+919876543210") === null,
+      `card and UPI both read, spellings reconciled, unknown stays unknown`,
+    );
+  }
+
+
+  {
+    /*
+       Changing the number IS changing the credential.
+
+       It used to be a second field on the profile form: type anything,
+       press Save. Anyone holding a session could repoint the account at
+       their own number and keep it, and the real owner could not undo it —
+       the way back in was the number that had just been taken away.
+
+       The token is signed over the new number as well as the customer, so
+       one request's token cannot be replayed to claim a different number.
+       Same failure the email-change token is built against, with a worse
+       ending.
+    */
+    const [changer] = await db
+      .insert(customers)
+      .values({
+        email: `phone-change-${Date.now()}@example.in`,
+        name: "Phone Changer",
+        phone: toE164(`93${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    const wanted = "+919000012345";
+    const token = await mintPhoneChange(changer.id, wanted);
+
+    const honest = await verifyPhoneChange(token);
+
+    /* Repoint it at a different number, keeping the signature. */
+    const parts = token.split(".");
+    const repointed = await verifyPhoneChange(
+      [
+        parts[0],
+        parts[1],
+        Buffer.from("+919999999999", "utf8").toString("base64url"),
+        parts[3],
+      ].join("."),
+    );
+
+    /* And move it onto somebody else's account. */
+    const [other] = await db
+      .insert(customers)
+      .values({
+        email: `phone-other-${Date.now()}@example.in`,
+        name: "Someone Else",
+        phone: toE164(`92${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+    const moved = await verifyPhoneChange(
+      [other.id, parts[1], parts[2], parts[3]].join("."),
+    );
+
+    check(
+      "a phone change cannot be repointed at another number or another account",
+      honest?.phone === wanted &&
+        honest?.customerId === changer.id &&
+        repointed === null &&
+        moved === null,
+      `honest verifies; repointed and moved both refused`,
+    );
+  }
+
+  {
+    /*
+       The signed-in flows must be able to SEE the throttle, not just obey
+       it. Sign-in swallows it silently — telling a stranger they were
+       throttled tells them the number is a customer — but a member who has
+       just typed one code would otherwise be shown "we texted you" for a
+       message nobody sent, and would sit waiting for it.
+    */
+    const [spammer] = await db
+      .insert(customers)
+      .values({
+        email: `throttle-${Date.now()}@example.in`,
+        name: "Throttle Tester",
+        phone: toE164(`91${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    const first = await issueCodeTo(spammer.id, "+919000054321");
+    const second = await issueCodeTo(spammer.id, "+919000054321");
+
+    check(
+      "a second code inside the throttle window reports that it was not sent",
+      first === true && second === false,
+      `first sent, second refused`,
     );
   }
 

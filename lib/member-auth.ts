@@ -82,11 +82,34 @@ export function verifyLink(token: string | undefined | null) {
   return verify(token, "link");
 }
 
-export async function mintSession(customerId: string) {
+/**
+ * The cookie names a SESSION, not a customer.
+ *
+ * It used to carry the customer id directly, which made the token complete
+ * on its own — nothing had to be stored, and nothing could be taken away. A
+ * stolen cookie was good for thirty days and there was no row to revoke,
+ * nothing to show the member, and no way for either of us to notice.
+ *
+ * One level of indirection fixes all three: member_sessions holds whose it
+ * is, where it signed in from, and whether it is still allowed. Everything
+ * that reads it lives in lib/member-session, because this module is imported
+ * by middleware and must not reach a database.
+ */
+export async function mintSession(sessionId: string) {
   const expiresAt = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
-  return { value: await sign(customerId, expiresAt, "session"), expiresAt: new Date(expiresAt) };
+  return { value: await sign(sessionId, expiresAt, "session"), expiresAt: new Date(expiresAt) };
 }
-export function verifySession(token: string | undefined | null) {
+
+/**
+ * The session id this cookie is for, by signature and expiry alone.
+ *
+ * Edge-safe and deliberately incomplete. Whether that session still exists,
+ * and whether it has been revoked, is a database question — readSession() in
+ * lib/member-session answers it, and every server route asks. Middleware
+ * gets this one: enough to turn a stranger away, cheap enough to run on
+ * every request.
+ */
+export function readSessionToken(token: string | undefined | null) {
   return verify(token, "session");
 }
 
@@ -197,4 +220,53 @@ export async function codeMatches(
   storedHash: string,
 ): Promise<boolean> {
   return constantTimeEqual(await hashCode(customerId, code), storedHash);
+}
+
+/**
+ * A pending phone change, signed over the NEW number.
+ *
+ * The same shape as mintEmailChange and for a sharper reason. Phone is the
+ * sign-in credential now, so an unverified change is not an inconvenience —
+ * it is account takeover that the real owner cannot undo, because the way
+ * back in is the number that was just taken away. A typo does the same damage
+ * as an attacker.
+ *
+ * So the new number has to answer before it becomes the way in. This token
+ * carries which number was asked for; the code sent to it proves somebody
+ * holds it; and the session proves it is the member asking.
+ */
+export async function mintPhoneChange(customerId: string, newPhone: string): Promise<string> {
+  const expiresAt = Date.now() + LINK_MINUTES * 60_000;
+  const payload = `phone:${customerId}:${newPhone}:${expiresAt}`;
+  const sig = toHex(await crypto.subtle.sign("HMAC", await key(), encoder.encode(payload)));
+  const packed = Buffer.from(newPhone, "utf8").toString("base64url");
+  return `${customerId}.${expiresAt}.${packed}.${sig}`;
+}
+
+export async function verifyPhoneChange(
+  token: string | undefined | null,
+): Promise<{ customerId: string; phone: string } | null> {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 4) return null;
+
+  const [customerId, expRaw, packed, sig] = parts;
+  const expiresAt = Number(expRaw);
+  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return null;
+
+  let phone: string;
+  try {
+    phone = Buffer.from(packed, "base64url").toString("utf8");
+  } catch {
+    return null;
+  }
+
+  let expected: string;
+  try {
+    const payload = `phone:${customerId}:${phone}:${expiresAt}`;
+    expected = toHex(await crypto.subtle.sign("HMAC", await key(), encoder.encode(payload)));
+  } catch {
+    return null;
+  }
+  return constantTimeEqual(expected, sig) ? { customerId, phone } : null;
 }

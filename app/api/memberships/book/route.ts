@@ -15,7 +15,7 @@ import {
 import { computeSlots, SLOT_MINUTES } from "@/lib/slots";
 import { DISCLAIMER_VERSION } from "@/lib/constants";
 import { occupiesSlot, releaseStaleHold } from "@/lib/bookings";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { customerConfirmation, expertNotification, sendOnce } from "@/lib/email";
 import { ensureMeetingLink } from "@/lib/google";
 
@@ -39,7 +39,7 @@ function isUniqueViolation(err: unknown): boolean {
  * membership.
  */
 export async function POST(req: NextRequest) {
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));

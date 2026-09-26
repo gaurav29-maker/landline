@@ -4,7 +4,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, bundles, customers, experts, payments } from "@/lib/db/schema";
-import { MEMBER_COOKIE, verifySession } from "@/lib/member-auth";
+import { currentCustomerId } from "@/lib/member-session";
 import { cancellationOutcome } from "@/lib/cancellation";
 import { refundPayment } from "@/lib/razorpay";
 import { sendRaw } from "@/lib/email";
@@ -19,7 +19,7 @@ const Body = z.object({ bookingId: z.string().uuid() });
  * actually promises. Until now that promise existed only on the policy page.
  */
 export async function POST(req: NextRequest) {
-  const customerId = await verifySession((await cookies()).get(MEMBER_COOKIE)?.value);
+  const customerId = await currentCustomerId();
   if (!customerId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));

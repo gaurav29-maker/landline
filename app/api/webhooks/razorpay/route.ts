@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readPayer } from "@/lib/payer";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -23,6 +24,23 @@ import {
 import { memberConsoleUrl } from "@/lib/member-auth";
 import { MEMBERSHIP_TIERS } from "@/lib/constants";
 import { ensureMeetingLink } from "@/lib/google";
+
+/**
+ * The payer facts, shaped for the payments columns.
+ *
+ * Both capture paths write the same four, so the mapping lives here rather
+ * than being spelled out twice — a booking and a pass are paid for the same
+ * way and there is no reason one of them should know less about who paid.
+ */
+function payerColumns(entity: unknown) {
+  const payer = readPayer(entity);
+  return {
+    payerMethod: payer.method,
+    payerInstrument: payer.instrument,
+    payerContact: payer.contact,
+    payerEmail: payer.email,
+  };
+}
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -113,7 +131,7 @@ async function activateMembership(
 
   await db
     .update(payments)
-    .set({ razorpayPaymentId: paymentId, status: "captured", raw: entity })
+    .set({ razorpayPaymentId: paymentId, status: "captured", raw: entity, ...payerColumns(entity) })
     .where(eq(payments.id, payment.id));
 
   if (membership.status === "active") return; // redelivery
@@ -186,7 +204,7 @@ async function handleCapture(entity: Record<string, unknown>) {
 
   await db
     .update(payments)
-    .set({ razorpayPaymentId: paymentId, status: "captured", raw: entity })
+    .set({ razorpayPaymentId: paymentId, status: "captured", raw: entity, ...payerColumns(entity) })
     .where(eq(payments.id, payment.id));
 
   if (booking.status === "confirmed" || booking.status === "completed") {
