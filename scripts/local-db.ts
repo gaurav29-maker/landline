@@ -11,9 +11,14 @@ import path from "node:path";
  * the real wire protocol, so the app connects with an ordinary connection
  * string and neither Drizzle nor postgres.js knows the difference.
  *
- * DEVELOPMENT ONLY. Data lives in .pglite/ on this machine, there is no
- * backup, no concurrency to speak of, and no durability guarantee. Production
- * still needs a real Postgres — Neon or Supabase.
+ * DEVELOPMENT ONLY. Data lives in the OS temp directory — see DIR below, or
+ * set LOCAL_DB_DIR to put it somewhere else. It said ".pglite/ on this
+ * machine" for a while, which was wrong and only came to light when the repo
+ * moved and the database did not: being outside the working tree is the
+ * reason moving the project left it alone, and the reason an `rm -rf` in the
+ * repo cannot take it with them. Equally there is no backup, no concurrency
+ * to speak of, no durability guarantee, and a temp directory is not a
+ * promise. Production still needs a real Postgres — Neon or Supabase.
  *
  * KNOWN DEFECT IN THIS SETUP, measured rather than suspected: the socket
  * server loses the statement issued immediately after an error response on

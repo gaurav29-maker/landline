@@ -2490,15 +2490,29 @@ async function main() {
       updateBlocked = true;
     }
 
-    const [afterUpdate] = await db
-      .select()
-      .from(opsEvents)
-      .where(eq(opsEvents.id, victim.id));
+    /*
+       Read back with a retry, because the statement before this one was
+       MEANT to fail.
+
+       pglite-socket loses the statement that follows an error — the same
+       defect that made an earlier probe report DELETE as permitted when it
+       was not. Here it made this check throw on "afterUpdate.actorEmail" of
+       undefined on roughly every other run: the refusal arrived, and then
+       the SELECT verifying it came back empty.
+
+       One retry is enough because the connection recovers immediately, and
+       an empty result is never the correct answer here — the row is known
+       to exist, it was selected a moment ago.
+    */
+    let afterUpdate;
+    for (let attempt = 0; attempt < 3 && !afterUpdate; attempt++) {
+      [afterUpdate] = await db.select().from(opsEvents).where(eq(opsEvents.id, victim.id));
+    }
 
     check(
       "the record of who did it cannot be rewritten",
-      updateBlocked && afterUpdate.actorEmail === actor.email,
-      `refusal reported: ${updateBlocked}; actor still ${afterUpdate.actorEmail}`,
+      updateBlocked && afterUpdate?.actorEmail === actor.email,
+      `refusal reported: ${updateBlocked}; actor still ${afterUpdate?.actorEmail ?? "unreadable"}`,
     );
   }
 
