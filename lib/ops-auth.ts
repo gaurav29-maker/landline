@@ -1,10 +1,20 @@
 /**
- * Ops console auth: one shared password, one signed cookie.
+ * Ops console auth: one account per human, one signed cookie.
  *
- * Deliberately not Auth.js. There is exactly one operator, no self-service
- * signup, and nothing to federate — a user table here would be cost without
- * benefit. Uses Web Crypto rather than node:crypto so the same code runs in
- * middleware (edge) and in server actions (node).
+ * WAS: a single shared password in OPS_PASSWORD, on the reasoning that there
+ * was exactly one operator and a user table would be cost without benefit.
+ * The cost showed up somewhere else. A shared secret proves only that SOMEBODY
+ * knew it, which made every refund, every approval and every payout marked
+ * paid attributable to nobody — including on the days there genuinely was one
+ * operator, because "it must have been me" is not a record.
+ *
+ * So the cookie now carries an operator id. Everything downstream can name the
+ * person, and lib/ops-audit writes that name beside what they changed.
+ *
+ * Web Crypto throughout, because middleware runs on the edge and
+ * verifies the same cookie the server actions do. The password half is a
+ * separate module (lib/ops-password) for the same reason: the edge checks the
+ * signature, the action checks the password and the database.
  */
 
 export const OPS_COOKIE = "bp_ops";
@@ -42,42 +52,70 @@ function constantTimeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export async function passwordMatches(candidate: string): Promise<boolean> {
-  const expected = process.env.OPS_PASSWORD;
-  // No password configured means the console is closed, not open.
-  if (!expected) return false;
-  // Hash both sides first so the comparison is over equal-length strings.
-  const [a, b] = await Promise.all([sha256Hex(candidate), sha256Hex(expected)]);
-  return constantTimeEqual(a, b);
-}
+/* ------------------------------------------------------------- sessions -- */
 
-async function sha256Hex(value: string): Promise<string> {
-  return toHex(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
-}
-
-export async function mintSession(): Promise<{ value: string; expiresAt: Date }> {
+/**
+ * The cookie says which operator, and is signed over that id.
+ *
+ * `ops:` scopes it the way the member token is scoped, so an ops session and
+ * a member session are not interchangeable despite sharing a secret. Without
+ * the prefix, a customer id and an operator id are both just uuids.
+ */
+export async function mintSession(
+  operatorId: string,
+): Promise<{ value: string; expiresAt: Date }> {
   const expiresAt = new Date(Date.now() + OPS_SESSION_DAYS * 24 * 60 * 60 * 1000);
-  const payload = String(expiresAt.getTime());
+  const payload = `ops:${operatorId}:${expiresAt.getTime()}`;
   const sig = toHex(await crypto.subtle.sign("HMAC", await hmacKey(), encoder.encode(payload)));
-  return { value: `${payload}.${sig}`, expiresAt };
+  return { value: `${operatorId}.${expiresAt.getTime()}.${sig}`, expiresAt };
 }
 
-export async function sessionValid(token: string | undefined | null): Promise<boolean> {
-  if (!token) return false;
-  const dot = token.lastIndexOf(".");
-  if (dot < 1) return false;
+/**
+ * The operator id this cookie is for, or null.
+ *
+ * Signature and expiry only. Whether that operator is still allowed in is a
+ * database question, answered by requireOperator() in the server action — the
+ * edge has no database and should not pretend to.
+ */
+export async function sessionOperatorId(
+  token: string | undefined | null,
+): Promise<string | null> {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
 
-  const payload = token.slice(0, dot);
-  const sig = token.slice(dot + 1);
-
-  const expiresAt = Number(payload);
-  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return false;
+  const [operatorId, expRaw, sig] = parts;
+  const expiresAt = Number(expRaw);
+  if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) return null;
 
   let expected: string;
   try {
+    const payload = `ops:${operatorId}:${expiresAt}`;
     expected = toHex(await crypto.subtle.sign("HMAC", await hmacKey(), encoder.encode(payload)));
   } catch {
-    return false;
+    return null;
   }
-  return constantTimeEqual(expected, sig);
+  return constantTimeEqual(expected, sig) ? operatorId : null;
 }
+
+/** For middleware, which only needs to know whether to let the request past. */
+export async function sessionValid(token: string | undefined | null): Promise<boolean> {
+  return (await sessionOperatorId(token)) !== null;
+}
+
+/* ------------------------------------------------------------ passwords -- */
+
+/*
+ * Password hashing lives in lib/ops-password, which is node-only.
+ *
+ * It was here, using a dynamic `await import("node:crypto")` on the
+ * assumption that deferring the import would keep it out of the edge
+ * bundle. It does not: webpack resolves the specifier while bundling,
+ * whenever it would have run, so middleware — which imports this file to
+ * check the cookie — failed to build with "Reading from node:crypto is not
+ * handled by plugins".
+ *
+ * The module boundary is the fix, not the import position. This file signs
+ * with Web Crypto and runs anywhere; that one hashes with scrypt and is
+ * only ever reached from a server action.
+ */

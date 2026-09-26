@@ -58,7 +58,7 @@ still needs a real Postgres.
 | `SMS_PROVIDER` / `SMS_API_KEY` / `SMS_SENDER_ID` / `SMS_TEMPLATE_SIGNIN` | Your SMS provider, **after** DLT registration (see below). Leave unset in development: the code is printed to the server console. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare dashboard → Turnstile → Add site. Optional; set both or neither. |
 | `CRON_SECRET` | Any long random string. Guards the Cron endpoints. |
-| `OPS_PASSWORD` | Your own choice. The single password for `/ops`. |
+| _(no variable)_ | The ops console uses operator accounts, not a password in the environment. See **Who did it** below. |
 | `EXPERT_PAYOUT_PAISE` | What an expert is paid per session. Only used to estimate margin in `/ops/members`; defaults to ₹2,200, which is a **placeholder**. |
 
 ### Phone sign-in, and the paperwork in front of it
@@ -182,15 +182,46 @@ handler or server action, never during a page render.
 form and payments, mark-complete, cancel and refund, and pausing or repricing
 an expert.
 
-One shared password in `OPS_PASSWORD`, no user accounts — there is one
-operator and nothing to federate. A signed, httpOnly cookie holds the session
-for seven days. `middleware.ts` guards every `/ops` route in front of the
-pages, and each server action re-checks, because a server action is a POST
-endpoint in its own right.
+### Who did it
 
-If `OPS_PASSWORD` is unset the console refuses everyone. That is deliberate:
-the failure mode of a missing password should be a locked door, not an open
-one.
+The console used to take one shared password. That answered the question
+"is somebody allowed in" and threw away the more important one: a shared
+secret proves that *somebody* knew it, so every refund, every adviser
+approval and every payout marked paid was attributable to nobody — including
+on the days there genuinely was only one operator, because "it must have been
+me" is not a record.
+
+Operators are rows now. Add one:
+
+```bash
+npx tsx scripts/add-operator.ts "Full Name" you@landline.in
+```
+
+It prints a generated password once and stores only a scrypt hash, so it
+cannot be read back — rerun with `--reset` if it is lost, and `--disable
+you@landline.in` to switch an account off. There is no signup page and there
+should not be one: the list of people who can move money changes when
+somebody with database access decides it does. With no operator rows the
+console refuses everyone, which is the same locked door the missing password
+used to give.
+
+A signed, httpOnly cookie holds the session for seven days and carries the
+operator's id. `middleware.ts` verifies the signature at the edge; each
+server action re-checks — a server action is a POST endpoint in its own
+right — and also confirms the operator is still active, because a cookie
+lasts a week and without that lookup disabling somebody would not disable
+them until it expired.
+
+Every change made from the console is written to `ops_events` **inside the
+same transaction as the change**, so a refund that succeeds while its record
+fails is not discouraged, it is impossible. `/ops/activity` reads it back as
+sentences: who, what, from where, when.
+
+That table is append-only, enforced by a trigger that raises on `UPDATE` and
+`DELETE` — including for us. A `REVOKE` would not have done it, since the
+app connects as the table's owner and an owner can grant itself back what it
+revoked. A history we can tidy up answers "who did it" with "whoever tidied
+it last".
 
 Applications from `/apply` are reviewed here too. Approving creates the
 expert as **draft**, never live: publishing someone the moment they are

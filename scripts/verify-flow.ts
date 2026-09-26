@@ -4,7 +4,7 @@ loadEnv();
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { and, eq, gt, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, sql } from "drizzle-orm";
 import { db } from "../lib/db";
 import {
   bookings,
@@ -18,7 +18,12 @@ import {
   webhookEvents,
   expertPayouts,
   signInCodes,
+  opsUsers,
+  opsEvents,
 } from "../lib/db/schema";
+import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
+import { hashPassword, passwordMatches } from "../lib/ops-password";
+import { audited } from "../lib/ops-audit";
 import { CODE_MAX_ATTEMPTS, hashCode } from "../lib/member-auth";
 import { toE164 } from "../lib/phone";
 import { MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
@@ -2300,6 +2305,213 @@ async function main() {
       bad.every((n) => toE164(n) === null) &&
         good.every((n) => toE164(n) === "+919876543210"),
       `${good.length} spellings agree, ${bad.length} malformed refused`,
+    );
+  }
+
+
+  /* ------------------------------------------------------------------
+     Who did it.
+
+     The console used to take one shared password, so every refund and
+     approval was attributable to "whoever knew it". These checks cover the
+     three things that replaced that: the cookie names a person, the event
+     is written with the change or not at all, and the record cannot be
+     edited afterwards — including by us, which is the only version of
+     append-only worth having.
+     ------------------------------------------------------------------ */
+
+  const opsPassword = `pw-${Date.now()}`;
+  const [operator] = await db
+    .insert(opsUsers)
+    .values({
+      email: `ops-${Date.now()}@landline.test`,
+      name: "Suite Operator",
+      passwordHash: await hashPassword(opsPassword),
+    })
+    .returning();
+
+  const actor = { id: operator.id, email: operator.email, name: operator.name };
+
+  {
+    const right = await passwordMatches(opsPassword, operator.passwordHash);
+    const wrong = await passwordMatches(opsPassword + "x", operator.passwordHash);
+    /* Not a bare digest: a stored hash must carry its own parameters so the
+       cost can be raised later without locking everybody out. */
+    const parameterised = operator.passwordHash.startsWith("scrypt$16384$8$1$");
+    check(
+      "an operator password round-trips, and a wrong one does not",
+      right && !wrong && parameterised,
+      `scrypt, right ${right}, wrong ${wrong}`,
+    );
+  }
+
+  {
+    const { value } = await mintOpsSession(operator.id);
+    const mine = await sessionOperatorId(value);
+
+    /* The id is signed, so swapping it for somebody else's must not verify.
+       Without this the cookie would be a note saying who you claim to be. */
+    const [otherOperator] = await db
+      .insert(opsUsers)
+      .values({
+        email: `ops-other-${Date.now()}@landline.test`,
+        name: "Another Operator",
+        passwordHash: await hashPassword("irrelevant"),
+      })
+      .returning();
+    const parts = value.split(".");
+    const repointed = await sessionOperatorId(
+      [otherOperator.id, parts[1], parts[2]].join("."),
+    );
+    const tampered = await sessionOperatorId(
+      [parts[0], parts[1], tamper(parts[2])].join("."),
+    );
+
+    check(
+      "an ops cookie names one operator and cannot be repointed at another",
+      mine === operator.id && repointed === null && tampered === null,
+      `mine verifies, repointed and tampered both refused`,
+    );
+  }
+
+  {
+    const expertId = expert.id;
+    const [was] = await db
+      .select({ pricePaise: experts.pricePaise })
+      .from(experts)
+      .where(eq(experts.id, expertId));
+
+    await audited(
+      actor,
+      {
+        action: "expert.price",
+        entity: "expert",
+        entityId: expertId,
+        before: { pricePaise: was.pricePaise },
+        after: { pricePaise: was.pricePaise },
+      },
+      async (tx) => {
+        await tx
+          .update(experts)
+          .set({ pricePaise: was.pricePaise })
+          .where(eq(experts.id, expertId));
+      },
+    );
+
+    const [event] = await db
+      .select()
+      .from(opsEvents)
+      .where(eq(opsEvents.actorId, actor.id))
+      .orderBy(desc(opsEvents.at))
+      .limit(1);
+
+    check(
+      "a change through the console records who made it",
+      Boolean(event) &&
+        event.actorId === actor.id &&
+        event.actorEmail === actor.email &&
+        event.action === "expert.price" &&
+        event.entityId === expertId,
+      `${event?.actorEmail} -> ${event?.action}`,
+    );
+  }
+
+  {
+    /*
+       The event and the change are one transaction. If the work throws, the
+       event must not survive it — otherwise the log grows entries for things
+       that never happened, which is worse than no log at all.
+    */
+    const before = await db
+      .select({ id: opsEvents.id })
+      .from(opsEvents)
+      .where(eq(opsEvents.actorId, actor.id));
+
+    let threw = false;
+    try {
+      await audited(
+        actor,
+        { action: "expert.status", entity: "expert", entityId: expert.id },
+        async () => {
+          throw new Error("deliberate");
+        },
+      );
+    } catch {
+      threw = true;
+    }
+
+    const after = await db
+      .select({ id: opsEvents.id })
+      .from(opsEvents)
+      .where(eq(opsEvents.actorId, actor.id));
+
+    check(
+      "a change that fails leaves no record of having happened",
+      threw && after.length === before.length,
+      `${before.length} events before and after the failed action`,
+    );
+  }
+
+  {
+    /*
+       Append-only, enforced by the database rather than by everyone
+       remembering. A REVOKE would not do it: the application connects as the
+       table's owner, and an owner can grant itself back what was revoked.
+
+       Tested one statement per connection state — a failed statement leaves
+       the pglite socket unable to report the next one, which made an earlier
+       run of this say DELETE was allowed when it was not.
+    */
+    const [victim] = await db
+      .select({ id: opsEvents.id })
+      .from(opsEvents)
+      .where(eq(opsEvents.actorId, actor.id))
+      .limit(1);
+
+    let updateBlocked = false;
+    try {
+      await db.execute(
+        sql`update ops_events set actor_email = 'someone.else@example.in' where id = ${victim.id}`,
+      );
+    } catch {
+      updateBlocked = true;
+    }
+
+    const [afterUpdate] = await db
+      .select()
+      .from(opsEvents)
+      .where(eq(opsEvents.id, victim.id));
+
+    check(
+      "the record of who did it cannot be rewritten",
+      updateBlocked && afterUpdate.actorEmail === actor.email,
+      `update refused, actor still ${afterUpdate.actorEmail}`,
+    );
+  }
+
+  {
+    const [victim] = await db
+      .select({ id: opsEvents.id })
+      .from(opsEvents)
+      .where(eq(opsEvents.actorId, actor.id))
+      .limit(1);
+
+    let deleteBlocked = false;
+    try {
+      await db.execute(sql`delete from ops_events where id = ${victim.id}`);
+    } catch {
+      deleteBlocked = true;
+    }
+
+    const survivors = await db
+      .select({ id: opsEvents.id })
+      .from(opsEvents)
+      .where(eq(opsEvents.id, victim.id));
+
+    check(
+      "the record of who did it cannot be deleted",
+      deleteBlocked && survivors.length === 1,
+      `delete refused, row still there`,
     );
   }
 

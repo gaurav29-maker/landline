@@ -30,6 +30,7 @@ export default async function OpsLayout({ children }: { children: React.ReactNod
             <Link href="/ops/experts">Experts</Link>
             <Link href="/ops/payouts">Payouts</Link>
             <Link href="/ops/applications">Applications</Link>
+            <Link href="/ops/activity">Activity</Link>
             <Link href="/">Site</Link>
           </nav>
           <form action={signOut}>

@@ -1209,6 +1209,58 @@
     .ops-cols { grid-template-columns: 1fr; }
   }
 
+  /* ---------- the activity feed ---------- */
+  /*
+     Reads as sentences, not as a table.
+
+     A grid of action / entity / actor / timestamp columns is what this data
+     looks like in the database, and it is the wrong shape for the question
+     being asked. Somebody opens this page because a specific thing happened
+     and they want to know who did it — one line per event, with the name
+     first, answers that in a glance. The machine-readable version is the
+     table itself.
+  */
+  .ops-feed { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 1px; }
+  .ops-feed-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--sheet-line, var(--line));
+  }
+  .ops-feed-main { min-width: 0; font-size: 13.5px; line-height: 20px; }
+  /* The name leads, because the name is the answer. */
+  .ops-feed-who { font-weight: 500; color: var(--ink, var(--ink-dark)); }
+  .ops-feed-what { color: var(--ink-mute, var(--ink-soft)); }
+  .ops-feed-note {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    line-height: 18px;
+    color: var(--ink-mute, var(--ink-soft));
+    border-left: 2px solid var(--sheet-line, var(--line));
+    padding-left: 9px;
+  }
+  .ops-feed-meta {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute, var(--ink-soft));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .ops-feed-ip { opacity: 0.6; }
+  .ops-empty { margin-top: 18px; font-size: 13.5px; color: var(--ink-mute, var(--ink-soft)); }
+
+  @media (max-width: 560px) {
+    .ops-feed-row { flex-direction: column; gap: 6px; }
+    .ops-feed-meta { flex-direction: row; align-items: baseline; gap: 10px; }
+  }
+
   /* ================= MEMBER CONSOLE ================= */
 
   .member { max-width: 720px; }

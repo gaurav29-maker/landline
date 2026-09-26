@@ -548,3 +548,112 @@ export type Customer = typeof customers.$inferSelect;
 export type ExpertApplication = typeof expertApplications.$inferSelect;
 export type GoogleAccount = typeof googleAccounts.$inferSelect;
 export type ExpertPayout = typeof expertPayouts.$inferSelect;
+
+
+/* ============================ WHO DID IT ============================ */
+
+/**
+ * The people who operate Landline.
+ *
+ * The console used to take one shared password, on the reasoning that there
+ * was exactly one operator. That was true when it was written and stops being
+ * true the day somebody else is told the password — and nothing in the code
+ * notices. Worse, a shared secret cannot attribute anything even to that one
+ * person: every refund, every approval and every payout marked paid was done
+ * by "whoever knew the password".
+ *
+ * One row per human, so the session cookie can carry WHO rather than merely
+ * THAT SOMEBODY PASSED.
+ *
+ * There is no self-service signup and there should never be one. Operators are
+ * added by running scripts/add-operator.ts against the database, which is a
+ * deliberate piece of friction: the list of people who can move money should
+ * change only when somebody with database access decides it does.
+ */
+export const opsUserStatus = pgEnum("ops_user_status", ["active", "disabled"]);
+
+export const opsUsers = pgTable(
+  "ops_users",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    /** scrypt, with a per-row salt. See lib/ops-auth. */
+    passwordHash: text("password_hash").notNull(),
+    /*
+       Disabled rather than deleted. A departed operator's name has to keep
+       resolving, because their events do not disappear when they do — an
+       audit trail pointing at a deleted row is not an audit trail.
+    */
+    status: opsUserStatus("status").notNull().default("active"),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("ops_users_email_idx").on(sql`lower(${t.email})`)],
+);
+
+/**
+ * Every state change an operator makes, and who made it.
+ *
+ * APPEND ONLY, and enforced by the database rather than by everybody
+ * remembering. scripts/add-ops-identity.ts installs a trigger that raises on
+ * UPDATE and on DELETE.
+ *
+ * A trigger and not a REVOKE, which would not have worked: the application
+ * connects as this table's owner, an owner can grant itself back whatever was
+ * revoked, and on a local superuser grants are bypassed outright. The trigger
+ * applies to everyone, us included — which is the only version of append-only
+ * worth having, because a history we can tidy up answers "who did it" with
+ * "whoever tidied it last".
+ *
+ * Written inside the same transaction as the change it describes, by
+ * lib/ops-audit. That is the whole design: a refund that succeeds without
+ * leaving a record is not discouraged, it is impossible — either both land or
+ * neither does.
+ *
+ * actor_email is a copy, not a join.
+ *
+ * It duplicates ops_users.email on purpose. The question this table answers is
+ * "who did this, at the time they did it" — if an operator's address changes
+ * in 2027, the 2026 rows must still read the way they read in 2026. The id is
+ * there for joining; the email is there for the record.
+ */
+export const opsEvents = pgTable(
+  "ops_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => opsUsers.id),
+    actorEmail: text("actor_email").notNull(),
+    /** Dotted and stable, e.g. "booking.refund". Text, not an enum: the list
+        grows with the console and a new verb should not need a migration. */
+    action: text("action").notNull(),
+    /** What kind of thing was touched, e.g. "booking", "expert". */
+    entity: text("entity").notNull(),
+    entityId: text("entity_id").notNull(),
+    /*
+       The two halves of the change, as they were. Small objects, only the
+       fields that moved — a whole row snapshot would quietly copy a
+       customer's details into a table nobody thinks of as holding them.
+    */
+    before: jsonb("before"),
+    after: jsonb("after"),
+    /** Free text where an action has a reason attached, e.g. a refund note. */
+    note: text("note"),
+    /*
+       Where it was done from. Weak evidence on its own — an IP is not a
+       person — but it is what turns "this was done twice" into "this was
+       done twice from two different places", which is the question that
+       actually gets asked after something goes wrong.
+    */
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("ops_events_at_idx").on(t.at),
+    index("ops_events_entity_idx").on(t.entity, t.entityId),
+    index("ops_events_actor_idx").on(t.actorId),
+  ],
+);
