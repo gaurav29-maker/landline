@@ -149,24 +149,33 @@ export default async function MemberConsole({
       </div>
 
       {/*
-        A status line rather than a greeting: what you hold, and how long it
-        has left. Real values, in a mono so the day count does not shift the
-        line as it counts down.
+        A status line rather than a greeting: who you are, and what is
+        actually coming.
+
+        It used to lead with the pass you hold, and read "No active pass"
+        for everyone who held none — which, now that a call is the only
+        thing sold, is everyone. A line whose main fact is the absence of
+        a product nobody is offered says nothing. The number of sessions
+        actually in front of you is the fact a console should open with.
+
+        Mono digits, so the count does not shift the line as it changes.
       */}
       <div className="os-status">
         <span className="os-status-user">{customer.name}</span>
         <span className="os-status-sep">/</span>
-        <span className="os-status-plan">
-          {membership ? MEMBERSHIP_TIERS[membership.tier].label : "No active pass"}
-        </span>
         {membership ? (
           <>
+            <span className="os-status-plan">{MEMBERSHIP_TIERS[membership.tier].label}</span>
             <span className="os-status-sep">/</span>
             <span className="os-status-days">
               {daysLeft} day{daysLeft === 1 ? "" : "s"} remaining
             </span>
           </>
-        ) : null}
+        ) : (
+          <span className="os-status-days">
+            {upcoming.length} session{upcoming.length === 1 ? "" : "s"} coming up
+          </span>
+        )}
       </div>
 
       {membership ? (
@@ -182,25 +191,27 @@ export default async function MemberConsole({
           <span className="pill ok big">active</span>
         </div>
       ) : (
+        /*
+          The panel for a member who holds nothing — which, now that a call
+          is the only thing sold, is every member.
+
+          It used to read "No active pass" over a pitch for the quarterly
+          and annual, with a second link to /#ways. Both halves went stale
+          the moment that section became "One call, one price": the heading
+          named a product nobody is offered, and the link promised passes
+          to a page that says there are none. What is worth more than a
+          fixed link is one sentence saying there is nothing to keep track
+          of — which is the whole point of selling only the call.
+        */
         <div className="bp-panel">
-          <h1>No active pass</h1>
+          <h1>Book a session</h1>
           <p className="bp-muted">
-            Your sessions and history are below. Book a single call any time, or pick up a
-            quarterly or annual pass to stop paying per call.
+            Everything you have booked is below. Book the next one whenever you want it —
+            nothing is running in the background, and there is nothing to renew or cancel.
           </p>
-          {/*
-            Two routes, because somebody without a pass wants both and until
-            now had neither: this panel offered only "see passes", and pointed
-            it at /#pricing — an anchor that stopped existing when the home
-            page's packages section was renamed. It landed them at the top of
-            the home page.
-          */}
           <div className="member-nopass-actions">
             <a className="btn-primary" href="/experts">
               Find an expert
-            </a>
-            <a className="ops-link" href="/#ways">
-              See the passes
             </a>
           </div>
         </div>

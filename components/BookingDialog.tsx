@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ExpertCard } from "./ExpertGrid";
-import { BUNDLE_CREDITS, BUNDLE_DAYS, BUNDLE_PRICE_PAISE } from "@/lib/constants";
+/* BUNDLE_PRICE_PAISE stays: the bundle path still prices correctly if it is
+   ever sold again. CREDITS and DAYS went with the option that named them. */
+import { BUNDLE_PRICE_PAISE } from "@/lib/constants";
+import { SLOT_MINUTES } from "@/lib/slots";
 
 type Slot = { startsAt: string; endsAt: string };
 type Step = "picking" | "details" | "paying" | "done";
@@ -61,7 +64,14 @@ export default function BookingDialog({
   const [activeDay, setActiveDay] = useState<string | null>(null);
   const [chosen, setChosen] = useState<Slot | null>(null);
   const [step, setStep] = useState<Step>("picking");
+  /*
+     setProduct has no caller while the bundle is off sale — the picker that
+     called it is the commented-out block below. Left as state rather than a
+     `const product = "single"` so restoring the second option is putting the
+     markup back, with nothing here to rewrite.
+  */
   const [product, setProduct] = useState<Product>("single");
+  void setProduct;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -306,32 +316,23 @@ export default function BookingDialog({
 
         {step === "details" || step === "paying" ? (
           <div className="bp-body">
-            <div className="bp-product" role="radiogroup" aria-label="What you are buying">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={product === "single"}
-                className={`bp-product-opt${product === "single" ? " is-active" : ""}`}
-                onClick={() => setProduct("single")}
-              >
-                <span className="bp-product-name">One call</span>
-                <span className="bp-product-price">{rupees(expert.pricePaise)}</span>
-                <span className="bp-product-note">A single session</span>
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={product === "bundle"}
-                className={`bp-product-opt${product === "bundle" ? " is-active" : ""}`}
-                onClick={() => setProduct("bundle")}
-              >
-                <span className="bp-product-name">{BUNDLE_CREDITS} calls</span>
-                <span className="bp-product-price">{rupees(BUNDLE_PRICE_PAISE)}</span>
-                <span className="bp-product-note">
-                  Book the other {BUNDLE_CREDITS - 1} later · valid {BUNDLE_DAYS} days
-                </span>
-              </button>
-            </div>
+            {/*
+              There is one product, so there is nothing to choose between.
+
+              This was a two-option radiogroup: one call, or three for 9,999.
+              The bundle is no longer sold — see the note on #ways — and a
+              radiogroup with a single option is a decision nobody is making.
+
+              `product` stays in state and still posts as "single". The
+              bundle branch of this component and /api/bundles/hold behind it
+              are untouched, so putting the second option back is restoring
+              this block, not rebuilding the path.
+            */}
+            <p className="bp-product-one">
+              <span className="bp-product-name">One call</span>
+              <span className="bp-product-price">{rupees(expert.pricePaise)}</span>
+              <span className="bp-product-note">{SLOT_MINUTES} minutes, video</span>
+            </p>
 
             <p className="bp-chosen">
               {chosen ? `${dayLabel(chosen.startsAt)} at ${timeLabel(chosen.startsAt)} IST` : ""}

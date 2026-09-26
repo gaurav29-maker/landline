@@ -5,17 +5,8 @@ import { experts as expertsTable } from "@/lib/db/schema";
 import { openSlotsFor } from "@/lib/availability";
 import { istDayLabel, istTime, rupees } from "@/lib/format";
 import { SLOT_MINUTES } from "@/lib/slots";
-import {
-  BUNDLE_CREDITS,
-  BUNDLE_DAYS,
-  BUNDLE_PRICE_PAISE,
-  CONTACT_EMAIL,
-  INTAKE_RETENTION_DAYS,
-  MEMBERSHIP_TIERS,
-  SINGLE_CALL_PAISE,
-} from "@/lib/constants";
+import { CONTACT_EMAIL, INTAKE_RETENTION_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
 import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
-import PassPurchase from "@/components/PassPurchase";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
@@ -440,82 +431,56 @@ export default async function Home() {
         is earned by the three sections above it; leading with it asks people
         to price something they have not been shown.
       */}
+      {/*
+        One product.
+
+        This was three rungs — a call, a quarterly pass and an annual pass —
+        plus a bundle offered in the booking dialog. All four are still built
+        and still honoured; they are simply no longer for sale.
+
+        The arithmetic is why. At a 2,200 payout a single call earns 3,299
+        and the three-call bundle earns 3,399: three times the work and three
+        times an expert's diary for a hundred rupees more. The discount was
+        funded entirely out of margin, because the third call costs exactly
+        what the first one does — this is a person's time, not software, and
+        it does not get cheaper with volume.
+
+        The passes had the same shape of problem from the other end. Unlimited
+        for 90 days breaks even at 20.5 calls, so one enthusiastic member
+        erases the margin — and an unlimited pass selects for exactly that
+        member. Four quarterlies also cost less than one annual for identical
+        coverage, which the price list has said in a comment since September.
+
+        Nothing is deleted. /api/memberships/*, /api/bundles/hold and
+        /api/bookings/redeem all still work, the console still honours a pass
+        or a bundle somebody holds, and the suite still proves it. Selling
+        them again is putting the markup back, not rebuilding the product.
+      */}
       <section className="band" id="ways">
         <div className="wrap">
-          <div className="band-head">
-            <span className="eyebrow">Three ways to work with us</span>
-            <h2>Start with a conversation. Go as deep as you want.</h2>
+          <div className="band-head idx">
+            <span className="eyebrow">What it costs</span>
+            <h2>One call, one price.</h2>
+            <p>
+              No packages, no passes, nothing to cancel. You pay for the call you book,
+              and you book the next one when you want it.
+            </p>
           </div>
 
-          <div className="ladder">
-            <div className="rung">
-              <p className="rung-step">One-time</p>
-              <h3>Individual call</h3>
-              <p className="rung-price">{rupees(SINGLE_CALL_PAISE)}</p>
-              <p className="rung-per">a session, {SLOT_MINUTES} minutes</p>
-              <ul>
-                <li>A specific investment question</li>
-                <li>A company or sector discussion</li>
-                <li>A portfolio review</li>
-                <li>A second opinion</li>
-              </ul>
-              <div className="rung-foot">
-                {/* Forward to the full list: the three cards are above this now. */}
-                <a className="b b-line" href="/experts">
-                  Find an expert
-                </a>
-                <p className="rung-also">
-                  Or {BUNDLE_CREDITS} calls with the same expert for {rupees(BUNDLE_PRICE_PAISE)},
-                  valid {BUNDLE_DAYS} days.
-                </p>
-              </div>
-            </div>
-
-            <div className="rung">
-              <p className="rung-step">Ongoing</p>
-              <h3>{MEMBERSHIP_TIERS.quarterly.label}</h3>
-              <p className="rung-price">{rupees(MEMBERSHIP_TIERS.quarterly.pricePaise)}</p>
-              <p className="rung-per">{MEMBERSHIP_TIERS.quarterly.days} days, unlimited calls</p>
-              <ul>
-                <li>Any expert, as often as you like</li>
-                <li>Come back as the position changes</li>
-                <li>Follow-up conversations</li>
-                <li>Your own console, with your history</li>
-              </ul>
-              <div className="rung-foot">
-                <PassPurchase
-                  tier="quarterly"
-                  label={MEMBERSHIP_TIERS.quarterly.label}
-                  priceLabel={rupees(MEMBERSHIP_TIERS.quarterly.pricePaise)}
-                  cta="Get quarterly"
-                  className="b b-line"
-                />
-              </div>
-            </div>
-
-            <div className="rung deepest">
-              <p className="rung-step">Long term</p>
-              <h3>{MEMBERSHIP_TIERS.annual.label}</h3>
-              <p className="rung-price">{rupees(MEMBERSHIP_TIERS.annual.pricePaise)}</p>
-              <p className="rung-per">{MEMBERSHIP_TIERS.annual.days} days, unlimited calls</p>
-              <ul>
-                <li>Everything in the quarterly</li>
-                <li>Regular portfolio reviews</li>
-                <li>Sector and thematic discussions</li>
-                <li>A record of how your book has moved</li>
-              </ul>
-              <div className="rung-foot">
-                <PassPurchase
-                  tier="annual"
-                  label={MEMBERSHIP_TIERS.annual.label}
-                  priceLabel={rupees(MEMBERSHIP_TIERS.annual.pricePaise)}
-                  cta="Get annual"
-                  className="b b-fill"
-                />
-              </div>
-            </div>
+          <div className="price-one">
+            <p className="price-one-fig">{rupees(SINGLE_CALL_PAISE)}</p>
+            <p className="price-one-per">
+              one call &middot; {SLOT_MINUTES} minutes &middot; video
+            </p>
+            <ul>
+              <li>An expert who has read your portfolio before you speak</li>
+              <li>A specific question, a sector, or a second opinion</li>
+              <li>What they saw, written up afterwards and yours to keep</li>
+            </ul>
+            <a className="b b-fill" href="/experts">
+              Find an expert
+            </a>
           </div>
-
         </div>
       </section>
 
@@ -621,15 +586,6 @@ export default async function Home() {
                 Your expert writes up what the session covered, and it sits in your console beside
                 what you sent them. It is a record of what was discussed — not a recommendation, and
                 not something to act on by itself.
-              </p>
-            </details>
-            <details>
-              <summary>What is the difference between the packages?</summary>
-              <p>
-                An individual call is one conversation. The quarterly and annual passes are
-                unlimited calls with any expert across {MEMBERSHIP_TIERS.quarterly.days} or{" "}
-                {MEMBERSHIP_TIERS.annual.days} days, so you can come back as your position changes
-                rather than saving everything for one session.
               </p>
             </details>
             <details>

@@ -29,7 +29,7 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
     { href: "/experts", label: "Find an expert" },
     { href: to("#audit"), label: "Audit my portfolio" },
     { href: to("#how"), label: "How it works" },
-    { href: to("#ways"), label: "Packages" },
+    { href: to("#ways"), label: "What it costs" },
   ];
 
   return (
