@@ -9,7 +9,7 @@ import { currentCustomerId } from "@/lib/member-session";
 import { receiptsForCustomer } from "@/lib/receipts";
 import { istDateTime, rupees } from "@/lib/format";
 import { rethrowIfNavigation } from "@/lib/nav";
-import Wordmark from "@/components/Wordmark";
+import MemberBar from "@/components/MemberBar";
 
 export const metadata: Metadata = { title: "Receipts — Landline", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -39,12 +39,7 @@ export default async function Receipts() {
 
   return (
     <div className="wrap bp-page member">
-      <div className="os-bar">
-        <Wordmark className="logo os-mark" href="/member" sub="os" />
-        <span className="os-nav">
-          <span className="bp-muted">{name}</span>
-        </span>
-      </div>
+      <MemberBar name={name} current="receipts" />
 
       <p className="ops-crumb">
         <Link href="/member" className="ops-link">

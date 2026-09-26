@@ -29,9 +29,9 @@ export const dynamic = "force-dynamic";
 export default async function MemberLogin({
   searchParams,
 }: {
-  searchParams: Promise<{ sent?: string; email?: string; expired?: string }>;
+  searchParams: Promise<{ sent?: string; email?: string; expired?: string; out?: string }>;
 }) {
-  const { sent, email: emailRoute, expired } = await searchParams;
+  const { sent, email: emailRoute, expired, out } = await searchParams;
 
   async function requestLink(formData: FormData) {
     "use server";
@@ -77,6 +77,17 @@ export default async function MemberLogin({
     <main className="site signin">
       <div className="signin-col">
         <Wordmark className="logo signin-mark" as="p" sub="os" />
+
+        {/*
+          Signing out is not the same as being timed out, and the page
+          should not imply something went wrong. One line, past tense, no
+          apology.
+        */}
+        {out ? (
+          <p className="signin-note" role="status">
+            You are signed out. That session has been ended on this device.
+          </p>
+        ) : null}
 
         {expired ? (
           <p className="signin-note" role="status">

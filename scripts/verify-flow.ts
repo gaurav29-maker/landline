@@ -22,7 +22,13 @@ import {
   opsEvents,
   memberSessions,
 } from "../lib/db/schema";
-import { startSession, revokeSession, markVerified, FRESH_MINUTES } from "../lib/member-session";
+import {
+  startSession,
+  revokeSession,
+  markVerified,
+  activeSessions,
+  FRESH_MINUTES,
+} from "../lib/member-session";
 import { readPayer, contactMatches } from "../lib/payer";
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { issueCodeTo } from "../lib/member-code";
@@ -2855,6 +2861,62 @@ async function main() {
       "a second code inside the throttle window reports that it was not sent",
       first === true && second === false,
       `first sent, second refused`,
+    );
+  }
+
+
+  {
+    /*
+       Signing out has to REVOKE, not just drop the cookie.
+
+       The expert console signs out by deleting its cookie, because that
+       token is stateless and there is nothing else it can do. Copying that
+       here would be a lie: a member's session is a row, so a token copied
+       before signing out keeps working for thirty days unless the row is
+       ended. This check fails if member sign-out ever quietly becomes the
+       cookie-only kind.
+
+       Driven through the library rather than the button, because a server
+       action needs Next's own action header and cannot be posted to
+       directly. The button is wired to this same call.
+    */
+    const [outCustomer] = await db
+      .insert(customers)
+      .values({
+        email: `signout-${Date.now()}@example.in`,
+        name: "Sign Out Tester",
+        phone: toE164(`89${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    /* Two devices, so the scoping is tested as well as the revoke. */
+    const first = await startSession(outCustomer.id);
+    const second = await startSession(outCustomer.id);
+
+    const open = await activeSessions(outCustomer.id);
+
+    /* Sign out of the first one only. */
+    const [target] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, outCustomer.id))
+      .orderBy(memberSessions.createdAt)
+      .limit(1);
+    await revokeSession(outCustomer.id, target.id);
+
+    const goneRes = await fetch(`${BASE}/member`, {
+      headers: { cookie: `bp_member=${first.value}` },
+      redirect: "manual",
+    });
+    const stillRes = await fetch(`${BASE}/member`, {
+      headers: { cookie: `bp_member=${second.value}` },
+      redirect: "manual",
+    });
+
+    check(
+      "signing out ends that session on the server, and only that one",
+      open.length === 2 && goneRes.status === 307 && stillRes.status === 200,
+      `2 open; signed-out device ${goneRes.status}, other device ${stillRes.status}`,
     );
   }
 

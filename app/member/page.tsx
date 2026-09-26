@@ -13,6 +13,7 @@ import { rethrowIfNavigation } from "@/lib/nav";
 import PassPurchase from "@/components/PassPurchase";
 import ManageBooking from "@/components/member/ManageBooking";
 import { signBookingToken } from "@/lib/tokens";
+import MemberBar from "@/components/MemberBar";
 import Wordmark from "@/components/Wordmark";
 
 export const metadata: Metadata = { title: "Your console — Landline", robots: { index: false } };
@@ -140,13 +141,7 @@ export default async function MemberConsole({
 
   return (
     <div className="wrap bp-page member">
-      <div className="os-bar">
-        <Wordmark className="logo os-mark" href="/" sub="os" />
-        <span className="os-nav">
-          <a href="/member/receipts">Receipts</a>
-          <a href="/member/profile">Your details</a>
-        </span>
-      </div>
+      <MemberBar name={customer.name} current="console" />
 
       {/*
         A status line rather than a greeting: who you are, and what is
