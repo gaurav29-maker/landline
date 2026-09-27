@@ -26,24 +26,88 @@ sign in anywhere, since sign-in is a link by email), and Razorpay test keys.
 
 You need a Postgres database and a Razorpay test account. Both are free.
 
+From a fresh clone, in order. Every step below was run against an empty
+database before it was written down.
+
 ```bash
-cp .env.example .env.local     # then fill it in — see below
 npm install
-npm run db:local               # a local Postgres, in its own terminal
-npm run db:push                # create the tables
-npm run db:seed                # three demo experts, weekdays 10-1 and 3-7 IST
+cp .env.example .env.local     # then fill it in — see below
+```
+
+`TOKEN_SECRET` has to be set before anything will sign in. Generate one:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Then, in its own terminal, leave the database running:
+
+```bash
+npm run db:local
+```
+
+And in another, build the schema and fill it:
+
+```bash
+npm run db:push                          # every table
+npx tsx scripts/add-ops-identity.ts      # NOT optional — see below
+npm run db:seed                          # three demo experts, weekdays 10-1 and 3-7 IST
+npx tsx scripts/add-operator.ts "Your Name" you@landline.in
 npm run dev
 ```
 
-`db:local` needs no account and nothing installed: it runs Postgres compiled
-to WebAssembly behind the ordinary wire protocol, so Drizzle and postgres.js
-cannot tell the difference. Data lives in the OS temp directory, deliberately
-**outside** this repo — the project sits inside OneDrive, whose syncing has
-corrupted `.next` more than once, and a database directory being synced
-mid-write is a worse version of the same problem.
+### Why two of those steps are not optional
 
-Development only. There is no backup and no durability guarantee; production
-still needs a real Postgres.
+**`add-ops-identity.ts` after `db:push`.** Push creates all the tables,
+including `ops_events`, and cannot create the trigger that makes it
+append-only — Drizzle's schema has no way to express one. So a database built
+with push alone has an audit trail that anybody can edit or delete, which is
+the one property it exists to have. The script is idempotent; run it after
+every push. Verified: straight after `db:push` the trigger is absent, and
+after the script it is there.
+
+**`add-operator.ts`.** The ops console has no signup page and no password in
+the environment, so with no operator rows it refuses everyone — the same
+locked door a missing password used to give. The script prints a generated
+password once and stores only a scrypt hash, so it cannot be read back; rerun
+with `--reset` if it is lost, and `--disable you@landline.in` to switch an
+account off.
+
+### Migrating a database that already has data
+
+`db:push` diffs the schema and can refuse a change it cannot work out — on
+PGlite it tries to recreate a primary key and Postgres answers *column "id"
+is in a primary key*. The three scripts below write those changes out
+explicitly. All are idempotent and safe on a database that already has them.
+
+```bash
+npx tsx scripts/add-signin-codes.ts      # phone sign-in codes, phone uniqueness
+npx tsx scripts/add-member-sessions.ts   # revocable member sessions, payer columns
+npx tsx scripts/add-expert-sessions.ts   # revocable expert sessions
+```
+
+On a fresh database `db:push` covers all three; they exist for the one that
+is already live.
+
+### About `db:local`
+
+It needs no account and nothing installed: Postgres compiled to WebAssembly
+behind the ordinary wire protocol, so Drizzle and postgres.js cannot tell the
+difference. Data lives in the OS temp directory, deliberately **outside** this
+repo — set `LOCAL_DB_DIR` to move it. Being outside the working tree is why
+moving the project does not disturb the database, and why a stray `rm -rf` in
+the repo cannot take it with them.
+
+Equally: a temp directory is not a promise. There is no backup and no
+durability guarantee, and clearing temp files starts you at `db:push` again.
+Development only; production still needs a real Postgres.
+
+One known defect, measured rather than suspected: the socket server loses the
+statement issued immediately after an error on the same connection. Provoke a
+constraint violation, catch it, and the next query can come back empty. It has
+produced two wrong conclusions in this codebase already, so a check that
+deliberately triggers an error should verify the outcome rather than the
+exception, and read back with a retry.
 
 ### Filling in `.env.local`
 
@@ -321,7 +385,7 @@ npm run dev          # in another
 npm run verify
 ```
 
-64 checks against a real database and a running server. They cover the parts
+114 checks against a real database and a running server. They cover the parts
 that need neither Razorpay nor Resend, and several of them exist because the
 thing they check is a claim rather than an observation:
 
@@ -404,5 +468,17 @@ The Vercel MCP connector 404s on this account. Use the CLI:
 ```bash
 npx vercel deploy --prod --yes
 ```
+
+A new environment needs the same two steps a fresh clone does, run against
+whatever database it points at — with `DATABASE_URL` set to the production
+one, not the local:
+
+```bash
+npx tsx scripts/add-ops-identity.ts      # or the audit trail is editable
+npx tsx scripts/add-operator.ts "Your Name" you@landline.in
+```
+
+Without the second one nobody can open `/ops` at all, which is the intended
+locked door and an easy half-hour to lose if it is forgotten.
 
 Cron schedules are in `vercel.json` and need a plan that allows them.
