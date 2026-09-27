@@ -22,6 +22,7 @@ import {
   opsEvents,
   memberSessions,
   expertSessions,
+  expertProducts,
 } from "../lib/db/schema";
 import {
   startSession,
@@ -31,6 +32,12 @@ import {
   FRESH_MINUTES,
 } from "../lib/member-session";
 import { readPayer, contactMatches } from "../lib/payer";
+import {
+  activeProducts,
+  bookableProduct,
+  changeProductPrice,
+  defaultProduct,
+} from "../lib/products";
 import http from "node:http";
 import { sendSms, signInSms } from "../lib/sms";
 import {
@@ -3192,6 +3199,105 @@ async function main() {
       "the audit trail cannot be emptied with TRUNCATE either",
       left.length === 1,
       `event survived; refusal reported: ${truncateBlocked}`,
+    );
+  }
+
+
+  /* ------------------------------------------------------------------
+     What an expert sells.
+
+     Price and duration moved off the expert row and onto a product. The
+     expert row keeps a cached 'from' price because the listing sorts on
+     it — and two columns holding one fact is how they end up disagreeing,
+     which would show as a listing price that is not what checkout charges.
+     ------------------------------------------------------------------ */
+  {
+    const [prodExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.status, "live"))
+      .limit(1);
+
+    const primary = await defaultProduct(prodExpert.id);
+    if (!primary) throw new Error("the backfill did not run");
+
+    const moved = primary.pricePaise + 70000;
+    await changeProductPrice(primary.id, moved);
+
+    const [cached] = await db
+      .select({ pricePaise: experts.pricePaise })
+      .from(experts)
+      .where(eq(experts.id, prodExpert.id));
+
+    check(
+      "repricing a product moves the cached listing price with it",
+      cached.pricePaise === moved,
+      `product ${moved}, expert row ${cached.pricePaise}`,
+    );
+
+    /* And what checkout actually charges comes from the product. */
+    const slotList = await slots();
+    const held = await post("/api/bookings/hold", {
+      expertSlug: prodExpert.slug,
+      startsAt: slotList[slotList.length - 1],
+      name: "Product Tester",
+      email: `product-${Date.now()}@example.in`,
+      phone: `9${String(Date.now()).slice(-9)}`,
+      disclaimerAccepted: true,
+    });
+
+    const [booked] = await db
+      .select({ amountPaise: bookings.amountPaise, productId: bookings.productId })
+      .from(bookings)
+      .where(eq(bookings.id, String(held.json.bookingId)));
+
+    check(
+      "the price charged comes from the product, and the booking records which",
+      held.status === 200 &&
+        booked.amountPaise === moved &&
+        booked.productId === primary.id,
+      `charged ${booked?.amountPaise}, product recorded`,
+    );
+
+    await changeProductPrice(primary.id, primary.pricePaise);
+  }
+
+  {
+    /*
+       A hidden product stops being bookable with no other change, because
+       every booking path resolves through bookableProduct.
+    */
+    const [anyExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.status, "live"))
+      .limit(1);
+
+    const [extra] = await db
+      .insert(expertProducts)
+      .values({
+        expertId: anyExpert.id,
+        slug: `probe-${Date.now()}`,
+        name: "Second opinion",
+        minutes: 15,
+        pricePaise: 199900,
+      })
+      .returning();
+
+    const visible = await bookableProduct(anyExpert.id, extra.slug);
+    const listed = (await activeProducts(anyExpert.id)).some((x) => x.id === extra.id);
+
+    await db
+      .update(expertProducts)
+      .set({ status: "hidden" })
+      .where(eq(expertProducts.id, extra.id));
+
+    const afterHide = await bookableProduct(anyExpert.id, extra.slug);
+
+    check(
+      "a second product can exist, and hiding it stops it being bookable",
+      visible?.minutes === 15 && listed && afterHide === null,
+      `15-minute product listed, then hidden and refused`,
     );
   }
 

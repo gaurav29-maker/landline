@@ -11,7 +11,8 @@ import {
   customers,
   experts,
 } from "@/lib/db/schema";
-import { computeSlots, SLOT_MINUTES } from "@/lib/slots";
+import { computeSlots } from "@/lib/slots";
+import { bookableProduct, defaultProduct } from "@/lib/products";
 import { DISCLAIMER_VERSION, HOLD_MINUTES } from "@/lib/constants";
 import { occupiesSlot, releaseStaleHold } from "@/lib/bookings";
 
@@ -19,6 +20,12 @@ export const dynamic = "force-dynamic";
 
 const Body = z.object({
   expertSlug: z.string().min(1),
+  /*
+     Which of the expert's products. Optional: every booking link that
+     predates expert_products omits it, and those must keep working —
+     they resolve to the expert's default product instead.
+  */
+  productSlug: z.string().min(1).max(60).optional(),
   startsAt: z.string().datetime(),
   name: z.string().min(1).max(120),
   email: z.string().email().max(200),
@@ -95,6 +102,22 @@ export async function POST(req: NextRequest) {
       ),
   ]);
 
+  /*
+     PRICE AND DURATION COME FROM THE PRODUCT, NOT THE EXPERT ROW.
+
+     experts.price_paise is a denormalised 'from' price for the listing
+     page; it is not what anybody is charged. Resolving here also means a
+     hidden product stops being bookable with no other change, because
+     bookableProduct only returns active ones.
+  */
+  const product = input.productSlug
+    ? await bookableProduct(expert.id, input.productSlug)
+    : await defaultProduct(expert.id);
+
+  if (!product) {
+    return NextResponse.json({ error: "That session is not available" }, { status: 404 });
+  }
+
   const offered = computeSlots({
     timezone: expert.timezone,
     rules: rules.map((r) => ({ weekday: r.weekday, startMinute: r.startMinute, endMinute: r.endMinute })),
@@ -107,6 +130,7 @@ export async function POST(req: NextRequest) {
     takenStarts: taken.map((b) => b.startsAt),
     from: new Date(),
     to: horizonEnd,
+    slotMinutes: product.minutes,
   });
 
   if (!offered.some((s) => s.startsAt.getTime() === startsAt.getTime())) {
@@ -207,11 +231,12 @@ export async function POST(req: NextRequest) {
         expertId: expert.id,
         customerId: customer.id,
         startsAt,
-        endsAt: new Date(startsAt.getTime() + SLOT_MINUTES * 60_000),
+        endsAt: new Date(startsAt.getTime() + product.minutes * 60_000),
         status: "held",
         holdExpiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
         product: "single",
-        amountPaise: expert.pricePaise, // server-side price, always
+        productId: product.id,
+        amountPaise: product.pricePaise, // server-side price, always
       })
       .returning();
 

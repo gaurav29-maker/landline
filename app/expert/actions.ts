@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { changeProductPrice, defaultProduct } from "@/lib/products";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { EXPERT_COOKIE } from "@/lib/expert-auth";
@@ -258,8 +259,24 @@ export async function updateExpertProfile(formData: FormData) {
 
   await db
     .update(experts)
-    .set({ headline, bio, pricePaise, updatedAt: new Date() })
+    .set({ headline, bio, updatedAt: new Date() })
     .where(eq(experts.id, expertId));
+
+  /*
+     The price lives on the product now, not on the expert.
+
+     experts.price_paise is a cache for the listing page, written in
+     exactly one place — syncExpertFromProducts, which this calls
+     through. Setting it here as well is how the two would start
+     disagreeing, and that disagreement shows up as a listing price
+     that is not what checkout charges.
+
+     Still one rate on this screen because an expert still sells one
+     thing. When they sell two, this becomes a list and this call
+     becomes a loop.
+  */
+  const primary = await defaultProduct(expertId);
+  if (primary) await changeProductPrice(primary.id, pricePaise);
 
   revalidatePath("/expert/profile");
   revalidatePath("/");

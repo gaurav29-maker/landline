@@ -260,6 +260,18 @@ export const bookings = pgTable(
     status: bookingStatus("status").notNull().default("held"),
     holdExpiresAt: timestamp("hold_expires_at", { withTimezone: true }),
     product: productType("product").notNull().default("single"),
+    /*
+       WHICH product, as opposed to how it was paid for.
+
+       `product` above says single / bundle_call / membership_call — the
+       payment route. This says which of the expert's offerings it was, so
+       a booking still knows it was a fifteen-minute second opinion after
+       the expert has renamed or repriced it.
+
+       Nullable: every booking taken before this table existed has no
+       answer, and inventing one would be worse than admitting it.
+    */
+    productId: uuid("product_id").references(() => expertProducts.id),
     bundleId: uuid("bundle_id").references(() => bundles.id),
     membershipId: uuid("membership_id").references(() => memberships.id),
     amountPaise: integer("amount_paise").notNull(),
@@ -782,4 +794,70 @@ export const expertSessions = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("expert_sessions_expert_idx").on(t.expertId)],
+);
+
+
+/* ========================= WHAT AN EXPERT SELLS ========================= */
+
+export const expertProductStatus = pgEnum("expert_product_status", ["active", "hidden"]);
+
+/**
+ * One row per thing an expert sells.
+ *
+ * Price and duration used to be a single column and a global constant:
+ * experts.price_paise, and SLOT_MINUTES = 45 for everybody. That is exactly
+ * one product, and it is why a fifteen-minute second opinion and a
+ * forty-five-minute audit could not both exist — not because the availability
+ * engine could not do it (computeSlots has always taken slotMinutes as a
+ * parameter) but because there was nowhere to put a second price.
+ *
+ * ONE SOURCE OF TRUTH, AND A CACHE THAT SAYS SO.
+ *
+ * This table is authoritative for what a session costs and how long it runs.
+ * experts.price_paise stays, but only as a denormalised "from" price for the
+ * listing page, which sorts and filters on it and cannot do that against a
+ * child table without a subquery on every row. It is written in exactly one
+ * place — syncExpertFromProducts() in lib/products — so the two cannot drift.
+ * Nothing reads it to decide what to charge.
+ *
+ * Per expert rather than a global catalogue, because two experts offering
+ * "a second opinion" may reasonably price it differently, and an expert who
+ * only wants to sell one thing should not have rows for things they do not.
+ */
+export const expertProducts = pgTable(
+  "expert_products",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    expertId: uuid("expert_id")
+      .notNull()
+      .references(() => experts.id, { onDelete: "cascade" }),
+    /** Stable, in the URL, unique per expert: "audit", "second-opinion". */
+    slug: text("slug").notNull(),
+    /** What the buyer sees: "Portfolio audit". */
+    name: text("name").notNull(),
+    /** One line under the name. Optional — a name is often enough. */
+    blurb: text("blurb"),
+    /**
+     * How long the session runs.
+     *
+     * Feeds computeSlots, so changing it changes which start times are
+     * offered. Minutes rather than an interval: the whole scheduling layer
+     * already counts in minutes from midnight.
+     */
+    minutes: smallint("minutes").notNull(),
+    pricePaise: integer("price_paise").notNull(),
+    /*
+       Hidden rather than deleted. A product somebody has already booked has
+       to keep resolving — bookings point at it — and an expert who stops
+       offering something should not break the record of when they did.
+    */
+    status: expertProductStatus("status").notNull().default("active"),
+    sortOrder: smallint("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("expert_products_slug_idx").on(t.expertId, sql`lower(${t.slug})`),
+    index("expert_products_expert_idx").on(t.expertId),
+  ],
 );

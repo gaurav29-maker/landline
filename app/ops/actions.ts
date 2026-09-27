@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { defaultProduct, syncExpertFromProducts } from "@/lib/products";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { bookings, bundles, expertApplications, experts, payments, expertPayouts } from "@/lib/db/schema";
+import { bookings, bundles, expertApplications, experts, expertProducts, payments, expertPayouts } from "@/lib/db/schema";
 import { OPS_COOKIE } from "@/lib/ops-auth";
 import { audited, requireOperator } from "@/lib/ops-audit";
 import { refundPayment } from "@/lib/razorpay";
@@ -245,12 +246,31 @@ export async function setExpertPrice(formData: FormData) {
       after: { pricePaise, displayName: before?.name ?? null },
     },
     async (tx) => {
+      /*
+         The authoritative write stays INSIDE the transaction, with the
+         audit event.
+
+         Calling changeProductPrice here instead would be tidier and
+         wrong: it writes on its own connection, so a failure after it
+         would roll back the event and leave the price changed — a
+         change with no record, which is the one thing ops_events
+         exists to make impossible.
+
+         The cache refresh is the only part that happens afterwards. If
+         that fails the listing is briefly stale while the truth is
+         correct and recorded, which is the right way round to fail.
+      */
+      const primary = await defaultProduct(id);
+      if (!primary) throw new Error("That expert has nothing to reprice");
+
       await tx
-        .update(experts)
+        .update(expertProducts)
         .set({ pricePaise, updatedAt: new Date() })
-        .where(eq(experts.id, id));
+        .where(eq(expertProducts.id, primary.id));
     },
   );
+
+  await syncExpertFromProducts(id);
 
   revalidatePath("/ops/experts");
   revalidatePath("/");
