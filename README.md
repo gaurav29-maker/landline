@@ -146,11 +146,32 @@ order, through a telecom DLT platform:
    approved one template at a time and issued a template id. What is sent
    must match what was approved; an edited word is a rejected message.
 
-Operators drop unregistered traffic and there is no test mode that reaches
-a real phone, so this cannot be finished early. The provider call itself is
-one function in `lib/sms.ts`, deliberately left as a stub — every provider
-wants a different body shape, and one written from memory typechecks,
-deploys, and delivers nothing.
+Operators drop unregistered traffic and there is no test mode that reaches a
+real phone, so the registrations cannot be hurried. **The code is not what is
+waiting** — the provider call is written against MSG91's Flow API, and four
+environment variables turn it on.
+
+Two things it handles that are easy to get wrong, both covered by the suite
+against a local mock server rather than by sending anything:
+
+- MSG91 answers **HTTP 200 with `{"type":"error"}`** when a send fails — a
+  wrong template id, an unregistered header, a number on DND. A `res.ok`
+  check calls every one of those a successful send, and the member sits
+  waiting for a message the logs swear went out. The body decides, not the
+  status.
+- Their own docs disagree about the template field: the apidoc page says
+  `flow_id`, their current documentation and client library say
+  `template_id`. Both go out carrying the same value, because guessing wrong
+  means a 200 and no message.
+
+The number is sent as `919876543210` — country code, no plus. The template
+must define `VAR1` (the code) and `VAR2` (minutes), and its registered text
+must match `signInSms()` in `lib/sms.ts` word for word.
+
+Until all three registrations are done, leave `SMS_PROVIDER` unset: a
+development server prints the code to its own console and sign-in works end
+to end. Production with no provider throws rather than leaving somebody
+waiting for a message nobody sent.
 
 Members who predate phone sign-in, or who have no number on file, still
 sign in by emailed link at `/member/login?email=1`.
@@ -385,7 +406,7 @@ npm run dev          # in another
 npm run verify
 ```
 
-114 checks against a real database and a running server. They cover the parts
+117 checks against a real database and a running server. They cover the parts
 that need neither Razorpay nor Resend, and several of them exist because the
 thing they check is a claim rather than an observation:
 

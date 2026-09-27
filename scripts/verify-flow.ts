@@ -31,6 +31,8 @@ import {
   FRESH_MINUTES,
 } from "../lib/member-session";
 import { readPayer, contactMatches } from "../lib/payer";
+import http from "node:http";
+import { sendSms, signInSms } from "../lib/sms";
 import {
   startExpertSession,
   revokeExpertSession,
@@ -2543,10 +2545,13 @@ async function main() {
       deleteBlocked = true;
     }
 
-    const survivors = await db
-      .select({ id: opsEvents.id })
-      .from(opsEvents)
-      .where(eq(opsEvents.id, victim.id));
+    /* Same retry as the update check above, and for the same reason: the
+       DELETE was meant to fail, and pglite-socket loses the statement that
+       follows an error. Without this the row looks deleted when it is not. */
+    let survivors: { id: string }[] = [];
+    for (let attempt = 0; attempt < 3 && survivors.length === 0; attempt++) {
+      survivors = await db.select({ id: opsEvents.id }).from(opsEvents).where(eq(opsEvents.id, victim.id));
+    }
 
     /*
        Judged on the outcome, not on the exception.
@@ -2564,7 +2569,7 @@ async function main() {
     check(
       "the record of who did it cannot be deleted",
       survivors.length === 1,
-      `row survived; refusal reported: ${deleteBlocked}`,
+      `${survivors.length} row(s) left; refusal reported: ${deleteBlocked}`,
     );
   }
 
@@ -3012,6 +3017,129 @@ async function main() {
       before >= 2 && after === 0,
       `${before} open, then ${after}`,
     );
+  }
+
+
+  /* ------------------------------------------------------------------
+     The SMS route, checked without sending one.
+
+     No DLT registration and no credentials, so the real endpoint cannot be
+     called — but almost everything that goes wrong with a provider call is
+     the shape of the request and the reading of the reply, and both can be
+     checked against a server we run ourselves. What cannot be checked here
+     is whether MSG91 likes the payload; what can is that we never again
+     report a message as sent when it was not.
+     ------------------------------------------------------------------ */
+  {
+    type Captured = { url: string; headers: Record<string, unknown>; body: unknown };
+    /* Assigned inside the server callback, which TypeScript cannot see, so it
+       narrows this to never without the explicit annotation on the read. */
+    let captured: Captured | undefined;
+    let reply = { status: 200, json: { type: "success", message: "abc123" } as unknown };
+
+    const mock = http.createServer((req, res) => {
+      let raw = "";
+      req.on("data", (c) => (raw += c));
+      req.on("end", () => {
+        captured = {
+          url: req.url ?? "",
+          headers: req.headers as Record<string, unknown>,
+          body: JSON.parse(raw || "{}"),
+        };
+        res.writeHead(reply.status, { "content-type": "application/json" });
+        res.end(JSON.stringify(reply.json));
+      });
+    });
+
+    await new Promise<void>((done) => mock.listen(0, "127.0.0.1", done));
+    const port = (mock.address() as { port: number }).port;
+
+    const saved = {
+      provider: process.env.SMS_PROVIDER,
+      key: process.env.SMS_API_KEY,
+      sender: process.env.SMS_SENDER_ID,
+      template: process.env.SMS_TEMPLATE_SIGNIN,
+      endpoint: process.env.SMS_ENDPOINT,
+    };
+
+    try {
+      process.env.SMS_PROVIDER = "msg91";
+      process.env.SMS_API_KEY = "test-authkey";
+      process.env.SMS_SENDER_ID = "LNDLNE";
+      process.env.SMS_TEMPLATE_SIGNIN = "template-123";
+      process.env.SMS_ENDPOINT = `http://127.0.0.1:${port}/api/v5/flow/`;
+
+      await sendSms({ to: "+919876543210", ...signInSms("424242", 10) });
+
+      const seen = captured as Captured | undefined;
+      const body = (seen?.body ?? {}) as Record<string, unknown>;
+      const recipient = (Array.isArray(body.recipients) ? body.recipients[0] : {}) as Record<
+        string,
+        unknown
+      >;
+
+      check(
+        "the SMS request carries what the provider needs",
+        seen?.headers.authkey === "test-authkey" &&
+          body.template_id === "template-123" &&
+          /* Both names, because their own docs disagree about which. */
+          body.flow_id === "template-123" &&
+          body.sender === "LNDLNE" &&
+          /* Country code, no plus — a leading + is silently undeliverable. */
+          recipient.mobiles === "919876543210" &&
+          recipient.VAR1 === "424242" &&
+          recipient.VAR2 === "10",
+        `authkey, both id fields, sender, ${String(recipient.mobiles)}, vars`,
+      );
+
+      /*
+         THE TRAP. MSG91 returns HTTP 200 with a failure in the body, so a
+         res.ok check would call an unregistered header or a wrong template
+         id a successful send — and the member would sit waiting for a
+         message the logs swear went out.
+      */
+      reply = { status: 200, json: { type: "error", message: "sender id not registered" } };
+      let refused = false;
+      let saidWhy = false;
+      try {
+        await sendSms({ to: "+919876543210", ...signInSms("424242", 10) });
+      } catch (err) {
+        refused = true;
+        saidWhy = String((err as Error).message).includes("sender id not registered");
+      }
+
+      check(
+        "a 200 that says \"error\" in the body is a failure, not a send",
+        refused && saidWhy,
+        `refused, and passed the provider's reason through`,
+      );
+
+      /* Half-configured is the other way to send nothing quietly. */
+      delete process.env.SMS_TEMPLATE_SIGNIN;
+      let caught = false;
+      try {
+        await sendSms({ to: "+919876543210", ...signInSms("424242", 10) });
+      } catch (err) {
+        caught = String((err as Error).message).includes("SMS_TEMPLATE_SIGNIN");
+      }
+      check(
+        "a half-configured provider refuses instead of sending nothing",
+        caught,
+        `names the missing variable`,
+      );
+    } finally {
+      if (saved.provider === undefined) delete process.env.SMS_PROVIDER;
+      else process.env.SMS_PROVIDER = saved.provider;
+      if (saved.key === undefined) delete process.env.SMS_API_KEY;
+      else process.env.SMS_API_KEY = saved.key;
+      if (saved.sender === undefined) delete process.env.SMS_SENDER_ID;
+      else process.env.SMS_SENDER_ID = saved.sender;
+      if (saved.template === undefined) delete process.env.SMS_TEMPLATE_SIGNIN;
+      else process.env.SMS_TEMPLATE_SIGNIN = saved.template;
+      if (saved.endpoint === undefined) delete process.env.SMS_ENDPOINT;
+      else process.env.SMS_ENDPOINT = saved.endpoint;
+      await new Promise<void>((done) => mock.close(() => done()));
+    }
   }
 
 
