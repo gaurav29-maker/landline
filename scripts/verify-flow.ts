@@ -3143,6 +3143,59 @@ async function main() {
   }
 
 
+  {
+    /*
+       TRUNCATE is the hole a row-level trigger leaves.
+
+       The append-only guard was written as FOR EACH ROW on update and
+       delete, which never fires for TRUNCATE — a statement-level operation
+       that would have emptied the whole audit trail in one line. Found by
+       reading the grants on the real database, where `anon` turned out to
+       hold TRUNCATE on every table, rather than by re-reading the trigger.
+
+       Judged on the outcome for the same reason as the others: the failed
+       statement leaves the pglite socket unable to report the next one.
+    */
+    const [truncActor] = await db
+      .insert(opsUsers)
+      .values({
+        email: `truncate-${Date.now()}@landline.test`,
+        name: "Truncate Probe",
+        passwordHash: "scrypt$1$1$1$00$00",
+      })
+      .returning();
+
+    await db.insert(opsEvents).values({
+      actorId: truncActor.id,
+      actorEmail: truncActor.email,
+      action: "probe.truncate",
+      entity: "booking",
+      entityId: "probe",
+    });
+
+    let truncateBlocked = false;
+    try {
+      await db.execute(sql`truncate table ops_events`);
+    } catch {
+      truncateBlocked = true;
+    }
+
+    let left: { id: string }[] = [];
+    for (let attempt = 0; attempt < 3 && left.length === 0; attempt++) {
+      left = await db
+        .select({ id: opsEvents.id })
+        .from(opsEvents)
+        .where(eq(opsEvents.actorId, truncActor.id));
+    }
+
+    check(
+      "the audit trail cannot be emptied with TRUNCATE either",
+      left.length === 1,
+      `event survived; refusal reported: ${truncateBlocked}`,
+    );
+  }
+
+
   console.log(`\n  ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }

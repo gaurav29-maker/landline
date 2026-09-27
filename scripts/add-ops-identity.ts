@@ -81,6 +81,29 @@ async function main() {
       for each row execute function ops_events_append_only()
   `);
 
+  /*
+     TRUNCATE needs its own trigger.
+
+     The one above is FOR EACH ROW, and TRUNCATE is a statement-level
+     operation that never fires a row trigger — so an append-only table
+     could still be emptied in a single statement. Found by reading the
+     grants on a real database rather than by assuming the first trigger
+     covered it.
+  */
+  await db.execute(sql`
+    create or replace function ops_events_no_truncate() returns trigger as $$
+    begin
+      raise exception 'ops_events is append-only (attempted TRUNCATE)';
+    end;
+    $$ language plpgsql
+  `);
+  await db.execute(sql`drop trigger if exists ops_events_no_truncate on ops_events`);
+  await db.execute(sql`
+    create trigger ops_events_no_truncate
+      before truncate on ops_events
+      for each statement execute function ops_events_no_truncate()
+  `);
+
   console.log("ops_users and ops_events ready; ops_events is append-only");
 }
 
