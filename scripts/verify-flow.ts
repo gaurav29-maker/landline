@@ -21,6 +21,7 @@ import {
   opsUsers,
   opsEvents,
   memberSessions,
+  expertSessions,
 } from "../lib/db/schema";
 import {
   startSession,
@@ -30,6 +31,12 @@ import {
   FRESH_MINUTES,
 } from "../lib/member-session";
 import { readPayer, contactMatches } from "../lib/payer";
+import {
+  startExpertSession,
+  revokeExpertSession,
+  revokeAllExpertSessions,
+  activeExpertSessions,
+} from "../lib/expert-session";
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { issueCodeTo } from "../lib/member-code";
 import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
@@ -2917,6 +2924,93 @@ async function main() {
       "signing out ends that session on the server, and only that one",
       open.length === 2 && goneRes.status === 307 && stillRes.status === 200,
       `2 open; signed-out device ${goneRes.status}, other device ${stillRes.status}`,
+    );
+  }
+
+
+  {
+    /*
+       An expert's sign-out has to end the session, not forget the cookie.
+
+       This was the last stateless token on the site. Sign-out deleted the
+       cookie and the signature stayed good for thirty days, so a borrowed or
+       lost machine could not be cut off — on the console that reads other
+       people's portfolios, which is a stronger reason than the member side
+       had, not a weaker one.
+
+       JUDGED ON WHAT IS SERVED, NOT ON THE STATUS CODE.
+
+       app/expert/loading.tsx puts a Suspense boundary in front of the page,
+       so a revoked session gets 200 and a static skeleton, and the redirect
+       happens inside the stream. That is cosmetic — no expert data is ever
+       rendered — but it means a status check here would be testing Next's
+       streaming rather than the guarantee. The guarantee is: nothing of
+       theirs comes back, and the stream ends at the login page.
+    */
+    const [liveExpert] = await db
+      .select({ id: experts.id, name: experts.displayName })
+      .from(experts)
+      .where(eq(experts.status, "live"))
+      .limit(1);
+
+    const keep = await startExpertSession(liveExpert.id);
+    const ended = await startExpertSession(liveExpert.id);
+    const openBefore = (await activeExpertSessions(liveExpert.id)).length;
+
+    const working = await fetch(`${BASE}/expert`, {
+      headers: { cookie: `bp_expert=${keep.value}` },
+    }).then((r) => r.text());
+
+    /* Sign out of the second device, the way signOutExpert does. */
+    const [endedRow] = await db
+      .select()
+      .from(expertSessions)
+      .where(eq(expertSessions.expertId, liveExpert.id))
+      .orderBy(desc(expertSessions.createdAt))
+      .limit(1);
+    await revokeExpertSession(liveExpert.id, endedRow.id);
+
+    const afterOut = await fetch(`${BASE}/expert`, {
+      headers: { cookie: `bp_expert=${ended.value}` },
+    }).then((r) => r.text());
+    const stillIn = await fetch(`${BASE}/expert`, {
+      headers: { cookie: `bp_expert=${keep.value}` },
+    }).then((r) => r.text());
+
+    check(
+      "signing out ends an expert session on the server, and only that one",
+      openBefore >= 2 &&
+        working.includes(liveExpert.name) &&
+        !afterOut.includes(liveExpert.name) &&
+        afterOut.includes("/expert/login") &&
+        stillIn.includes(liveExpert.name),
+      `signed-out device serves nothing and lands on login; other device still works`,
+    );
+  }
+
+  {
+    /*
+       And the lost-laptop button: every session at once. The expert console
+       has no device list — an expert has few, and after losing one the only
+       action that matters is all of them.
+    */
+    const [anyExpert] = await db
+      .select({ id: experts.id })
+      .from(experts)
+      .where(eq(experts.status, "live"))
+      .limit(1);
+
+    await startExpertSession(anyExpert.id);
+    await startExpertSession(anyExpert.id);
+    const before = (await activeExpertSessions(anyExpert.id)).length;
+
+    await revokeAllExpertSessions(anyExpert.id);
+    const after = (await activeExpertSessions(anyExpert.id)).length;
+
+    check(
+      "an expert can end every session at once",
+      before >= 2 && after === 0,
+      `${before} open, then ${after}`,
     );
   }
 

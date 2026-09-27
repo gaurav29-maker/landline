@@ -2,10 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { EXPERT_COOKIE } from "@/lib/expert-auth";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { availabilityRules, bookings, experts } from "@/lib/db/schema";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import {
+  currentExpertId,
+  readExpertSession,
+  revokeAllExpertSessions,
+  revokeExpertSession,
+} from "@/lib/expert-session";
 import { disconnect as disconnectGoogleAccount } from "@/lib/google";
 import { recordPayout } from "@/lib/payouts";
 
@@ -15,7 +22,7 @@ import { recordPayout } from "@/lib/payouts";
  * An expert must never be able to touch another's schedule by id.
  */
 async function requireExpert(): Promise<string> {
-  const id = await verifyExpertSession((await cookies()).get(EXPERT_COOKIE)?.value);
+  const id = await currentExpertId();
   if (!id) throw new Error("Not signed in");
   return id;
 }
@@ -33,8 +40,42 @@ export async function disconnectGoogle() {
   revalidatePath("/expert/profile");
 }
 
+/**
+ * Sign out, and mean it.
+ *
+ * This deleted the cookie and stopped there, which was all it could do
+ * while the token was stateless: the signature stayed valid for thirty
+ * days whatever the browser did with it. On a borrowed or lost machine
+ * that made the button a gesture.
+ *
+ * Revoke first, then drop the cookie. A failed revoke leaves the expert
+ * signed in and able to try again, which is recoverable; the other order
+ * leaves them looking signed out with a live session they can no longer
+ * reach.
+ *
+ * Scoped to this device. Signing out of a laptop must not end the session
+ * on the phone that has tomorrow's schedule on it — signOutExpertEverywhere
+ * is the deliberate version of that.
+ */
 export async function signOutExpert() {
+  const session = await readExpertSession();
+  if (session) await revokeExpertSession(session.expertId, session.sessionId);
+
   (await cookies()).delete(EXPERT_COOKIE);
+}
+
+/**
+ * End every session this expert has open.
+ *
+ * The remedy for a machine they no longer have. Members get a list of
+ * devices to pick from; an expert has far fewer, and the one action that
+ * matters after losing one is all of them at once.
+ */
+export async function signOutExpertEverywhere() {
+  const expertId = await requireExpert();
+  await revokeAllExpertSessions(expertId);
+  (await cookies()).delete(EXPERT_COOKIE);
+  redirect("/expert/login?out=1");
 }
 
 /** The link for ONE session. Never the expert's own room — see schema. */

@@ -5,11 +5,11 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { experts } from "@/lib/db/schema";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import { activeExpertSessions, currentExpertId } from "@/lib/expert-session";
 import { rethrowIfNavigation } from "@/lib/nav";
 import { rupees } from "@/lib/format";
 import ExpertBar from "@/components/expert/ExpertBar";
-import { disconnectGoogle, setOwnPaused, updateExpertProfile } from "../actions";
+import { disconnectGoogle, setOwnPaused, signOutExpertEverywhere, updateExpertProfile } from "../actions";
 import { googleConfigured, isConnected } from "@/lib/google";
 
 export const metadata: Metadata = { title: "Your profile — Landline", robots: { index: false } };
@@ -21,7 +21,8 @@ export default async function ExpertProfilePage({
   searchParams: Promise<{ google?: string }>;
 }) {
   const { google: googleResult } = await searchParams;
-  const expertId = await verifyExpertSession((await cookies()).get(EXPERT_COOKIE)?.value);
+  const expertId = await currentExpertId();
+  const sessionCount = expertId ? (await activeExpertSessions(expertId)).length : 0;
   if (!expertId) redirect("/expert/login");
 
   let me;
@@ -236,6 +237,37 @@ export default async function ExpertProfilePage({
             </form>
           </div>
         )}
+      </section>
+
+      {/*
+        The remedy for a machine you no longer have.
+
+        Members get a list of devices to pick from, because they have more of
+        them and the interesting question is "which of these is not me". An
+        expert has few, and the only action that matters after losing one is
+        all of them at once — so this is the button rather than a list.
+
+        It asks for nothing extra on purpose. Everything else here guards
+        against somebody who should not be signed in; this guards against the
+        possibility that they already are, and the worst an intruder achieves
+        by pressing it is telling the real expert something is wrong.
+      */}
+      <section className="xp-block">
+        <h2>Signed-in devices</h2>
+        <div className="xp-pause">
+          <p className="bp-muted">
+            {sessionCount === 1
+              ? "This is the only device signed in to your console."
+              : `${sessionCount} devices are signed in to your console.`}{" "}
+            Lost a laptop or used somebody else&rsquo;s machine? End them all and sign in
+            again with a fresh link.
+          </p>
+          <form action={signOutExpertEverywhere}>
+            <button className="ops-btn" type="submit">
+              End every session
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   );

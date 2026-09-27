@@ -746,3 +746,40 @@ export const memberSessions = pgTable(
   },
   (t) => [index("member_sessions_customer_idx").on(t.customerId)],
 );
+
+
+/**
+ * An expert's signed-in devices.
+ *
+ * The same change member_sessions was, made for the same reason and a turn
+ * later. The expert token was stateless — the cookie said "expert X, expires
+ * then", the server checked the signature, and nothing was stored. So "sign
+ * out" deleted a cookie and the token stayed valid for thirty days, which
+ * meant a borrowed or lost machine could not be cut off at all.
+ *
+ * An expert reads other people's portfolios. That is a stronger reason for
+ * this than the member side had, not a weaker one, and it is only in second
+ * place because members outnumber experts.
+ *
+ * No verifiedAt here, deliberately. Members have one because two screens ask
+ * how recently identity was proven; the expert console has no such screen, and
+ * a column nothing reads is a claim about enforcement that is not true.
+ */
+export const expertSessions = pgTable(
+  "expert_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    expertId: uuid("expert_id")
+      .notNull()
+      /* Dies with the expert, like a member's session dies with them. */
+      .references(() => experts.id, { onDelete: "cascade" }),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    /* Recognisable, never authoritative — see the member table's note. */
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    /** Set, never deleted: a revoked session is evidence that it existed. */
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("expert_sessions_expert_idx").on(t.expertId)],
+);

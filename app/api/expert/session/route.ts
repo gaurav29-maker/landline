@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { EXPERT_COOKIE, mintExpertSession, verifyExpertLink } from "@/lib/expert-auth";
+import { EXPERT_COOKIE, verifyExpertLink } from "@/lib/expert-auth";
+import { startExpertSession } from "@/lib/expert-session";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   if (!expertId) return NextResponse.redirect(`${base}/expert/login?expired=1`);
 
-  const { value, expiresAt } = await mintExpertSession(expertId);
+  const { value, expiresAt } = await startExpertSession(expertId);
   const res = NextResponse.redirect(`${base}/expert`);
   res.cookies.set(EXPERT_COOKIE, value, {
     httpOnly: true,

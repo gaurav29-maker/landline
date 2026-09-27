@@ -76,10 +76,30 @@ export function verifyExpertLink(token: string | undefined | null) {
   return verify(token, "link");
 }
 
-export async function mintExpertSession(expertId: string) {
+/**
+ * The cookie names a SESSION, not an expert.
+ *
+ * It used to carry the expert id directly, which made the token complete on
+ * its own: nothing stored, so nothing revocable. Signing out deleted a
+ * cookie while the token stayed good for thirty days, which is no use at all
+ * on a machine somebody no longer has.
+ *
+ * expert_sessions holds whose it is and whether it is still allowed.
+ * Everything that reads it lives in lib/expert-session, because this module
+ * is imported by middleware and must not reach a database.
+ */
+export async function mintExpertSession(sessionId: string) {
   const expiresAt = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
-  return { value: await sign(expertId, expiresAt, "session"), expiresAt: new Date(expiresAt) };
+  return { value: await sign(sessionId, expiresAt, "session"), expiresAt: new Date(expiresAt) };
 }
-export function verifyExpertSession(token: string | undefined | null) {
+
+/**
+ * The session id this cookie is for, by signature and expiry alone.
+ *
+ * Edge-safe and deliberately incomplete, exactly like the member one:
+ * middleware gets this, and the route asks the database whether that session
+ * is still allowed.
+ */
+export function readExpertSessionToken(token: string | undefined | null) {
   return verify(token, "session");
 }

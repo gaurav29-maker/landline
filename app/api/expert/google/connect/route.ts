@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import { currentExpertId } from "@/lib/expert-session";
 import { consentUrl, googleConfigured } from "@/lib/google";
 
 /**
@@ -11,7 +11,7 @@ import { consentUrl, googleConfigured } from "@/lib/google";
  * in the request, so one expert cannot start a connection for another.
  */
 export async function GET() {
-  const expertId = await verifyExpertSession((await cookies()).get(EXPERT_COOKIE)?.value);
+  const expertId = await currentExpertId();
   if (!expertId) return NextResponse.redirect(new URL("/expert/login", process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"));
 
   if (!googleConfigured()) {

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, experts, intakeSubmissions } from "@/lib/db/schema";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import { currentExpertId } from "@/lib/expert-session";
 import { istDateTime } from "@/lib/format";
 import ExpertBar from "@/components/expert/ExpertBar";
 import { rethrowIfNavigation } from "@/lib/nav";
@@ -32,7 +32,7 @@ type Intake = {
 };
 
 export default async function ExpertSchedule() {
-  const expertId = await verifyExpertSession((await cookies()).get(EXPERT_COOKIE)?.value);
+  const expertId = await currentExpertId();
   if (!expertId) redirect("/expert/login");
 
   let data;

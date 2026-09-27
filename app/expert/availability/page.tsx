@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { availabilityRules, experts } from "@/lib/db/schema";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import { currentExpertId } from "@/lib/expert-session";
 import { rethrowIfNavigation } from "@/lib/nav";
 import { addAvailability, removeAvailability } from "../actions";
 import ExpertBar from "@/components/expert/ExpertBar";
@@ -23,7 +23,7 @@ function hhmm(minutes: number): string {
 }
 
 export default async function Availability() {
-  const expertId = await verifyExpertSession((await cookies()).get(EXPERT_COOKIE)?.value);
+  const expertId = await currentExpertId();
   if (!expertId) redirect("/expert/login");
 
   let expert;

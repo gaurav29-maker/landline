@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OPS_COOKIE, sessionValid } from "@/lib/ops-auth";
 import { MEMBER_COOKIE, readSessionToken } from "@/lib/member-auth";
-import { EXPERT_COOKIE, verifyExpertSession } from "@/lib/expert-auth";
+import { EXPERT_COOKIE, readExpertSessionToken } from "@/lib/expert-auth";
 
 /**
  * Everything under /ops holds real customer data — names, emails and portfolio
@@ -31,7 +31,7 @@ export async function middleware(req: NextRequest) {
   // is the same shape as the member one but on its own cookie and scope.
   if (path === "/expert/login") return NextResponse.next();
   if (path.startsWith("/expert")) {
-    if (await verifyExpertSession(req.cookies.get(EXPERT_COOKIE)?.value)) {
+    if (await readExpertSessionToken(req.cookies.get(EXPERT_COOKIE)?.value)) {
       return NextResponse.next();
     }
     const url = req.nextUrl.clone();
