@@ -104,6 +104,19 @@ async function main() {
       for each statement execute function ops_events_no_truncate()
   `);
 
+  /*
+     Pin the search_path on both guard functions.
+
+     A function without one resolves unqualified names against whatever the
+     caller's search_path happens to be, which is a hijack route when somebody
+     can create objects in an earlier schema. These two only raise an
+     exception and reference nothing, so the exposure is theoretical — but
+     Supabase's linter flags it, and a warning nobody can close is a warning
+     everybody learns to scroll past.
+  */
+  await db.execute(sql`alter function ops_events_append_only() set search_path = ''`);
+  await db.execute(sql`alter function ops_events_no_truncate() set search_path = ''`);
+
   console.log("ops_users and ops_events ready; ops_events is append-only");
 }
 
