@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { bookings, expertPayouts } from "@/lib/db/schema";
-import { EXPERT_PAYOUT_PAISE } from "@/lib/constants";
+import { bookings, expertPayouts, expertProducts, experts } from "@/lib/db/schema";
+import { EXPERT_SHARE_BPS } from "@/lib/constants";
 
 /**
  * The expert payout ledger.
@@ -17,8 +17,9 @@ import { EXPERT_PAYOUT_PAISE } from "@/lib/constants";
  */
 
 /** What a session earns today. Read once, at the moment it is earned. */
-export function rateForSession(): number {
-  return EXPERT_PAYOUT_PAISE;
+export function rateForSession(sessionValuePaise: number): number {
+  /* Integer maths throughout: paise in, paise out, rounded once. */
+  return Math.round((sessionValuePaise * EXPERT_SHARE_BPS) / 10000);
 }
 
 /**
@@ -34,10 +35,48 @@ export function rateForSession(): number {
  * Never throws at the caller: closing a session must not fail because the
  * ledger had an opinion.
  */
+/**
+ * What this session is worth, for payout purposes.
+ *
+ * Product price, then the amount charged, then the expert's listed price.
+ * Each fallback exists for a real row: products are new, pass-covered
+ * bookings charge nothing, and a product deleted later should not strand
+ * a payout at zero.
+ */
+async function sessionValuePaise(booking: {
+  expertId: string;
+  amountPaise: number;
+  productId: string | null;
+}): Promise<number> {
+  if (booking.productId) {
+    const [product] = await db
+      .select({ pricePaise: expertProducts.pricePaise })
+      .from(expertProducts)
+      .where(eq(expertProducts.id, booking.productId))
+      .limit(1);
+    if (product) return product.pricePaise;
+  }
+
+  if (booking.amountPaise > 0) return booking.amountPaise;
+
+  const [expert] = await db
+    .select({ pricePaise: experts.pricePaise })
+    .from(experts)
+    .where(eq(experts.id, booking.expertId))
+    .limit(1);
+  return expert?.pricePaise ?? 0;
+}
+
 export async function recordPayout(bookingId: string): Promise<number | null> {
   try {
     const [booking] = await db
-      .select({ id: bookings.id, expertId: bookings.expertId, status: bookings.status })
+      .select({
+        id: bookings.id,
+        expertId: bookings.expertId,
+        status: bookings.status,
+        amountPaise: bookings.amountPaise,
+        productId: bookings.productId,
+      })
       .from(bookings)
       .where(eq(bookings.id, bookingId))
       .limit(1);
@@ -45,7 +84,22 @@ export async function recordPayout(bookingId: string): Promise<number | null> {
     if (!booking) return null;
     if (booking.status !== "completed" && booking.status !== "no_show") return null;
 
-    const amountPaise = rateForSession();
+    /*
+       WHAT THE SESSION IS WORTH, WHICH IS NOT WHAT THE CUSTOMER PAID.
+
+       A session covered by a pass or a bundle records amountPaise = 0,
+       because no money changed hands for that particular booking. Taking
+       a share of that would pay the expert nothing for an hour of real
+       work — the customer paid up front instead, and the expert is owed
+       the same either way.
+
+       So the product's price leads: it is what this session costs when
+       somebody buys it outright. The amount charged is the fallback for
+       bookings that predate products, and the expert's own price is the
+       last resort.
+    */
+    const sessionValue = await sessionValuePaise(booking);
+    const amountPaise = rateForSession(sessionValue);
 
     const inserted = await db
       .insert(expertPayouts)

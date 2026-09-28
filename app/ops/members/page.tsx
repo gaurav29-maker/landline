@@ -2,7 +2,8 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, memberships } from "@/lib/db/schema";
 import { istDateTime, rupees } from "@/lib/format";
-import { EXPERT_PAYOUT_PAISE, MEMBERSHIP_TIERS } from "@/lib/constants";
+import { EXPERT_SHARE_BPS, MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "@/lib/constants";
+import { rateForSession } from "@/lib/payouts";
 import NoDatabase from "@/components/ops/NoDatabase";
 
 export const dynamic = "force-dynamic";
@@ -43,13 +44,15 @@ async function load() {
 
     return rows.map(({ membership, customer }) => {
       const calls = used.get(membership.id) ?? 0;
-      const cost = calls * EXPERT_PAYOUT_PAISE;
+      /* A pass session is worth a single call, so that is what it costs. */
+      const perSession = rateForSession(SINGLE_CALL_PAISE);
+      const cost = calls * perSession;
       const margin = membership.amountPaise - cost;
       const daysLeft = Math.max(
         0,
         Math.ceil((membership.endsAt.getTime() - Date.now()) / 86_400_000),
       );
-      const breakEven = Math.floor(membership.amountPaise / EXPERT_PAYOUT_PAISE);
+      const breakEven = Math.floor(membership.amountPaise / perSession);
       return { membership, customer, calls, cost, margin, daysLeft, breakEven };
     });
   } catch {
@@ -72,8 +75,8 @@ export default async function OpsMembers() {
       <p className="ops-muted ops-lede">
         Passes are unlimited, so usage is not capped anywhere in the code. This page is where a
         member who costs more than they pay becomes visible — ideally before their renewal.
-        Expert cost is estimated at {rupees(EXPERT_PAYOUT_PAISE)} a session; set{" "}
-        <code>EXPERT_PAYOUT_PAISE</code> to the real figure or every number here is a guess.
+        Expert cost is {EXPERT_SHARE_BPS / 100}% of a session, so{" "}
+        {rupees(rateForSession(SINGLE_CALL_PAISE))} against a single call.
       </p>
 
       <div className="ops-tiles">

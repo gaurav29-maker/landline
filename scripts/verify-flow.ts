@@ -53,7 +53,7 @@ import { hashPassword, passwordMatches } from "../lib/ops-password";
 import { audited } from "../lib/ops-audit";
 import { CODE_MAX_ATTEMPTS, hashCode } from "../lib/member-auth";
 import { toE164 } from "../lib/phone";
-import { MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
+import { EXPERT_SHARE_BPS, MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
 import { openSlotsFor, openSlotsForMany } from "../lib/availability";
 import { runtimeConnection } from "../lib/db/connection";
 import { verifyBookingToken } from "../lib/tokens";
@@ -61,7 +61,7 @@ import robotsRoute from "../app/robots";
 import { googleCalendarTemplateUrl } from "../lib/meet";
 import { signState, verifyState, ensureMeetingLink } from "../lib/google";
 import { seal, open as unseal } from "../lib/secretbox";
-import { recordPayout, voidPayout, totalsForExpert } from "../lib/payouts";
+import { rateForSession, recordPayout, voidPayout, totalsForExpert } from "../lib/payouts";
 
 /**
  * Exercises the parts of the booking flow that need no Razorpay and no Resend.
@@ -2148,10 +2148,10 @@ async function main() {
    * Changing the split next quarter must not rewrite what somebody was owed
    * last quarter — the same reason bookings carry amountPaise.
    */
-  const savedRate = process.env.EXPERT_PAYOUT_PAISE;
+  const savedRate = process.env.EXPERT_SHARE_BPS;
   const beforeTotals = await totalsForExpert(expert.id);
   try {
-    process.env.EXPERT_PAYOUT_PAISE = "999999";
+    process.env.EXPERT_SHARE_BPS = "9900";
     const afterTotals = await totalsForExpert(expert.id);
     check(
       "changing the rate does not rewrite what was already earned",
@@ -2159,8 +2159,8 @@ async function main() {
       `${beforeTotals.pendingPaise} paise before and after the rate moved`,
     );
   } finally {
-    if (savedRate === undefined) delete process.env.EXPERT_PAYOUT_PAISE;
-    else process.env.EXPERT_PAYOUT_PAISE = savedRate;
+    if (savedRate === undefined) delete process.env.EXPERT_SHARE_BPS;
+    else process.env.EXPERT_SHARE_BPS = savedRate;
   }
 
 
@@ -3298,6 +3298,85 @@ async function main() {
       "a second product can exist, and hiding it stops it being bookable",
       visible?.minutes === 15 && listed && afterHide === null,
       `15-minute product listed, then hidden and refused`,
+    );
+  }
+
+
+  {
+    /*
+       The expert is paid a SHARE, of what the session is worth.
+
+       Two separate things, and the second is the one that bites. A flat
+       payout was indistinguishable from a share while every session cost
+       the same; products ended that. And a share of the amount CHARGED
+       would pay nothing for a pass-covered session, which records
+       amountPaise = 0 because the customer paid up front — an hour of work
+       is owed the same either way.
+    */
+    const cheap = rateForSession(199900);
+    const dear = rateForSession(549900);
+
+    check(
+      "the payout is a share of the session, not a flat fee",
+      cheap === Math.round((199900 * EXPERT_SHARE_BPS) / 10000) &&
+        dear === Math.round((549900 * EXPERT_SHARE_BPS) / 10000) &&
+        /* The thing a flat rate got wrong: cheaper session, smaller payout. */
+        cheap < dear &&
+        /* And never more than the session is worth. */
+        cheap < 199900 &&
+        dear < 549900,
+      `1,999 -> ${cheap}, 5,499 -> ${dear} paise`,
+    );
+  }
+
+  {
+    /*
+       A pass-covered session pays the expert properly.
+
+       The booking charged nothing, so the payout has to come from what the
+       session is worth rather than what changed hands. Driven through
+       recordPayout so it is the real resolution order being tested, not a
+       restatement of it.
+    */
+    const [passExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.status, "live"))
+      .limit(1);
+
+    const [passCustomer] = await db
+      .insert(customers)
+      .values({
+        email: `payout-${Date.now()}@example.in`,
+        name: "Payout Tester",
+        phone: toE164(`88${String(Date.now()).slice(-8)}`),
+      })
+      .returning();
+
+    const product = await defaultProduct(passExpert.id);
+    const when = new Date(Date.now() + 90 * 86_400_000);
+
+    const [covered] = await db
+      .insert(bookings)
+      .values({
+        expertId: passExpert.id,
+        customerId: passCustomer.id,
+        startsAt: when,
+        endsAt: new Date(when.getTime() + 45 * 60_000),
+        status: "completed",
+        product: "membership_call",
+        productId: product?.id ?? null,
+        /* Covered by a pass: no money changed hands for this booking. */
+        amountPaise: 0,
+      })
+      .returning();
+
+    const paid = await recordPayout(covered.id);
+
+    check(
+      "a pass-covered session still pays the expert",
+      paid !== null && paid > 0 && paid === rateForSession(product?.pricePaise ?? 0),
+      `charged 0, expert earned ${paid} paise`,
     );
   }
 

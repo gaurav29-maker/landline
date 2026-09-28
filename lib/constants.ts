@@ -38,23 +38,30 @@ export const MEMBERSHIP_TIERS = {
 export type MembershipTierName = keyof typeof MEMBERSHIP_TIERS;
 
 /**
- * What an expert is paid per session.
+ * The expert's cut, in basis points. 8000 = 80%.
  *
- * THIS IS A PLACEHOLDER — the real split has not been decided. Set
- * EXPERT_PAYOUT_PAISE in the environment before the first session completes.
+ * A SHARE, NOT A FLAT AMOUNT, and that is not tidying for its own sake. It
+ * used to be a fixed number of paise, which is indistinguishable from a share
+ * for exactly as long as every session costs the same. Products ended that:
+ * an expert can now sell a ₹5,499 audit and a ₹1,999 second opinion, and a
+ * flat ₹4,399 payout would have paid them more than the customer paid for the
+ * shorter one.
  *
- * It is NOT only a display figure, whatever this comment used to say. It is
- * read by rateForSession() and written into expert_payouts the moment a
- * session is marked complete, which is what an expert is then owed. And it is
- * frozen there on purpose — the suite proves that changing this rate never
- * rewrites what was already earned, because somebody who worked under the old
- * rate earned the old rate.
+ * Basis points rather than 0.8, because money and binary floating point
+ * should not meet. 8000/10000 is exact; 0.8 is not.
  *
- * Both halves of that are correct, and together they mean the first completed
- * session locks in whatever this number happens to be. Decide it before then,
- * not before launch.
+ * WHAT IT IS APPLIED TO is in lib/payouts: the product's price, not the
+ * amount charged. A session covered by a pass records amountPaise = 0, and a
+ * share of nothing is not what an expert is owed for an hour of work.
+ *
+ * Read by rateForSession() and written into expert_payouts the moment a
+ * session is marked complete. Frozen there on purpose — the suite proves
+ * changing this never rewrites what was already earned, because somebody who
+ * worked under the old rate earned the old rate. So the first completed
+ * session locks in whatever this is; override with EXPERT_SHARE_BPS before
+ * then, not before launch.
  */
-export const EXPERT_PAYOUT_PAISE = Number(process.env.EXPERT_PAYOUT_PAISE ?? 220000);
+export const EXPERT_SHARE_BPS = Number(process.env.EXPERT_SHARE_BPS ?? 8000);
 
 /**
  * A pass is bought outright, not auto-renewed, so a member has to actively
