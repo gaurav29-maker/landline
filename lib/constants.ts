@@ -38,10 +38,21 @@ export const MEMBERSHIP_TIERS = {
 export type MembershipTierName = keyof typeof MEMBERSHIP_TIERS;
 
 /**
- * What an expert is paid per session, used only to estimate margin in the ops
- * console. THIS IS A PLACEHOLDER — the real split has not been decided. Set
- * EXPERT_PAYOUT_PAISE in the environment once it is, or every margin figure
- * below is fiction.
+ * What an expert is paid per session.
+ *
+ * THIS IS A PLACEHOLDER — the real split has not been decided. Set
+ * EXPERT_PAYOUT_PAISE in the environment before the first session completes.
+ *
+ * It is NOT only a display figure, whatever this comment used to say. It is
+ * read by rateForSession() and written into expert_payouts the moment a
+ * session is marked complete, which is what an expert is then owed. And it is
+ * frozen there on purpose — the suite proves that changing this rate never
+ * rewrites what was already earned, because somebody who worked under the old
+ * rate earned the old rate.
+ *
+ * Both halves of that are correct, and together they mean the first completed
+ * session locks in whatever this number happens to be. Decide it before then,
+ * not before launch.
  */
 export const EXPERT_PAYOUT_PAISE = Number(process.env.EXPERT_PAYOUT_PAISE ?? 220000);
 
