@@ -263,8 +263,8 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
                 rather than at the summary.
               </li>
               <li>
-                <b>They read it before you meet.</b> Your expert opens the call already knowing the
-                book.
+                <b>It is on their screen.</b> Your expert has the whole book in front of them for
+                the session, so you are not reciting it from memory.
               </li>
               <li>
                 <b>{SLOT_MINUTES} minutes, one to one.</b> You ask. They read the position back to

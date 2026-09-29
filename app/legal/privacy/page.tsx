@@ -48,7 +48,8 @@ export default function Privacy() {
         </li>
         <li>
           <strong>Your portfolio summary, goals, risk comfort and questions</strong> — so the expert
-          arrives already knowing your situation. This is the point of the intake form.
+          has your situation in front of them during the session. This is the point of the intake
+          form.
         </li>
         <li>
           <strong>Payment records</strong> — the amount, the time and Razorpay&rsquo;s reference for it.

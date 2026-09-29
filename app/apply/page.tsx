@@ -22,9 +22,9 @@ export default function Apply() {
           <h1 className="doc-name">Be useful, and paid, without taking on a client.</h1>
           <p className="doc-lede">
             People arrive having already written down what they hold and what they are worried
-            about. You read it before the call, spend {SLOT_MINUTES} minutes telling them what you
-            see in it, and that is the whole job. No mandate, no onboarding, no ongoing obligation
-            to anybody.
+            about. It is on your screen when the call opens, you spend {SLOT_MINUTES} minutes going
+            through it with them, and that is the whole job. No mandate, no onboarding, no ongoing
+            obligation to anybody.
           </p>
 
           {/*
@@ -47,9 +47,9 @@ export default function Apply() {
                 takes one click and hides you from the site immediately.
               </li>
               <li>
-                <b>They come prepared.</b> Holdings and the actual question are in your hands before
-                the call, so you spend the time on the problem instead of twenty minutes finding out
-                what it is.
+                <b>They come prepared.</b> Holdings and the actual question are on your screen for
+                the session, so you spend the time on the problem instead of twenty minutes finding
+                out what it is.
               </li>
               <li>
                 <b>Nothing to sell.</b> You are not distributing a product, and no part of your pay

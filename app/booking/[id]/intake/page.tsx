@@ -62,7 +62,7 @@ function IntakeForm({ id }: { id: string }) {
     return (
       <div className="panel">
         <h1>Thank you — that is everything.</h1>
-        <p>Your expert will read this before the call.</p>
+        <p>Your expert has this in front of them on the call.</p>
         <p className="muted">
           You can change any of it up until the session starts — come back to this page and send it
           again.

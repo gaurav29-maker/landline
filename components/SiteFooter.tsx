@@ -35,7 +35,7 @@ export default function SiteFooter({ onLanding = false }: { onLanding?: boolean 
           */}
           <p>
             <b>{BRAND_TAGLINE}</b> You pick the person and you pick the
-            time, and they have read your portfolio before you speak. No forwarded screenshot,
+            time, and your holdings are in front of them while you talk. No forwarded screenshot,
             no broadcast channel, nobody in between.
           </p>
         </div>

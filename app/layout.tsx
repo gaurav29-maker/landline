@@ -4,7 +4,7 @@ import { sitePublic } from "@/lib/launch";
 
 const TITLE = "Landline — book a market expert to read your portfolio";
 const DESCRIPTION =
-  "Book an experienced market professional directly. They read your portfolio before you meet, and tell you what they actually see in it.";
+  "Book an experienced market professional directly. You send your holdings ahead so they are in front of your expert for the session, and they tell you what they actually see in them.";
 
 /**
  * `metadataBase` is what turns the relative image paths below into the

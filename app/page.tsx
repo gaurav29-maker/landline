@@ -473,7 +473,7 @@ export default async function Home() {
               one call &middot; {SLOT_MINUTES} minutes &middot; video
             </p>
             <ul>
-              <li>An expert who has read your portfolio before you speak</li>
+              <li>An expert with your holdings in front of them for the call</li>
               <li>A specific question, a sector, or a second opinion</li>
               <li>What they saw, written up afterwards and yours to keep</li>
             </ul>
@@ -627,9 +627,17 @@ export default async function Home() {
             Was "You book. They look. You decide."
 
             "Look" was the problem. Every other line on this site says READ —
-            the audit section, step 05, the page title — because reading the
-            portfolio before the call is the whole product. "Look" is a glance,
-            and it was the last verb before the two buttons.
+            the audit section, step 05, the page title — because the read is
+            the whole product. "Look" is a glance, and it was the last verb
+            before the two buttons.
+
+            READ ON THE CALL, not before it. The site used to promise in nine
+            places that the expert arrived having already been through your
+            portfolio, which was never something we could make true: what an
+            expert does with the intake before the session is their business,
+            and the session is where the work happens. What the software
+            actually guarantees is that the intake is on their screen for the
+            call, so that is what the copy says now.
 
             "You book" and "You decide" described the process for the fourth
             time on one page, after the six steps and the FAQ have both covered

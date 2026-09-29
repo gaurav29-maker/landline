@@ -123,8 +123,9 @@ export function customerConfirmation(args: {
         ${args.amountPaise > 0 ? `Paid ${rupees(args.amountPaise)}` : "Included in your plan"}
         ${args.meetingUrl ? `<br><a href="${args.meetingUrl}">Join link</a>` : ""}
       </p>
-      <p><strong>One thing before the call.</strong> Fill in the short intake form so
-         your expert arrives having already looked at your holdings:</p>
+      <p><strong>One thing before the call.</strong> Fill in the short intake form so your
+         holdings are in front of your expert while you talk, instead of being described from
+         memory:</p>
       <p><a href="${intakeUrl(args.bookingId)}"
             style="display:inline-block;background:#3E6AE1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Fill the intake form</a></p>

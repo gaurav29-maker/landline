@@ -258,7 +258,7 @@ export default async function MemberConsole({
                     <>
                       <span className="pill warn">intake not sent</span>
                       <span className="bp-muted">
-                        {b.expertName.split(" ")[0]} reads it before the call.
+                        {b.expertName.split(" ")[0]} will have it on the call.
                       </span>
                       <a
                         className="ops-link"

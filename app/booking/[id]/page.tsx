@@ -108,13 +108,13 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
 
           {data.intakeDone ? (
             <p className="muted">
-              Your intake form is in. Your expert will read it before the call.
+              Your intake form is in. Your expert has it in front of them on the call.
             </p>
           ) : (
             <>
               <p>
-                One thing left — the short intake form. It is what lets your expert arrive having
-                already looked at your holdings.
+                One thing left — the short intake form. It is what puts your holdings in front of
+                your expert for the call, instead of you describing them from memory.
               </p>
               <a className="b b-fill" href={data.intakePath}>
                 Fill the intake form
