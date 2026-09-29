@@ -5505,9 +5505,7 @@
      One size means one declaration, applied to everything rather than to a
      list of components somebody has to keep up to date.
   */
-  .site-dark.os *,
-  .site-dark.os h1, .site-dark.os h2, .site-dark.os h3, .site-dark.os p, .site-dark.os a, .site-dark.os b, .site-dark.os em, .site-dark.os small,
-  .site-dark.os button, .site-dark.os input, .site-dark.os select, .site-dark.os textarea, .site-dark.os dt, .site-dark.os dd {
+  .site-dark.os *:not(.signin):not(.signin *) {
     font-family: var(--os-face);
     font-size: var(--os-size);
     line-height: var(--os-lh);
@@ -5569,8 +5567,8 @@
   .site-dark.os .os-nav > span,
   .site-dark.os .os-nav .ops-signout,
   .site-dark.os .ops-btn,
-  .site-dark.os .b,
-  .site-dark.os .btn-primary,
+  .site-dark.os .b:not(.signin *),
+  .site-dark.os .btn-primary:not(.signin *),
   .site-dark.os .bp-day,
   .site-dark.os .bp-slot,
   .site-dark.os .pill {
@@ -5646,7 +5644,7 @@
   .site-dark.os .bp-field textarea:focus { outline: none; border-color: var(--ink-dark); }
 
   /* ---- links: underlined, never coloured ---- */
-  .site-dark.os a { color: var(--ink-dark); }
+  .site-dark.os a:not(.signin *) { color: var(--ink-dark); }
   .site-dark.os .ops-link,
   .site-dark.os .member-list-right a,
   .site-dark.os .member-intake a,
@@ -5703,3 +5701,27 @@
   */
   .site-dark.os .os-mark span,
   .site-dark.os .os-mark .mark-r { color: inherit; }
+
+  /*
+     THE SIGN-IN PAGE IS NOT THE CONSOLE.
+
+     It sits inside the member layout, so it wears .site-dark.os — but it
+     also carries .site, because it is the last page of the marketing site
+     rather than the first page of the console. Nobody is signed in yet;
+     there is no chrome, no data, nothing to operate. It is a door.
+
+     The one-size system ran straight through it and took the serif
+     heading down to 10px, flattened the sub-line into it and turned the
+     Send code button into a grey capsule — a door that looked like a
+     dashboard. The rules above now stop at .signin, and this restates the
+     site's own type because the page still inherits from the .os wrapper.
+
+     Tokens need no restating: .site redeclares them on this element, so
+     the colours were always the site's.
+  */
+  .site-dark.os .signin {
+    font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: normal;
+  }
