@@ -37,6 +37,7 @@ import {
   bookableProduct,
   changeProductPrice,
   defaultProduct,
+  ensureDefaultProduct,
 } from "../lib/products";
 import http from "node:http";
 import { sendSms, signInSms } from "../lib/sms";
@@ -1396,6 +1397,164 @@ async function main() {
     `${bgApp.background.length} characters`,
   );
   await db.delete(expertApplications).where(eq(expertApplications.id, bgApp.id));
+
+  /*
+   * ---- what the applicant asked to be paid ----
+   *
+   * The form lets an applicant propose their own rate, and approving is what
+   * turns that proposal into a price. Three things have to hold for that to be
+   * trustworthy, and each of them has been wrong at some point:
+   *
+   *   - blank has to be null, not zero. Zero is a free session, which is a
+   *     different product nobody has decided to offer; null is 'they did not
+   *     say'. A coercion that turns an empty field into 0 would put somebody
+   *     on a rate of nothing and make it look deliberate.
+   *
+   *   - the number has to survive the round trip, in paise.
+   *
+   *   - and the approved expert has to end up with something to sell. This is
+   *     the one that was actually broken: ensureDefaultProduct existed and
+   *     nothing called it, so a newly approved expert had a price and no
+   *     product, and the hold route turned every customer away.
+   */
+  const askedPaise = 812300;
+  const [askApp] = await db
+    .insert(expertApplications)
+    .values({
+      name: "Priced Applicant",
+      email: `ask-${Date.now()}@example.in`,
+      headline: "asked for their own rate",
+      bio: "asked for their own rate",
+      background: "Ran a book, wants to be paid like it.",
+      specialties: ["portfolio_audit"],
+      yearsExperience: 11,
+      askedPricePaise: askedPaise,
+    })
+    .returning();
+
+  const [blankApp] = await db
+    .insert(expertApplications)
+    .values({
+      name: "Unpriced Applicant",
+      email: `blank-${Date.now()}@example.in`,
+      headline: "left the rate alone",
+      bio: "left the rate alone",
+      background: "Happy with the standard rate.",
+      specialties: ["portfolio_audit"],
+      yearsExperience: 4,
+    })
+    .returning();
+
+  check(
+    "an applicant can ask for their own rate, and leaving it blank is not zero",
+    askApp.askedPricePaise === askedPaise && blankApp.askedPricePaise === null,
+    `asked ${askApp.askedPricePaise}, blank stored as ${blankApp.askedPricePaise}`,
+  );
+
+  /*
+     Approval, run in the shape the action runs it: the expert row and the
+     product in ONE transaction. That is not tidiness. On a separate
+     connection the product's foreign key is checked against an expert row
+     that has not committed yet, and the insert fails for an expert who
+     plainly exists — so this is the shape that proves the pair lands
+     together. A plain transaction rather than audited(): the event is
+     somebody else's test, and this one has no operator in scope yet.
+  */
+  const approvedPrice = askApp.askedPricePaise ?? SINGLE_CALL_PAISE;
+  const approved = await db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(experts)
+      .values({
+        slug: `asked-${Date.now()}`,
+        displayName: askApp.name,
+        initials: "PA",
+        headline: askApp.headline,
+        bio: askApp.bio,
+        background: askApp.background,
+        specialties: askApp.specialties,
+        yearsExperience: askApp.yearsExperience,
+        pricePaise: approvedPrice,
+        contactEmail: askApp.email,
+        status: "draft",
+      })
+      .returning();
+
+    await ensureDefaultProduct(created.id, approvedPrice, tx);
+    return created;
+  });
+
+  const soldAtApproval = await defaultProduct(approved.id);
+  check(
+    "approving at the rate they asked for gives them a product at that rate",
+    soldAtApproval !== null && soldAtApproval.pricePaise === askedPaise,
+    soldAtApproval
+      ? `one product at ${soldAtApproval.pricePaise}`
+      : "no product at all — the expert would be unbookable",
+  );
+
+  const bookableAtApproval = await bookableProduct(
+    approved.id,
+    soldAtApproval?.slug ?? "audit",
+  );
+  check(
+    "a newly approved expert is bookable rather than priced and empty",
+    bookableAtApproval !== null && bookableAtApproval.pricePaise === askedPaise,
+    bookableAtApproval
+      ? `the hold route would charge ${bookableAtApproval.pricePaise}`
+      : "the hold route would turn the customer away",
+  );
+
+  /* Run it twice: approval is a button two operators can both be looking at. */
+  await ensureDefaultProduct(approved.id, 111100);
+  const afterSecond = await activeProducts(approved.id);
+  check(
+    "creating the first product twice leaves one product at the first price",
+    afterSecond.length === 1 && afterSecond[0].pricePaise === askedPaise,
+    `${afterSecond.length} product(s) at ${afterSecond[0]?.pricePaise}`,
+  );
+
+  /*
+     The expert row caches a 'from' price for the listing. Approval writes
+     both of them from one number, so they agree without anything having to
+     sync afterwards — a listing that disagrees with the checkout is exactly
+     the drift that cached column risks.
+  */
+  const [approvedRow] = await db
+    .select({ pricePaise: experts.pricePaise })
+    .from(experts)
+    .where(eq(experts.id, approved.id))
+    .limit(1);
+  check(
+    "the listed price and the product price agree from the moment of approval",
+    approvedRow.pricePaise === askedPaise,
+    `listing ${approvedRow.pricePaise}, product ${soldAtApproval?.pricePaise}`,
+  );
+
+  /*
+     And a guard against the regression coming back. The behaviour above is
+     proved with the action's transaction body rather than the action itself,
+     because the action reads a cookie. So this reads the action: remove the
+     call and newly approved experts are unbookable again, and nothing else
+     in this suite would notice.
+  */
+  const approveSrc = fs.readFileSync("app/ops/actions.ts", "utf8");
+  check(
+    "the approval action is the thing that creates the product",
+    /ensureDefaultProduct\(created\.id, pricePaise, tx\)/.test(approveSrc),
+    "approveApplication calls it inside its own transaction",
+  );
+  check(
+    "approval uses the rate they asked for, falling back to the standard one",
+    /const pricePaise = application\.askedPricePaise \?\? SINGLE_CALL_PAISE;/.test(
+      approveSrc,
+    ),
+    "one number, used for the expert row and the product",
+  );
+
+  await db.delete(experts).where(eq(experts.id, approved.id));
+  await db
+    .delete(expertApplications)
+    .where(inArray(expertApplications.id, [askApp.id, blankApp.id]));
 
 
   // ---- 10. one open application per address ----

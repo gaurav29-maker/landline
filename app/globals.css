@@ -2745,6 +2745,8 @@
     white-space: pre-wrap;
   }
   .ops-application .ops-app-meta { margin: 8px 0 0; font-size: 12.5px; max-width: 68ch; }
+  .ops-application .ops-app-rate { margin-top: 14px; font-size: 13.5px; }
+  .ops-application .ops-app-rate b { color: var(--ink-dark); }
   .ops-app-actions {
     display: flex;
     align-items: center;

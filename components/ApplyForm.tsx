@@ -2,6 +2,13 @@
 
 import { useActionState } from "react";
 import { submitApplication, type ApplyState } from "@/app/apply/actions";
+import {
+  EXPERT_SHARE_BPS,
+  PRICE_MAX_PAISE,
+  PRICE_MIN_PAISE,
+  SINGLE_CALL_PAISE,
+} from "@/lib/constants";
+import { rupees } from "@/lib/format";
 
 const INITIAL: ApplyState = { ok: false };
 
@@ -59,6 +66,37 @@ export default function ApplyForm() {
           {err("yearsExperience") ? <em className="err">{err("yearsExperience")}</em> : null}
         </label>
       </div>
+
+      {/*
+        What they would like to charge.
+
+        Optional, with the standard rate as the placeholder so a blank field
+        reads as a default rather than a missing answer. Somebody with no view
+        on it can skip it; somebody who charges ₹12,000 elsewhere should not
+        accept ₹5,499 silently and find out afterwards.
+
+        A request, not a setting. The review sees it and approving is what
+        makes it real — said plainly underneath, so nobody is surprised in
+        either direction.
+      */}
+      <label className="f">
+        <span>
+          Your rate per session, in rupees <em>optional</em>
+        </span>
+        <input
+          name="askedRupees"
+          type="number"
+          min={PRICE_MIN_PAISE / 100}
+          max={PRICE_MAX_PAISE / 100}
+          placeholder={String(SINGLE_CALL_PAISE / 100)}
+        />
+        {err("askedRupees") ? <em className="err">{err("askedRupees")}</em> : null}
+      </label>
+      <p className="hint">
+        Leave it blank to take the standard {rupees(SINGLE_CALL_PAISE)}. You keep{" "}
+        {EXPERT_SHARE_BPS / 100}% of whatever it is, and you can change it yourself once you
+        are in.
+      </p>
 
       <label className="f">
         <span>One line, as it would appear on your card</span>

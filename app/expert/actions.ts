@@ -5,6 +5,7 @@ import { changeProductPrice, defaultProduct } from "@/lib/products";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { EXPERT_COOKIE } from "@/lib/expert-auth";
+import { PRICE_MAX_PAISE, PRICE_MIN_PAISE } from "@/lib/constants";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { availabilityRules, bookings, experts } from "@/lib/db/schema";
@@ -232,8 +233,6 @@ export async function removeAvailability(formData: FormData) {
  * says pausing takes one click — but draft to live stays a deliberate
  * decision by whoever did the verifying.
  */
-const PRICE_MIN_PAISE = 50_000;
-const PRICE_MAX_PAISE = 5_000_000;
 
 export async function updateExpertProfile(formData: FormData) {
   const expertId = await requireExpert();

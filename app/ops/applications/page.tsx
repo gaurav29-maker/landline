@@ -1,7 +1,9 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { expertApplications } from "@/lib/db/schema";
-import { istDateTime } from "@/lib/format";
+import { istDateTime, rupees } from "@/lib/format";
+import { EXPERT_SHARE_BPS, SINGLE_CALL_PAISE } from "@/lib/constants";
+import { rateForSession } from "@/lib/payouts";
 import NoDatabase from "@/components/ops/NoDatabase";
 import { approveApplication, rejectApplication } from "../actions";
 
@@ -42,9 +44,10 @@ export default async function OpsApplications() {
     <>
       <h1 className="ops-h1">Applications</h1>
       <p className="ops-muted ops-lede">
-        Approving creates the expert as <b>draft</b> and emails them a sign-in link. They set their
-        own hours and rate, and you publish them from Experts once they have. Nothing appears on the
-        site until you do.
+        Approving creates the expert as <b>draft</b> at the rate shown on their card, emails them a
+        sign-in link, and gives them one session to sell. They set their own hours and can change
+        the rate themselves from there, and you publish them from Experts once they have. Nothing
+        appears on the site until you do.
       </p>
 
       {open.length === 0 ? (
@@ -117,6 +120,48 @@ export default async function OpsApplications() {
                   <b>Note</b> {a.note}
                 </p>
               ) : null}
+
+              {/*
+                The rate, last thing before the buttons.
+
+                Approving writes this number onto the expert AND onto the first
+                product they will sell, so it is a decision, not a detail — it
+                belongs under the reviewer's thumb rather than up with the
+                contact line. The standard rate is spelled out when they left
+                the field blank, because blank and 5,499 approve to the same
+                price and nobody should have to remember that.
+
+                Their cut is shown next to it for the same reason: the number
+                the applicant cares about is what reaches them, and working it
+                out in your head at approval time is how somebody gets put on
+                a rate nobody intended.
+              */}
+              <p className="ops-app-meta ops-app-rate">
+                <b>Rate</b>{" "}
+                {a.askedPricePaise === null ? (
+                  <>
+                    {rupees(SINGLE_CALL_PAISE)}{" "}
+                    <span className="ops-muted">
+                      standard — they did not ask for one
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {rupees(a.askedPricePaise)}{" "}
+                    {a.askedPricePaise === SINGLE_CALL_PAISE ? (
+                      <span className="ops-muted">asked for, which is the standard rate</span>
+                    ) : (
+                      <span className="pill warn">
+                        asked for · standard is {rupees(SINGLE_CALL_PAISE)}
+                      </span>
+                    )}
+                  </>
+                )}{" "}
+                <span className="ops-muted">
+                  · they keep {rupees(rateForSession(a.askedPricePaise ?? SINGLE_CALL_PAISE))} of it (
+                  {EXPERT_SHARE_BPS / 100}%)
+                </span>
+              </p>
 
               <div className="ops-app-actions">
                 <form action={approveApplication}>

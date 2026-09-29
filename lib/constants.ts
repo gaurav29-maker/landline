@@ -64,6 +64,22 @@ export type MembershipTierName = keyof typeof MEMBERSHIP_TIERS;
 export const EXPERT_SHARE_BPS = Number(process.env.EXPERT_SHARE_BPS ?? 8000);
 
 /**
+ * What a session may be priced at, either end.
+ *
+ * Here rather than in one console, because three places now need the same
+ * answer: the application form where somebody proposes a rate, the expert
+ * console where they change it, and the ops console where it is reviewed.
+ * Three copies of a bound is three chances for them to disagree, and the
+ * one that disagrees is the one that lets a ₹5 session through.
+ *
+ * The floor is not zero on purpose. A free session is a different product
+ * with different tax and different expectations, and nobody has decided to
+ * offer one.
+ */
+export const PRICE_MIN_PAISE = 50_000;
+export const PRICE_MAX_PAISE = 5_000_000;
+
+/**
  * A pass is bought outright, not auto-renewed, so a member has to actively
  * decide to pay again. The prompt IS the renewal mechanism — without it they
  * simply lapse.

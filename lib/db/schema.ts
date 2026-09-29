@@ -464,6 +464,19 @@ export const expertApplications = pgTable(
     background: text("background").notNull().default(""),
     specialties: specialty("specialties").array().notNull(),
     yearsExperience: smallint("years_experience").notNull(),
+    /*
+       What they would like to charge, if they said.
+
+       A REQUEST, NOT A PRICE. It is what the applicant typed, kept exactly
+       as typed so the review can see it — approving is what turns it into
+       the price on their first product. Null means they left it blank and
+       take the standard rate.
+
+       Kept after approval rather than cleared: when an expert asks six
+       months later why they are on a particular rate, this column is the
+       answer.
+    */
+    askedPricePaise: integer("asked_price_paise"),
 
     /**
      * Asked at the door rather than after approval. Whether someone is

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { defaultProduct, syncExpertFromProducts } from "@/lib/products";
+import { defaultProduct, ensureDefaultProduct, syncExpertFromProducts } from "@/lib/products";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
@@ -311,6 +311,21 @@ export async function approveApplication(formData: FormData) {
   const taken = await db.select({ slug: experts.slug }).from(experts);
   const slug = uniqueSlug(application.name, taken.map((e) => e.slug));
 
+  /*
+     What they asked for, or the standard rate.
+
+     The applicant proposed a number on the form; approving is what makes it
+     a price. Bounds were checked when it was submitted, and they are the
+     same constants the expert console enforces, so nothing needs
+     re-validating here — but the audit event records it either way, because
+     'why is this expert on ₹8,000' is a question with an answer and this is
+     where the answer is written down.
+
+     One number, used for both the product and the cached price on the
+     expert row, so the two agree from the moment they exist.
+  */
+  const pricePaise = application.askedPricePaise ?? SINGLE_CALL_PAISE;
+
   const initials = application.name
     .split(/\s+/)
     .filter(Boolean)
@@ -330,7 +345,8 @@ export async function approveApplication(formData: FormData) {
         slug,
         sebiRegType: application.sebiRegType,
         sebiRegNumber: application.sebiRegNumber,
-        pricePaise: SINGLE_CALL_PAISE,
+        pricePaise,
+        priceAskedFor: application.askedPricePaise,
       },
     },
     async (tx) => {
@@ -345,13 +361,20 @@ export async function approveApplication(formData: FormData) {
           background: application.background,
           specialties: application.specialties,
           yearsExperience: application.yearsExperience,
-          pricePaise: SINGLE_CALL_PAISE,
+          pricePaise,
           sebiRegType: application.sebiRegType,
           sebiRegNumber: application.sebiRegNumber,
           contactEmail: application.email,
           status: "draft",
         })
         .returning();
+
+      /*
+         An expert with no product is not bookable: the hold route reads the
+         product to get the price and the duration, and finds nothing. Same
+         transaction as the expert row, so approval never half-happens.
+      */
+      await ensureDefaultProduct(created.id, pricePaise, tx);
 
       await tx
         .update(expertApplications)

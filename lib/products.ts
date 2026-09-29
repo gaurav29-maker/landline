@@ -22,6 +22,9 @@ import { SLOT_MINUTES } from "@/lib/slots";
 
 export type ExpertProduct = typeof expertProducts.$inferSelect;
 
+/** The connection, or a transaction on it — whichever the caller has. */
+type Db = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 /** The slug every expert's first product gets, from the days of one price. */
 export const DEFAULT_PRODUCT_SLUG = "audit";
 
@@ -119,17 +122,25 @@ export async function changeProductPrice(productId: string, pricePaise: number):
 }
 
 /**
- * Give an expert their first product, from the price they already had.
+ * Give an expert their first product, at the price they are going live on.
  *
- * Called when an expert is created and by the backfill. Idempotent on the
- * (expert, slug) unique index, so running it twice is a no-op rather than a
- * second identical product.
+ * Called the moment an expert is created — an expert without a product is
+ * not bookable, because the hold route asks for the product first and finds
+ * nothing. Idempotent on the (expert, slug) unique index, so running it
+ * twice is a no-op rather than a second identical product.
+ *
+ * TAKES THE TRANSACTION when there is one. Approval creates the expert and
+ * this product together; on a separate connection the foreign key would be
+ * checked against a row that has not committed yet, and the insert would
+ * fail for a product whose expert plainly exists. Passing the tx also
+ * means the pair rolls back as a pair.
  */
 export async function ensureDefaultProduct(
   expertId: string,
   pricePaise: number,
+  tx: Db = db,
 ): Promise<void> {
-  await db
+  await tx
     .insert(expertProducts)
     .values({
       expertId,

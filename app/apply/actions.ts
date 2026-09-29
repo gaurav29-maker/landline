@@ -6,6 +6,7 @@ import { z } from "zod";
 import { and, count, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { expertApplications } from "@/lib/db/schema";
+import { PRICE_MAX_PAISE, PRICE_MIN_PAISE } from "@/lib/constants";
 
 const Body = z.object({
   name: z.string().trim().min(2, "Tell us your name").max(120),
@@ -28,6 +29,26 @@ const Body = z.object({
     .max(600, "Keep it under 600 characters"),
   specialties: z.array(z.enum(["portfolio_audit", "fno_systematic"])).min(1, "Pick at least one"),
   yearsExperience: z.coerce.number().int().min(0).max(60),
+  /*
+     What they would like to charge, in rupees, optional.
+
+     Collected in rupees because that is what somebody thinks in, and
+     stored in paise because that is what everything downstream counts
+     in. An empty field is undefined rather than 0 — blank means 'you
+     decide', and zero would mean 'free', which is a different answer.
+  */
+  askedRupees: z
+    .union([z.literal(""), z.coerce.number()])
+    .optional()
+    .transform((v) => (v === "" || v === undefined ? undefined : v))
+    .refine(
+      (v) =>
+        v === undefined ||
+        (Number.isFinite(v) &&
+          v * 100 >= PRICE_MIN_PAISE &&
+          v * 100 <= PRICE_MAX_PAISE),
+      `A rate has to be between ₹${PRICE_MIN_PAISE / 100} and ₹${PRICE_MAX_PAISE / 100}`,
+    ),
   sebiRegType: z.enum(["ria", "ra", "none"]),
   sebiRegNumber: z.string().trim().max(60).optional(),
   links: z.string().trim().max(600).optional(),
@@ -86,6 +107,7 @@ export async function submitApplication(
     background: formData.get("background"),
     specialties: formData.getAll("specialties"),
     yearsExperience: formData.get("yearsExperience"),
+    askedRupees: formData.get("askedRupees"),
     sebiRegType: formData.get("sebiRegType"),
     sebiRegNumber: formData.get("sebiRegNumber") || undefined,
     links: formData.get("links") || undefined,
@@ -148,6 +170,8 @@ export async function submitApplication(
       background: data.background,
       specialties: data.specialties,
       yearsExperience: data.yearsExperience,
+      askedPricePaise:
+        data.askedRupees === undefined ? null : Math.round(data.askedRupees * 100),
       sebiRegType: data.sebiRegType,
       sebiRegNumber: data.sebiRegType === "none" ? null : (data.sebiRegNumber ?? null),
       links: data.links ?? null,
