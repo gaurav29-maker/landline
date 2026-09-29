@@ -4681,6 +4681,49 @@
     .site .nav-end { display: none; }
     .site .nav-aside .b-line { display: none; }
 
+    /*
+       ---- the phone nav is an object, not a band ----
+
+       After Palace: a capsule that fits its contents, centred, floating
+       clear of the top edge, over a page that scrolls under it.
+
+       The full-width bar was carrying a wordmark and a menu button and
+       600px of nothing between them, plus a rule across the screen to
+       separate that nothing from the page. On a phone a line across the
+       whole width reads as structure, and there was no structure — the
+       two things in it are the two things, and a shape that holds exactly
+       them says that better than a band does.
+
+       WHY STICKY AND NOT FIXED. Sticky keeps its height in the flow, so
+       the hero starts below the capsule instead of underneath it, and
+       nothing needs a matching top padding that somebody has to remember
+       to change. It floats once you scroll, which is the only moment the
+       floating means anything.
+
+       The ground stays on ::before, for the reason written where that
+       rule is: backdrop-filter on .nav itself would make it the
+       containing block for .nav-panel, which is fixed inset:0, and the
+       full-screen menu would become a menu the size of the capsule.
+    */
+    .site .nav {
+      width: fit-content;
+      margin: 12px auto 0;
+      padding: 0 8px 0 18px;
+      gap: 8px;
+      height: 56px;
+      top: max(12px, env(safe-area-inset-top, 0px));
+    }
+    .site .nav::before {
+      border-radius: 999px;
+      border-bottom: 0;
+      /* A rim so the capsule has an edge on a pale page, and a lift so it
+         reads as sitting above the words rather than printed on them. */
+      box-shadow: var(--nav-rim), var(--nav-lift);
+    }
+    /* Inside a shape that fits its contents, nothing may claim the slack. */
+    .site .nav-in { flex: 0 0 auto; }
+    .site .nav-mid { margin-right: 0; }
+
     .site .nav-burger { display: inline-grid; }
     .site .nav-panel { display: grid; }
 
