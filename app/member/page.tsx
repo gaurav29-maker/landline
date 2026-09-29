@@ -236,9 +236,14 @@ export default async function MemberConsole({
                 {/*
                   The intake was reachable only from the confirmation email.
                   Lose the email and there was no way to tell your expert what
-                  you hold — and them reading it beforehand is the premise of
-                  the session. The console knows this is the member's own
+                  you hold, and it is what puts the book on their screen for
+                  the call. The console knows this is the member's own
                   booking, so it can mint the same signed link the email did.
+
+                  The state is a pill and a link, and nothing else. A line of
+                  prose between them was explaining what "intake not sent"
+                  next to "Tell them what you hold" already says, nine times
+                  down one page.
                 */}
                 <p className="member-intake">
                   {b.intakeId ? (
@@ -257,9 +262,6 @@ export default async function MemberConsole({
                   ) : (
                     <>
                       <span className="pill warn">intake not sent</span>
-                      <span className="bp-muted">
-                        {b.expertName.split(" ")[0]} will have it on the call.
-                      </span>
                       <a
                         className="ops-link"
                         href={`/booking/${b.id}/intake?t=${signBookingToken(b.id)}`}
