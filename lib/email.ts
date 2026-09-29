@@ -91,7 +91,7 @@ const DISCLAIMER = `
  */
 const MASTHEAD = `
   <div style="border-bottom:1px solid #E4E8EF;padding-bottom:15px;margin-bottom:24px">
-    <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;color:#1A1A1A">land<span style="color:#1E61F0">line</span></div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:-0.02em;color:#1A1A1A">land<span style="color:#387ED1">line</span></div>
     <div style="font-size:12px;color:#6B6B6B;margin-top:4px">${BRAND_TAGLINE}</div>
   </div>`;
 
@@ -127,7 +127,7 @@ export function customerConfirmation(args: {
          holdings are in front of your expert while you talk, instead of being described from
          memory:</p>
       <p><a href="${intakeUrl(args.bookingId)}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Fill the intake form</a></p>
       <p style="font-size:13px;color:#6B6B6B">It asks for a summary of your holdings —
          never a login.</p>`),
@@ -163,7 +163,7 @@ export function intakeNudge(args: { customerName: string; startsAt: Date; bookin
       <p>Filling it in is what makes the session useful — otherwise the first fifteen
          minutes go on describing your portfolio out loud.</p>
       <p><a href="${intakeUrl(args.bookingId)}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Fill it in now</a></p>`),
   };
 }
@@ -186,7 +186,7 @@ export function reminder(args: {
       ${
         args.meetingUrl
           ? `<p><a href="${args.meetingUrl}"
-                  style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+                  style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                          border-radius:8px;text-decoration:none">Join the call</a></p>`
           : "<p>Your expert will send the join link shortly.</p>"
       }`),
@@ -219,7 +219,7 @@ export function memberSignInLink(args: { customerName: string; url: string }) {
       <p>Hi ${args.customerName}, here is your link into the Landline console.
          It works once and expires in 30 minutes.</p>
       <p><a href="${args.url}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Open my console</a></p>
       <p style="font-size:13px;color:#6B6B6B">If you did not ask for this, ignore it —
          nobody can get in without the link.</p>`),
@@ -233,7 +233,7 @@ export function emailChangeConfirm(args: { customerName: string; url: string }) 
       <p>Hi ${args.customerName}, someone asked to use this address for a Landline
          account. Confirm it and it becomes the address you sign in with.</p>
       <p><a href="${args.url}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Confirm this address</a></p>
       <p style="font-size:13px;color:#6B6B6B">The link expires in 30 minutes. If this
          was not you, ignore it — nothing changes unless the link is followed.</p>`),
@@ -247,7 +247,7 @@ export function expertSignInLink(args: { expertName: string; url: string }) {
       <p>Hi ${args.expertName}, here is your link into your Landline schedule.
          It works once and expires in 30 minutes.</p>
       <p><a href="${args.url}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Open my schedule</a></p>
       <p style="font-size:13px;color:#6B6B6B">If you did not ask for this, ignore it.</p>`),
   };
@@ -268,7 +268,7 @@ export function membershipWelcome(args: {
       <p>Sessions are unlimited for that whole period, with any expert on the
          platform. Book them from your console:</p>
       <p><a href="${args.consoleUrl}"
-            style="display:inline-block;background:#1E61F0;color:#FFFFFF;padding:11px 20px;
+            style="display:inline-block;background:#387ED1;color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Open your console</a></p>
       <p style="font-size:13px;color:#6B6B6B">The link signs you in — no password.
          It is tied to this email address, so keep it to yourself.</p>`),

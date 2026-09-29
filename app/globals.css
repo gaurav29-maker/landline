@@ -72,26 +72,35 @@
     --ink-dark: #171A20;
     --ink-soft: #5C5E62;
     /*
-       One brand blue across the whole site. Set to #1E61F0 on
+       One brand blue across the whole site. Set to #387ED1 on
        30 September 2026; every ratio below was re-measured against it
        rather than carried over, because a comment quoting the old
        number is worse than no comment.
 
+       KNOWN AND ACCEPTED: white on #387ED1 is 4.14:1, which is under
+       WCAG AA's 4.5:1 for normal text. Every filled button on the site
+       carries a white label on this fill, so every one of them is a
+       quarter-point short. It is a chosen brand colour and the decision
+       was Gaurav's; recording the number here so nobody rediscovers it
+       in an audit and assumes it was an accident. #3578C7 is the nearest
+       darker value of the same hue that clears 4.5 exactly, if it is
+       ever worth the half-shade.
+
        Two supporting values exist for contrast, not for variety:
-         --on-accent  text sitting ON the blue. White clears #1E61F0 at
-                      5.22:1, so this hue carries a white label.
+         --on-accent  text sitting ON the blue. White, at the 4.14:1
+                      above. Nothing else is legible on this fill.
          --blue-deep  the same hue darkened, for blue TEXT on light
-                      grounds. #1E61F0 itself reads 5.22:1 on white but
-                      drops to 4.75:1 on the #F4F4F4 band, and half the
-                      small text sits on that band — clearing AA by a
-                      quarter of a point is not a margin. #1A52CC clears
-                      it properly: 6.72 on white, 6.11 on the band, and
-                      6.28 on the console's #F7F7F7 panel.
+                      grounds. #387ED1 as text is 4.14:1 on white and
+                      3.76:1 on the #F4F4F4 band, and half the small text
+                      sits on that band — so blue text never uses the
+                      brand value directly. #2A5FA0 clears it with room:
+                      6.48 on white, 5.89 on the band, 6.04 on the
+                      console's #F7F7F7 panel.
     */
-    --blue: #1E61F0;
-    --blue-light: #A6BEFB;
-    --blue-tint: #E9F0FE;
-    --blue-deep: #1A52CC;
+    --blue: #387ED1;
+    --blue-light: #A8C8EC;
+    --blue-tint: #EAF2FB;
+    --blue-deep: #2A5FA0;
 
     /*
      * The glass accent. These are LIGHT, not ink — they only ever appear as
@@ -1412,10 +1421,11 @@
      ramp `.site` uses, so a person moving between the site and their
      console is not moving between two different greys.
 
-     The accent carries a white label here: white on #1E61F0 is 5.22:1.
-     Blue TEXT is the other way round — #1E61F0 on this ground is only
-     3.65:1, so --blue-deep lightens rather than darkens in the dark theme.
-     #7FA5FF reads 7.92:1 here and 8.73:1 on the site's pure black.
+     The accent carries a white label here: white on #387ED1 is 4.14:1,
+     which is the known shortfall recorded with the token itself.
+     Blue TEXT is the other way round — #387ED1 on this ground is 4.60:1,
+     so --blue-deep lightens rather than darkens in the dark theme.
+     #5CA8FF reads 7.71:1 here and 8.50:1 on the site's pure black.
      Same token, opposite direction, because the ground moved.
   */
 
@@ -1454,10 +1464,10 @@
        the work. Tinting it grey would have made every input look
        disabled. */
     --field-bg:   #FFFFFF;
-    --blue:       #1E61F0;
-    --blue-light: #A6BEFB;
-    --blue-tint:  #E9F0FE;
-    --blue-deep:  #1A52CC;
+    --blue:       #387ED1;
+    --blue-light: #A8C8EC;
+    --blue-tint:  #EAF2FB;
+    --blue-deep:  #2A5FA0;
     /* Translucent so one hairline sits correctly on every surface
        underneath it; ink-on-light here, light-on-ink in dark. */
     --hair:       rgba(23, 26, 32, 0.08);
@@ -1492,8 +1502,8 @@
          alpha layer over its parent — this one read 1.08:1 against a
          real 15.11. Solid values are easier to reason about. */
       --field-bg:   #1D2024;
-      --blue-tint:  #101C38;
-      --blue-deep:  #7FA5FF;
+      --blue-tint:  #0F1D30;
+      --blue-deep:  #5CA8FF;
       --hair:       rgba(255, 255, 255, 0.06);
       --hair-strong: rgba(255, 255, 255, 0.11);
       --panel:      rgba(8, 8, 10, 0.93);
@@ -1513,8 +1523,8 @@
        alpha layer over its parent — this one read 1.08:1 against a
        real 15.11. Solid values are easier to reason about. */
     --field-bg:   #1D2024;
-    --blue-tint:  #101C38;
-    --blue-deep:  #7FA5FF;
+    --blue-tint:  #0F1D30;
+    --blue-deep:  #5CA8FF;
     --hair:       rgba(255, 255, 255, 0.06);
     --hair-strong: rgba(255, 255, 255, 0.11);
     --panel:      rgba(8, 8, 10, 0.93);
@@ -3260,7 +3270,7 @@
      Measured from the reference rather than recalled: two text weights
      only (400 and 500), letter-spacing left at normal, a 4px control
      radius, a 56px nav, one elevation, and text that never sits at pure
-     black, and the accent is #1E61F0 throughout.
+     black, and the accent is #387ED1 throughout.
      ================================================================ */
 
   .site {
@@ -3286,8 +3296,8 @@
     --bg-alt:     #F4F4F4;
     --rule:       #E3E4E6;
     --hairline:   rgba(23, 26, 32, 0.08);
-    --accent:     #1E61F0;
-    --accent-ink: #1A52CC;
+    --accent:     #387ED1;
+    --accent-ink: #2A5FA0;
     --on-accent:  #FFFFFF;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.16);
     --notice-bg: #F1F5FD;
@@ -3453,7 +3463,7 @@
       --bg-alt:     #0D0D0D;
       --rule:       #2A2A2A;
       --hairline:   rgba(255, 255, 255, 0.09);
-      --accent-ink: #7FA5FF;
+      --accent-ink: #5CA8FF;
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
       --nav-bg: rgba(30, 30, 30, 0.66);
@@ -3510,7 +3520,7 @@
     --bg-alt:     #0D0D0D;
     --rule:       #2A2A2A;
     --hairline:   rgba(255, 255, 255, 0.09);
-    --accent-ink: #7FA5FF;
+    --accent-ink: #5CA8FF;
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
     --nav-bg: rgba(30, 30, 30, 0.66);
@@ -3573,9 +3583,10 @@
 
   /*
      The accent as *text* is a different problem from the accent as a
-     surface. The accent on white is 5.22:1 — fine for a button fill, thin for
-     a word you have to read. On the dark ground the bright blue is the
-     legible one, so this follows the ground rather than being fixed.
+     surface. The accent on white is 4.14:1 — thin for a button fill, and
+     thinner still for a word you have to read. On the dark ground the bright
+     blue is the legible one, so this follows the ground rather than being
+     fixed.
   */
   .site .said {
     font-family: "Instrument Serif", Georgia, serif;
@@ -3603,7 +3614,7 @@
      what this site looks like on black.
 
      --accent-ink moves with them. The disclaimer flag on the audit panel is
-     drawn in the accent, and #1A52CC is a colour chosen to clear WHITE —
+     drawn in the accent, and #2A5FA0 is a colour chosen to clear WHITE —
      on black it is the one thing on the band you would struggle to read.
 
      IN DARK MODE the page is already black, so forcing #000 here would
@@ -3621,7 +3632,7 @@
     --ink-faint:  #8B929B;
     --rule:       #2A2A2A;
     --hairline:   rgba(255, 255, 255, 0.09);
-    --accent-ink: #7FA5FF;
+    --accent-ink: #5CA8FF;
     --card:       #181818;
     --card-edge:  0;
     --card-shadow: none;
@@ -4355,7 +4366,7 @@
      to sit in front of every audit item.
 
      Its contrast was measured and fine (5.37 to 8.13 on the gradient, over
-     the 5.22 of the flat blue it replaced). Recording that here because a
+     the 4.14 of the flat blue it replaced). Recording that here because a
      good measurement is not a reason to keep something that should not be
      on the page. If real photographs ever arrive this is where they go.
   */
