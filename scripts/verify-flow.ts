@@ -1810,24 +1810,36 @@ async function main() {
       .filter(Boolean);
   };
 
-  const systemDark = declsIn(/:root:not\(\[data-theme="light"\]\) \.site/);
-  const chosenDark = declsIn(/:root\[data-theme="dark"\] \.site/);
-  const onlyIn = (a: string[], b: string[]) => a.filter((d) => !b.includes(d));
-  const drift = [
-    ...onlyIn(systemDark, chosenDark).map((d) => `only when following the OS: ${d}`),
-    ...onlyIn(chosenDark, systemDark).map((d) => `only when chosen: ${d}`),
-  ];
   /*
-   * A property declared twice in ONE list is invisible to the drift test
-   * above, because that test asks whether each declaration appears in the
-   * other list at all — and a duplicate does. The whole --scrim/--sheet-*
-   * group sat twice in the system-dark block for a day and this check
-   * reported "34 declarations, identical in both" the entire time.
+   * TWO scopes, each named exactly.
    *
-   * It is not cosmetic. Two declarations of one property is one of them
-   * doing nothing, and which one is decided by source order — so editing
-   * the visible one changes nothing and the next person edits a value
-   * that was never being used.
+   * This used to search for `.site` unanchored and take the first hit in the
+   * file. The moment the console grew dark blocks of its own — `.site-dark`,
+   * which appears earlier — that pattern started matching THEM, and the check
+   * moved from guarding 37 public-site tokens to guarding 13 console ones
+   * without saying so. It still passed. It was simply no longer looking at
+   * the thing it was written for, which is the worst state a test can be in.
+   *
+   * So both scopes are named, both are compared, and the counts are reported
+   * per scope: a drop like that becomes visible in the output rather than a
+   * green tick over a smaller job.
+   */
+  const scopes = [
+    { name: "site", brace: "\\.site \\{" },
+    { name: "console", brace: "\\.site-dark \\{" },
+  ];
+
+  /*
+   * A property declared twice in ONE list is invisible to the drift test,
+   * because that test asks whether each declaration appears in the other list
+   * at all — and a duplicate does. The whole --scrim/--sheet-* group sat twice
+   * in the system-dark block for a day and this check reported "34
+   * declarations, identical in both" the entire time.
+   *
+   * It is not cosmetic. Two declarations of one property is one of them doing
+   * nothing, and which one is decided by source order — so editing the visible
+   * one changes nothing and the next person edits a value that was never being
+   * used.
    */
   const dupes = (list: string[], where: string): string[] => {
     const seen = new Map<string, number>();
@@ -1837,17 +1849,41 @@ async function main() {
     }
     return [...seen].filter(([, n]) => n > 1).map(([prop, n]) => `${prop} declared ${n}x ${where}`);
   };
-  const repeated = [
-    ...dupes(systemDark, "when following the OS"),
-    ...dupes(chosenDark, "when chosen"),
-  ];
+  const onlyIn = (a: string[], b: string[]) => a.filter((d) => !b.includes(d));
+
+  const faults: string[] = [];
+  const counts: string[] = [];
+  let allFound = true;
+
+  for (const scope of scopes) {
+    const systemDark = declsIn(
+      new RegExp(`:root:not\\(\\[data-theme="light"\\]\\) ${scope.brace}`),
+    );
+    const chosenDark = declsIn(new RegExp(`:root\\[data-theme="dark"\\] ${scope.brace}`));
+
+    if (systemDark.length === 0) {
+      allFound = false;
+      faults.push(`${scope.name}: no system-dark block found`);
+      continue;
+    }
+
+    faults.push(
+      ...onlyIn(systemDark, chosenDark).map(
+        (d) => `${scope.name}, only when following the OS: ${d}`,
+      ),
+      ...onlyIn(chosenDark, systemDark).map((d) => `${scope.name}, only when chosen: ${d}`),
+      ...dupes(systemDark, `in ${scope.name} when following the OS`),
+      ...dupes(chosenDark, `in ${scope.name} when chosen`),
+    );
+    counts.push(`${scope.name} ${systemDark.length}`);
+  }
 
   check(
     "both dark themes declare exactly the same tokens, once each",
-    systemDark.length > 0 && drift.length === 0 && repeated.length === 0,
-    drift.length > 0 || repeated.length > 0
-      ? [...drift, ...repeated].slice(0, 3).join(" | ")
-      : `${systemDark.length} declarations, identical in both, none repeated`,
+    allFound && faults.length === 0,
+    faults.length > 0
+      ? faults.slice(0, 3).join(" | ")
+      : `${counts.join(", ")} declarations, identical in both, none repeated`,
   );
 
   /*

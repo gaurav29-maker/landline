@@ -1394,7 +1394,84 @@
      Same token, opposite direction, because the ground moved.
   */
 
+  /*
+     The console follows the theme. It used to BE the theme.
+
+     This block was an unconditional dark palette, which is why the member
+     and expert consoles stayed black while the public site had a working
+     light/dark toggle in its nav. One product, two rules about what
+     colour means — and a member who set the site to light, signed in, and
+     watched it go dark on them.
+
+     So light is the default here and dark is the override, under exactly
+     the two selectors the public site uses: prefers-color-scheme guarded
+     against an explicit light choice, and the data-theme stamp so the
+     toggle wins in both directions. Every rule downstream reads these
+     tokens and needed no change — that is the whole argument for having
+     had them.
+
+     The light values are the public site's own, not a second set invented
+     here, so the console and the marketing page are the same white.
+  */
   .site-dark {
+    --canvas:     #FFFFFF;
+    --white:      #FFFFFF;
+    --surface:    #F4F4F4;
+    --line:       #E3E4E6;
+    --ink-dark:   #171A20;
+    --ink:        #393C41;
+    --ink-soft:   #5C5E62;
+    /* A field reads as a well on a dark ground and as an outline on a
+       light one, so on white it is the page colour and the border does
+       the work. Tinting it grey would have made every input look
+       disabled. */
+    --field-bg:   #FFFFFF;
+    --blue:       #3E6AE1;
+    --blue-light: #A9BCF3;
+    --blue-tint:  #ECF0FD;
+    --blue-deep:  #3159C9;
+    /* Translucent so one hairline sits correctly on every surface
+       underneath it; ink-on-light here, light-on-ink in dark. */
+    --hair:       rgba(23, 26, 32, 0.08);
+    --hair-strong: rgba(23, 26, 32, 0.14);
+    /* Every panel in the console: the pass card, receipts, the confirm
+       sheet, the expert's session list. It was written out as
+       rgba(8,8,10,0.93) in ten places and read as a token in one, with
+       that literal as the fallback — so the token was never actually
+       defined and the fallback was the real value everywhere. */
+    --panel:      #F7F7F7;
+
+    --on-accent:  #FFFFFF;
+    --display:    "Instrument Serif", Georgia, serif;
+
+    background: var(--canvas);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .site-dark {
+      --canvas:     #0E1013;
+      --white:      #16191D;
+      --surface:    #16191D;
+      --line:       #262A30;
+      --ink-dark:   #F5F6F7;
+      --ink:        #D3D6DA;
+      --ink-soft:   #9AA0A8;
+      /* A field's ground, pre-composited rather than a 3% white wash.
+         Three translucent surfaces in this sheet each made the contrast
+         audit report a false failure, because it cannot composite an
+         alpha layer over its parent — this one read 1.08:1 against a
+         real 15.11. Solid values are easier to reason about. */
+      --field-bg:   #1D2024;
+      --blue-tint:  #151C33;
+      --blue-deep:  #8AA5F0;
+      --hair:       rgba(255, 255, 255, 0.06);
+      --hair-strong: rgba(255, 255, 255, 0.11);
+      --panel:      rgba(8, 8, 10, 0.93);
+    }
+  }
+  :root[data-theme="dark"] .site-dark {
     --canvas:     #0E1013;
     --white:      #16191D;
     --surface:    #16191D;
@@ -1404,21 +1481,15 @@
     --ink-soft:   #9AA0A8;
     /* A field's ground, pre-composited rather than a 3% white wash.
        Three translucent surfaces in this sheet each made the contrast
-       audit report a false failure, because it cannot composite an alpha
-       layer over its parent — this one read 1.08:1 against a real 15.11.
-       Solid values are easier to reason about and stop the noise. */
+       audit report a false failure, because it cannot composite an
+       alpha layer over its parent — this one read 1.08:1 against a
+       real 15.11. Solid values are easier to reason about. */
     --field-bg:   #1D2024;
-    --blue:       #3E6AE1;
-    --blue-light: #A9BCF3;
     --blue-tint:  #151C33;
     --blue-deep:  #8AA5F0;
-
-    --on-accent:  #FFFFFF;
-    --display:    "Instrument Serif", Georgia, serif;
-
-    background: var(--canvas);
-    color: var(--ink);
-    min-height: 100vh;
+    --hair:       rgba(255, 255, 255, 0.06);
+    --hair-strong: rgba(255, 255, 255, 0.11);
+    --panel:      rgba(8, 8, 10, 0.93);
   }
 
   .site-dark .logo { color: var(--ink, var(--ink-dark)); }
@@ -1843,12 +1914,6 @@
      the page and headings were left-aligned and heavier.
   */
 
-  .site-dark {
-    /* A translucent hairline sits correctly on any surface underneath it;
-       a solid grey only works on the one shade it was picked against. */
-    --hair: rgba(255, 255, 255, 0.06);
-    --hair-strong: rgba(255, 255, 255, 0.11);
-  }
 
   /* ---- weight and tracking ---- */
 
@@ -1891,13 +1956,13 @@
   .site-dark .faq-item,
   .site-dark .final-cta,
   .site-dark .footer-recruit {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid var(--hair);
     border-radius: 20px;
   }
   .site-dark .price-card.popular {
     border-color: rgba(29, 155, 240, 0.4);
-    background: linear-gradient(180deg, rgba(29, 155, 240, 0.08), rgba(8, 8, 10, 0.93) 55%);
+    background: linear-gradient(180deg, rgba(29, 155, 240, 0.08), var(--panel) 55%);
   }
 
   .site-dark .logo-strip,
@@ -2186,7 +2251,7 @@
   /* ---------- panels ---------- */
 
   .os .member-pass {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid rgba(29, 155, 240, 0.28);
     border-radius: 4px;
   }
@@ -2200,7 +2265,7 @@
 
   .os .bp-panel,
   .os .member-book {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid var(--hair);
     border-radius: 4px;
   }
@@ -2254,10 +2319,10 @@
   .os .ops-btn.danger { border-color: rgba(230, 120, 120, 0.4); color: #E77B7B; }
   .os .ops-btn.danger:hover { background: rgba(230, 120, 120, 0.1); border-color: #C97676; }
 
-  .os .member-confirm { background: rgba(8, 8, 10, 0.93); border-color: var(--hair); border-radius: 4px; }
-  .os .ops-input { background: var(--panel, rgba(8,8,10,.93)); border-color: var(--hair-strong); color: var(--ink, var(--ink-dark)); border-radius: 4px; }
+  .os .member-confirm { background: var(--panel); border-color: var(--hair); border-radius: 4px; }
+  .os .ops-input { background: var(--panel); border-color: var(--hair-strong); color: var(--ink, var(--ink-dark)); border-radius: 4px; }
   .os .bp-field input, .os .bp-field textarea, .os .bp-field select {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border-color: var(--hair-strong);
     color: var(--ink, var(--ink-dark));
     border-radius: 4px;
@@ -2266,7 +2331,7 @@
 
   /* ---------- receipts ---------- */
 
-  .os .receipt { background: rgba(8, 8, 10, 0.93); border-color: var(--hair); border-radius: 4px; }
+  .os .receipt { background: var(--panel); border-color: var(--hair); border-radius: 4px; }
   .os .receipt-head, .os .receipt-foot, .os .receipt-table th { border-color: var(--hair); }
   .os .receipt-table td { border-color: var(--rule-soft, var(--hair)); }
   .os .receipt-ref, .os .receipt-table .num { font-family: var(--mono); }
@@ -2315,7 +2380,7 @@
     margin: 18px 0 4px;
   }
   .os .ops-login-card {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid var(--hair);
     border-radius: 4px;
   }
@@ -2359,7 +2424,7 @@
      pushed to opposite edges of a row. */
   .os .os-renew {
     display: block;
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid rgba(29, 155, 240, 0.28);
     border-radius: 4px;
     padding: 20px 22px;
@@ -2443,7 +2508,7 @@
   }
 
   .os .xp-intake {
-    background: rgba(8, 8, 10, 0.93);
+    background: var(--panel);
     border: 1px solid var(--hair);
     border-radius: 4px;
     padding: 14px 16px;
@@ -2753,7 +2818,7 @@
     flex-wrap: wrap;
     margin: 16px 0 0;
     padding-top: 14px;
-    border-top: 1px solid var(--hair, rgba(255,255,255,0.06));
+    border-top: 1px solid var(--hair);
   }
   .ops-app-actions .ops-input { width: 240px; }
   .ops-decided-h { margin-top: 34px; }
@@ -2836,7 +2901,7 @@
   .site-dark .apply-field textarea {
     width: 100%;
     box-sizing: border-box;
-    background: var(--field-bg, #1D2024);
+    background: var(--field-bg);
     border: 1px solid var(--hair-strong);
     border-radius: 8px;
     padding: 11px 13px;
@@ -2933,7 +2998,7 @@
   .site-dark .xp-note-input {
     width: 100%;
     box-sizing: border-box;
-    background: var(--field-bg, #1D2024);
+    background: var(--field-bg);
     border: 1px solid var(--hair-strong);
     border-radius: 8px;
     padding: 10px 12px;
