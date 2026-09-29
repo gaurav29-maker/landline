@@ -4672,18 +4672,22 @@
        from their 68, and the right direction: at 375 a 68px button is a
        slab, and the headline above it is no longer 96px either.
 
-       46 AND NOT 36, which is the one place this stops following them.
+       44 AND NOT 36, which is the one place this stops following them.
        The sweep this rule sits in exists to put every tappable thing at
        44px, because that is where Apple's guidance and the WCAG
        target-size rule both land. 36 would undo that for the two most
        important buttons on the site, on the device where the fingertip
-       argument actually applies. 46 keeps the proportion against the
-       smaller headline and stays above the floor.
+       argument actually applies.
+
+       44 exactly, so this is now the floor rather than a margin above it:
+       the height cannot come down again without taking the accessibility
+       rule with it. The width did the rest of the shrinking — 20px of
+       padding against 24, and a 13.5px label.
     */
     .site .hero-band .b {
-      min-height: 46px;
-      padding: 0 24px;
-      font-size: 14px;
+      min-height: 44px;
+      padding: 0 20px;
+      font-size: 13.5px;
     }
 
     /*
