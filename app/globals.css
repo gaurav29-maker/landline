@@ -3207,25 +3207,35 @@
        ground, so the only thing separating one expert from the next was a
        rule, and the card itself was invisible.
 
-       So light takes the glass sheet the nav and the booking sheet are made
-       of. On a white page that sheet alone would still be white on white;
-       what makes it read is --glass-shadow, which carries the bright inner
-       rim and the soft lift under it. The tint is almost nothing and the
-       EDGES are the whole effect — which is what frosted glass on a pale
-       ground actually looks like.
+       The first attempt at drawing it borrowed the glass sheet the nav and
+       the booking sheet are made of: near-white, a bright rim, a deep lift.
+       Those two genuinely float above the page, so they are built to cast
+       something. A card does not float — it lies on the page — and the
+       result was a white rectangle wearing a halo, where the shadow was
+       doing all the work a surface should be doing.
+
+       So it is a TINT and nothing else: one flat step down from the ground,
+       no shadow, no border, no rim. The surface is what separates the card
+       from the page, which is the only thing that stays calm when there are
+       nine of them in a grid rather than one. Shadows do not stack quietly.
+
+       Cool rather than neutral. Pure grey on a white page reads as an
+       absence of colour; this leans a few degrees toward the blue the site
+       already uses for everything it wants you to touch, so the card reads
+       as chosen rather than as unpainted.
 
        Padding and gap come across from dark at the same time. 18px 0 0 was
        right for text sitting directly on the page; a drawn panel has to
        inset its content from its own edges, and needs less air between it
        and the next one than two undrawn columns did.
     */
-    --card: linear-gradient(152deg, var(--glass-sheet-1) 0%, var(--glass-sheet-2) 100%);
+    --card: #F3F5F9;
     --card-radius: 16px;
     --card-edge: 0;
     --card-pad: 28px;
     --card-pad-sm: 22px;
     --card-gap: 20px;
-    --card-shadow: var(--glass-shadow);
+    --card-shadow: none;
     --btn-soft: #EFF0F3;
     --btn-soft-hover: #E5E7EC;
     --nav-hover: rgba(252, 253, 255, 0.92);
@@ -3969,17 +3979,16 @@
      6.5% of the width, and 28 here is 8. The colours are our own --card
      against our own grounds.
 
-     Still not glass, and the distinction is finer than it was. In light
-     mode the card is finished with the glass SHEET and RIM, because a white
-     card on a white page has to be drawn by its edges or it is not drawn at
-     all. What it does not take is the backdrop-filter, and that is the part
-     that would make it level 1 — the levels are about what a panel does to
-     the page BEHIND it, and this one does nothing to it.
+     Still not glass, in either theme: no backdrop-filter, no shadow, no
+     rim — a flat fill and a radius. So the levels note above stays true as
+     written. A tinted surface and a pane of glass are different claims: one
+     says nearer, the other says floating over, and a directory of people is
+     not floating over anything.
 
-     Not a technicality dressed up, either. The grid sits on a flat band with
-     nothing moving behind it, so a blur here would blur a solid colour: a
-     compositing layer per card for a result identical to the one without it.
-     Same reasoning as the level 1 panels above.
+     Light spent a version being glass and it was the wrong call — the fill
+     was almost white, so the shadow carried the whole panel, and nine of
+     those in a grid is nine halos. The fix was to make the SURFACE do the
+     work, which is what level 0 meant the whole time.
   */
   .site .xcard {
     border: 0;
