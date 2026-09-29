@@ -96,8 +96,8 @@ export default function GlobalError({
               onClick={reset}
               style={{
                 appearance: "none",
-                border: "1px solid #3E6AE1",
-                background: "#3E6AE1",
+                border: "1px solid #1E61F0",
+                background: "#1E61F0",
                 color: "#FFFFFF",
                 borderRadius: "4px",
                 padding: "10px 22px",
@@ -125,7 +125,7 @@ export default function GlobalError({
 
           <p style={{ margin: "26px 0 0", fontSize: "13.5px", color: "#5C5E62" }}>
             Telling us helps:{" "}
-            <a href="mailto:hello@landline.in" style={{ color: "#3159C9" }}>
+            <a href="mailto:hello@landline.in" style={{ color: "#1A52CC" }}>
               hello@landline.in
             </a>
             {error.digest ? (

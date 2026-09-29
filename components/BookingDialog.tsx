@@ -221,7 +221,7 @@ export default function BookingDialog({
         name: "Landline",
         description: order.description,
         prefill: order.prefill,
-        theme: { color: "#3E6AE1" },
+        theme: { color: "#1E61F0" },
         // The webhook confirms the booking. This only moves the browser on.
         handler: () => {
           window.location.href = `/booking/${hold.bookingId}`;
