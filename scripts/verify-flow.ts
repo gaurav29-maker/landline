@@ -1791,6 +1791,119 @@ async function main() {
    * requires being on the OS that exposes the copy you did not edit.
    * This compares them declaration for declaration.
    */
+  /*
+   * ---- the practices page has to stay true ----
+   *
+   * /principles tells a reader there is no analytics on this site and that
+   * it talks to exactly four outside services. That is the easiest kind of
+   * claim to publish and the easiest to outgrow — somebody adds a pixel
+   * for one campaign, or a font from a fifth host, and the page becomes a
+   * lie that nobody notices because nobody re-reads it.
+   *
+   * So the claim is a test. Adding a host means this fails and somebody
+   * has to either justify it or take the line off the page.
+   */
+  const sourceHosts = new Set<string>();
+  const trackerHits: string[] = [];
+
+  /*
+     Signatures rather than package names: a tracker that arrives as a
+     dependency still has to call something, and these are the calls.
+  */
+  const TRACKER = [
+    "googletagmanager",
+    "google-analytics",
+    "gtag(",
+    "fbq(",
+    "connect.facebook",
+    "hotjar",
+    "mixpanel",
+    "posthog",
+    "segment.com/analytics",
+    "clarity.ms",
+    "plausible.io",
+  ];
+
+  /* Exactly the four the page names, expanded to the hosts they use. */
+  const ALLOWED_HOSTS = new Set([
+    "checkout.razorpay.com", // Razorpay — taking the payment
+    "control.msg91.com", // MSG91 — the sign-in code
+    "accounts.google.com", // Google — calendar consent
+    "oauth2.googleapis.com",
+    "www.googleapis.com",
+    "calendar.google.com",
+    "fonts.googleapis.com", // Google — the fonts this site is set in
+    "fonts.gstatic.com",
+    "challenges.cloudflare.com", // Turnstile — the bot check on sign-in
+  ]);
+
+  {
+    const files: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.tsx?$/.test(entry.name)) files.push(full);
+      }
+    };
+    for (const dir of ["app", "components", "lib"]) walk(dir);
+
+    for (const file of files) {
+      const body = fs.readFileSync(file, "utf8");
+      for (const m of body.matchAll(/https:\/\/([a-zA-Z0-9.-]+)/g)) sourceHosts.add(m[1]);
+      for (const sig of TRACKER) {
+        if (body.includes(sig)) trackerHits.push(`${path.relative(".", file)}: ${sig}`);
+      }
+    }
+  }
+
+  const strangers = [...sourceHosts].filter((h) => !ALLOWED_HOSTS.has(h));
+  check(
+    "the site talks to no outside service the practices page does not name",
+    strangers.length === 0,
+    strangers.length > 0
+      ? `unlisted: ${strangers.join(", ")}`
+      : `${sourceHosts.size} hosts, all four services accounted for`,
+  );
+
+  check(
+    "there is no analytics or advertising tracker anywhere in the source",
+    trackerHits.length === 0,
+    trackerHits.length > 0 ? trackerHits.slice(0, 3).join(" | ") : "none of 11 signatures found",
+  );
+
+  /*
+     The page also promises there is no way to send marketing email. The
+     proof is that every sender in lib/email is named after an event that
+     happened to one booking — so a new export that is not is the thing
+     worth catching, not the sending itself.
+  */
+  {
+    const senders = [...fs.readFileSync("lib/email.ts", "utf8").matchAll(/export function (\w+)/g)].map(
+      (m) => m[1],
+    );
+    const TRANSACTIONAL = new Set([
+      "customerConfirmation",
+      "expertNotification",
+      "intakeNudge",
+      "reminder",
+      "bundleSlotLost",
+      "memberSignInLink",
+      "emailChangeConfirm",
+      "expertSignInLink",
+      "membershipWelcome",
+      "refundApology",
+    ]);
+    const unexpected = senders.filter((n) => !TRANSACTIONAL.has(n));
+    check(
+      "every email Landline can send is about one booking of yours",
+      unexpected.length === 0,
+      unexpected.length > 0
+        ? `not on the transactional list: ${unexpected.join(", ")}`
+        : `${senders.length} senders, all operational`,
+    );
+  }
+
   const css = fs.readFileSync("app/globals.css", "utf8");
   const declsIn = (startPattern: RegExp): string[] => {
     const at = css.search(startPattern);
