@@ -3876,16 +3876,23 @@
      --btn-soft rather than --card, because a control and a surface should
      be free to differ, and this one needs a hover that a card never does.
   */
-  .site .nav-aside .b-line {
-    background: var(--btn-soft);
+  /* Size first, and for whichever variant the button is wearing. These
+     were fused with the soft-grey fill below, so changing the sign-in
+     button to a solid one dropped its height and padding along with its
+     colour. */
+  .site .nav-aside .b {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    border-color: transparent;
     box-shadow: none;
-    color: var(--ink);
     min-height: 40px;
+    min-width: 0;
     padding: 0 18px;
     font-size: 14px;
+  }
+  .site .nav-aside .b-line {
+    background: var(--btn-soft);
+    border-color: transparent;
+    color: var(--ink);
   }
   .site .nav-aside .b-line:hover {
     background: var(--btn-soft-hover);
@@ -4038,6 +4045,22 @@
   }
   .site .b-sm { min-width: 0; padding: 8px 16px; font-size: 13px; }
   .site .b-pair { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  /*
+     The hero's two buttons, at editlobby's proportions: 68px tall with a
+     14px/600 label, against the 42px/500 they were. A page whose headline
+     is 96px cannot hand off to a 42px button — the eye goes from the
+     sentence straight past the thing it is supposed to do next.
+
+     Only in the hero. Every other button on the site stays 42, because
+     everywhere else the button is one of several things on the row and
+     this size would be shouting.
+  */
+  .site .hero-band .b {
+    min-height: 68px;
+    padding: 0 34px;
+    font-size: 15px;
+    font-weight: 600;
+  }
   /* Inside a document the text is left-aligned, so the buttons under it are too. */
   .site .doc .b-pair { justify-content: flex-start; margin-top: 4px; }
   .site a:focus-visible, .site button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -4107,7 +4130,33 @@
      18px below, not 30: the rejection line moved underneath and the gap to
      the buttons is now that line's to hold, not the headline's.
   */
-  .site .hero-band h1 { max-width: 21ch; margin: 0 auto 18px; }
+  /*
+     The headline at editlobby's scale: 96px, 1.1 line-height, -0.05em.
+     Measured off theirs rather than guessed — 96/105.6/-4.8px on a 1440
+     window, mixing a sans at 500 with Instrument Serif for the italic
+     words. That last part is already how this headline is built, so what
+     changes is the size and the tracking, not the composition.
+
+     40px was a subheading pretending to be a headline. The hero is the
+     one place on the site with a single sentence and nothing competing
+     with it, and it was set smaller than the h2 on the audit band.
+
+     clamp rather than a stack of breakpoints: 9vw is the slope that puts
+     it at 96 on a 1100px window and lets it fall to 34 on a phone
+     without a media query deciding it in steps. -0.05em rather than
+     -4.8px because tracking that big has to scale WITH the type; a fixed
+     -4.8 at 34px would weld the letters together.
+
+     21ch holds the line break where it was; the measure is the same
+     sentence, only louder.
+  */
+  .site .hero-band h1 {
+    max-width: 21ch;
+    margin: 0 auto 18px;
+    font-size: clamp(34px, 9vw, 96px);
+    line-height: 1.1;
+    letter-spacing: -0.05em;
+  }
 
   /* ------------------------------------------------------------ glass
      An accent, not a theme.
@@ -4679,7 +4728,9 @@
 
     /* Everything the bar carried on a wide screen is in the panel instead. */
     .site .nav-end { display: none; }
-    .site .nav-aside .b-line { display: none; }
+    /* Any button, not just the outlined one — below 900 the capsule holds
+       the wordmark and the menu, and the sheet holds everything else. */
+    .site .nav-aside .b { display: none; }
 
     /*
        ---- the phone nav is an object, not a band ----

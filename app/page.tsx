@@ -355,7 +355,12 @@ export default async function Home() {
           */}
           {experts.length > 0 ? (
             <p className="see-all">
-              <Link className="b b-line" href="/experts">
+              {/*
+                Filled: it is alone on its row, so there is no alternative for
+                it to be the lesser half of. An outline button with nothing
+                beside it is a button apologising for itself.
+              */}
+              <Link className="b b-fill" href="/experts">
                 See all experts
               </Link>
             </p>

@@ -103,8 +103,16 @@ export default function NavMenu({
   return (
     <>
       <div className="nav-aside">
-        {/* Above 900 this is a button in the bar; below, it opens the sheet. */}
-        <Link className="b b-line b-sm" href={signInHref}>
+        {/*
+          Above 900 this is a button in the bar; below, it opens the sheet.
+
+          Filled, not outlined. Signing in is an action somebody came here to
+          take, and editlobby's equivalent — Login to LobbyOS — is a solid
+          pill sitting next to their solid Book a call. An outline next to a
+          fill reads as "this one is the lesser option", which is not true of
+          a returning member.
+        */}
+        <Link className="b b-fill b-sm" href={signInHref}>
           Landline OS
         </Link>
 
