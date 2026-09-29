@@ -4687,6 +4687,11 @@
     */
     .site .b { min-height: 44px; }
     .site .b-sm { min-height: 44px; }
+    /* Chips were missed when this sweep went in: 30px tall, and since the
+       audit example they are a primary interaction on the home page rather
+       than only a filter on /experts. inline-flex because min-height does
+       nothing to an inline box. */
+    .site .chip { min-height: 44px; display: inline-flex; align-items: center; }
     /*
        The nav's own targets are NOT here any more, they are in the 900
        block with the rest of the phone nav. Below 900 the capsule, the
@@ -5083,6 +5088,30 @@
   /* The accent, so the disclaimer reads before the content does. */
   .site .spec-flag .eyebrow { color: var(--accent-ink); }
   .site .spec-note { font-size: 13px; line-height: 20px; color: var(--ink-mute); }
+
+  /*
+     The picker. A question and three answers, on one line where there is
+     room and wrapped where there is not — the label is part of it rather
+     than a heading above it, so the row reads as a sentence being answered
+     instead of a toolbar.
+  */
+  .site .spec-pick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 18px;
+  }
+  .site .spec-pick .eyebrow { margin-right: 4px; }
+  .site .spec-pick .chip { font-family: inherit; cursor: pointer; background: transparent; }
+  /* One line naming the shape, so the chip label does not have to carry it
+     all and the two columns below start from a stated premise. */
+  .site .spec-summary {
+    margin: 14px 0 0;
+    font-size: 14px;
+    line-height: 21px;
+    color: var(--ink-body);
+  }
 
   .site .spec-body {
     display: grid;
