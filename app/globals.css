@@ -3847,6 +3847,34 @@
   .site .b-fill:hover { background: var(--accent-ink); color: var(--on-accent); }
   .site .b-line { background: transparent; color: var(--ink); border-color: var(--ink-mute); }
   .site .b-line:hover { border-color: var(--ink); }
+
+  /*
+     SOFT — the third variant, after x.ai's.
+
+     Theirs is color-mix(in srgb, primary 3%, card) for the surface with
+     the accent itself as the label, no border, and a hover that only
+     moves the mix from 3% to 7%. The whole button is the accent at two
+     strengths: a trace of it in the ground, all of it in the word.
+
+     It solves the thing a nav actually has: an action that is real but is
+     not the page's main one. A fill claims to be the main action; an
+     outline reads as the lesser half of a pair it does not have. This
+     reads as neither — it belongs to the accent without competing for it.
+
+     3% is barely a colour. That is the point: on a light ground it is a
+     grey with a reason, and the blue in it is only legible once you see
+     the label it is under.
+  */
+  .site .b-soft {
+    background: color-mix(in srgb, var(--accent) 3%, var(--btn-soft));
+    color: var(--accent-ink);
+    border-color: transparent;
+    font-weight: 500;
+  }
+  .site .b-soft:hover {
+    background: color-mix(in srgb, var(--accent) 7%, var(--btn-soft));
+    border-color: transparent;
+  }
   /*
      Sign-in, made of the same glass as the capsule.
 
@@ -3880,13 +3908,16 @@
      were fused with the soft-grey fill below, so changing the sign-in
      button to a solid one dropped its height and padding along with its
      colour. */
+  /* 44 and 0 20px, which is x.ai's button measured: 44 tall, 12px 20px,
+     14px at 500. Vertical padding as a min-height because .b centres its
+     label with flex rather than with padding. */
   .site .nav-aside .b {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     box-shadow: none;
-    min-height: 40px;
+    min-height: 44px;
     min-width: 0;
-    padding: 0 18px;
+    padding: 0 20px;
     font-size: 14px;
   }
   .site .nav-aside .b-line {

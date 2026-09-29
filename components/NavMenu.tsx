@@ -106,13 +106,15 @@ export default function NavMenu({
         {/*
           Above 900 this is a button in the bar; below, it opens the sheet.
 
-          Filled, not outlined. Signing in is an action somebody came here to
-          take, and editlobby's equivalent — Login to LobbyOS — is a solid
-          pill sitting next to their solid Book a call. An outline next to a
-          fill reads as "this one is the lesser option", which is not true of
-          a returning member.
+          Soft, not filled and not outlined.
+
+          It was outlined, then filled to match editlobby, and neither is
+          right for it: a fill claims to be the page's main action next to
+          a Find an expert that already is one, and an outline reads as the
+          lesser half of a pair this button is not part of. The soft
+          variant belongs to the accent without competing for it.
         */}
-        <Link className="b b-fill b-sm" href={signInHref}>
+        <Link className="b b-soft b-sm" href={signInHref}>
           Landline OS
         </Link>
 
