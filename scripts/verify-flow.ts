@@ -394,6 +394,42 @@ async function main() {
   const anon = await post("/api/memberships/book", { expertSlug: EXPERT, startsAt: open[3] });
   check("the same call without a session is refused", anon.status === 401, `status ${anon.status}`);
 
+  /*
+     The ladder came down to one product, and the site says so: "No packages,
+     no passes, nothing to cancel". The purchase endpoint went on disagreeing
+     with that for a while — an UNAUTHENTICATED post with a name and an email
+     opened a live Razorpay order for up to ₹2,45,000 and created a customer
+     row on the way through. One button in the console was the only thing
+     linking to it, and a route does not need a link to be reachable.
+
+     Posted the way a caller would, with a body that used to be accepted, so
+     this fails if the handler is ever restored rather than only if the file
+     is renamed.
+  */
+  const passSale = await post("/api/memberships/purchase", {
+    tier: "annual",
+    name: "Would Be Buyer",
+    email: `pass-${Date.now()}@example.in`,
+    disclaimerAccepted: true,
+  });
+  check(
+    "a pass cannot be bought, by the console or by anyone posting directly",
+    passSale.status === 410,
+    `status ${passSale.status}`,
+  );
+
+  /*
+     And the other half of that decision, which is a different decision:
+     what was already sold is still honoured. The pass booking two checks up
+     is the proof — this asserts the two have not been collapsed into one by
+     somebody closing the whole membership surface.
+  */
+  check(
+    "ceasing to sell a pass did not stop an existing one working",
+    passBooking.status === 200 && passSale.status === 410,
+    "book 200, purchase 410",
+  );
+
   // ---- 7. a bundle credit is spent, once ----
   const [bundle] = await db
     .insert(bundles)

@@ -2355,18 +2355,17 @@
 
   /* ---------- OS: renewal and the record ---------- */
 
+  /* Prose since the renew button went: one column, not two things
+     pushed to opposite edges of a row. */
   .os .os-renew {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
+    display: block;
     background: rgba(8, 8, 10, 0.93);
     border: 1px solid rgba(29, 155, 240, 0.28);
     border-radius: 4px;
     padding: 20px 22px;
   }
   .os .os-renew .member-h2 { margin-bottom: 6px; }
+  .os .os-renew-after { margin: 10px 0 0; max-width: 60ch; }
 
   .os .os-moves { list-style: none; padding: 0; margin: 0; }
   .os .os-moves li {

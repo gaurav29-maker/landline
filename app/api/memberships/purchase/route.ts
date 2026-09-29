@@ -1,99 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { customers, memberships, payments } from "@/lib/db/schema";
-import { razorpay } from "@/lib/razorpay";
-import { MEMBERSHIP_TIERS } from "@/lib/constants";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Buys a pass. No booking is involved — a pass is a window of time, and the
- * member books inside it afterwards from their console.
+ * Passes are not sold any more. This route refuses.
  *
- * The tier NAME crosses the wire, never the price. The amount is read from
- * MEMBERSHIP_TIERS on the server, so a two-lakh pass cannot be bought for one
- * rupee by editing the request.
+ * WHY IT IS A REFUSAL AND NOT A DELETED FILE
+ *
+ * The storefront says "No packages, no passes, nothing to cancel" — one
+ * product, the call. This endpoint disagreed with that, and it disagreed
+ * loudly: it accepted an unauthenticated POST carrying a name and an email
+ * and opened a live Razorpay order for up to ₹2,45,000, creating a customer
+ * row on the way through. Nothing linked to it but one button in the member
+ * console, and a route does not need a link to be reachable — "nobody knows
+ * it is there" was never a control.
+ *
+ * Deleting the file would answer 404, which reads as a mistake worth
+ * retrying: a bad deploy, a renamed path. 410 says the thing existed, a
+ * decision was taken, and retrying will not change it. It also leaves this
+ * note where the next person will look, so the endpoint does not quietly come
+ * back the first time somebody wants to sell a pass again.
+ *
+ * DELIBERATELY STILL ALIVE: /api/memberships/book, which lets somebody who
+ * already holds a pass book inside it. Ceasing to sell something and refusing
+ * to honour what was already sold are different decisions, and only the first
+ * one has been made.
  */
-const Body = z.object({
-  tier: z.enum(["quarterly", "annual"]),
-  name: z.string().min(1).max(120),
-  email: z.string().email().max(200),
-  phone: z.string().max(20).optional(),
-  disclaimerAccepted: z.literal(true),
-});
-
-function isUniqueViolation(err: unknown): boolean {
-  return typeof err === "object" && err !== null && (err as { code?: string }).code === "23505";
-}
-
-export async function POST(req: NextRequest) {
-  const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
-  const input = parsed.data;
-  const tier = MEMBERSHIP_TIERS[input.tier];
-
-  const email = input.email.trim();
-  let [customer] = await db
-    .select()
-    .from(customers)
-    .where(sql`lower(${customers.email}) = ${email.toLowerCase()}`)
-    .limit(1);
-
-  if (!customer) {
-    try {
-      [customer] = await db
-        .insert(customers)
-        .values({ email, name: input.name, phone: input.phone })
-        .returning();
-    } catch (err) {
-      if (!isUniqueViolation(err)) throw err;
-      [customer] = await db
-        .select()
-        .from(customers)
-        .where(sql`lower(${customers.email}) = ${email.toLowerCase()}`)
-        .limit(1);
-    }
-  }
-
-  // The window is provisional until payment lands; the webhook sets the real
-  // start so a pass never begins before it is paid for.
-  const now = new Date();
-  const [membership] = await db
-    .insert(memberships)
-    .values({
-      customerId: customer.id,
-      tier: input.tier,
-      startsAt: now,
-      endsAt: new Date(now.getTime() + tier.days * 24 * 60 * 60 * 1000),
-      amountPaise: tier.pricePaise,
-      status: "pending",
-    })
-    .returning();
-
-  const order = await razorpay().orders.create({
-    amount: tier.pricePaise,
-    currency: "INR",
-    receipt: membership.id,
-    notes: { membershipId: membership.id, tier: input.tier },
-  });
-
-  await db.insert(payments).values({
-    membershipId: membership.id,
-    razorpayOrderId: order.id,
-    amountPaise: tier.pricePaise,
-    status: "created",
-  });
-
-  return NextResponse.json({
-    membershipId: membership.id,
-    orderId: order.id,
-    amountPaise: tier.pricePaise,
-    description: `${tier.label} — unlimited sessions for ${tier.days} days`,
-    keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    prefill: { name: customer.name, email: customer.email, contact: customer.phone ?? "" },
-  });
+export async function POST() {
+  return NextResponse.json(
+    { error: "Passes are no longer sold. Sessions are booked and paid for one at a time." },
+    { status: 410 },
+  );
 }

@@ -5,12 +5,11 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, experts, intakeSubmissions, memberships } from "@/lib/db/schema";
 import { currentCustomerId } from "@/lib/member-session";
-import { MEMBERSHIP_TIERS, RENEWAL_WINDOW_DAYS } from "@/lib/constants";
+import { MEMBERSHIP_TIERS, RENEWAL_WINDOW_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
 import { istDateTime, rupees } from "@/lib/format";
 import MemberBooking, { type BookableExpert } from "@/components/member/MemberBooking";
 import { liveBundlesForCustomer, recordForCustomer } from "@/lib/record";
 import { rethrowIfNavigation } from "@/lib/nav";
-import PassPurchase from "@/components/PassPurchase";
 import ManageBooking from "@/components/member/ManageBooking";
 import { signBookingToken } from "@/lib/tokens";
 import MemberBar from "@/components/MemberBar";
@@ -329,10 +328,23 @@ export default async function MemberConsole({
       ))}
 
       {/*
-        A pass is bought outright rather than auto-renewed, so this prompt is
-        the renewal mechanism. It carries what the sessions would have cost one
-        at a time, because that is the number the decision actually turns on —
-        including when it is unflattering.
+        A pass is ending, and there is nothing to decide.
+
+        This used to be the renewal mechanism — a pass is bought outright
+        rather than auto-renewed, so the prompt WAS the renewal. Then the
+        ladder came down to one product, and the prompt was left selling a
+        thing the storefront says does not exist: "No packages, no passes,
+        nothing to cancel", next to a button that sold a pass.
+
+        The notice stays, because somebody whose pass runs out in a fortnight
+        needs to know before it happens rather than by finding a checkout
+        where their booking used to be. What it says now is what is true:
+        this ends, then sessions are the single-call price, and nothing
+        renews on its own.
+
+        It still carries what the sessions would have cost one at a time,
+        because that is the honest accounting of what the pass was worth —
+        including when the number is unflattering.
       */}
       {membership && daysLeft <= RENEWAL_WINDOW_DAYS ? (
         <section className="member-section">
@@ -353,13 +365,10 @@ export default async function MemberConsole({
                 )}
               </p>
             </div>
-            <PassPurchase
-              tier={membership.tier}
-              label={MEMBERSHIP_TIERS[membership.tier].label}
-              priceLabel={rupees(MEMBERSHIP_TIERS[membership.tier].pricePaise)}
-              cta="Renew"
-              className="btn-primary"
-            />
+            <p className="bp-muted os-renew-after">
+              Passes are not sold any more, so there is nothing to renew. When this one ends,
+              sessions are {rupees(SINGLE_CALL_PAISE)} each, booked one at a time.
+            </p>
           </div>
         </section>
       ) : null}
