@@ -54,6 +54,7 @@ import { hashPassword, passwordMatches } from "../lib/ops-password";
 import { audited } from "../lib/ops-audit";
 import { CODE_MAX_ATTEMPTS, hashCode } from "../lib/member-auth";
 import { toE164 } from "../lib/phone";
+import { submitApplication } from "../app/apply/actions";
 import { EXPERT_SHARE_BPS, MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
 import { openSlotsFor, openSlotsForMany } from "../lib/availability";
 import { runtimeConnection } from "../lib/db/connection";
@@ -1555,6 +1556,75 @@ async function main() {
   await db
     .delete(expertApplications)
     .where(inArray(expertApplications.id, [askApp.id, blankApp.id]));
+
+
+  /*
+   * ---- a refused application keeps the answers ----
+   *
+   * This form asks for three paragraphs of writing. A form action resets
+   * the form when it returns, and a reset puts every uncontrolled field
+   * back to its defaultValue — so a single short answer used to empty the
+   * whole thing, and somebody who had just written out their career had to
+   * write it again. The likely thing they do instead is close the tab.
+   *
+   * Called directly rather than over HTTP: a zod refusal returns before
+   * anything touches headers() or the database, which is what makes the
+   * action callable from a script at all. The two later refusals — the
+   * throttle and the registration cross-check — go through the same helper,
+   * so this covers the shape rather than only the one path.
+   */
+  const typed = {
+    name: "Meera Raghavan",
+    email: "keeps-answers@example.in",
+    phone: "9876500011",
+    headline: "Twelve years reading balance sheets",
+    bio: "too short",
+    background: "Six years on a research desk, then six running a book of my own.",
+    yearsExperience: "12",
+    askedRupees: "9500",
+    sebiRegType: "ra",
+    sebiRegNumber: "INH000001234",
+    links: "example.in/meera",
+    note: "Two mornings a week to start.",
+  };
+
+  const typedForm = new FormData();
+  for (const [k, v] of Object.entries(typed)) typedForm.set(k, v);
+  typedForm.append("specialties", "portfolio_audit");
+
+  const refusal = await submitApplication({ ok: false }, typedForm);
+  const kept = refusal.values;
+  check(
+    "a refused application hands back every answer, including the bad one",
+    refusal.ok === false &&
+      kept !== undefined &&
+      Object.entries(typed).every(
+        ([k, v]) => kept[k as keyof typeof kept] === v,
+      ) &&
+      kept.specialties.join() === "portfolio_audit",
+    kept
+      ? `${Object.keys(typed).length} fields and the tick came back`
+      : "nothing came back — the form would be empty",
+  );
+
+  /*
+     The bad answer comes back too. Obvious once said, easy to lose: an
+     echo that helpfully dropped the field that failed would leave somebody
+     staring at an empty box under an error about what was in it.
+  */
+  check(
+    "the answer that was refused is returned to be corrected, not cleared",
+    kept?.bio === "too short" && refusal.fieldErrors?.bio !== undefined,
+    `bio came back as ${JSON.stringify(kept?.bio)}, with its error`,
+  );
+
+  /* The form keys off this, so a second refusal has to look different. */
+  const second = await submitApplication(refusal, typedForm);
+  check(
+    "each refusal is distinguishable from the one before it",
+    refusal.attempt === 1 && second.attempt === 2,
+    `attempt ${refusal.attempt}, then ${second.attempt}`,
+  );
 
 
   // ---- 10. one open application per address ----

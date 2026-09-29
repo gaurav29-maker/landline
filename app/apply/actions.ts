@@ -55,7 +55,79 @@ const Body = z.object({
   note: z.string().trim().max(1200).optional(),
 });
 
-export type ApplyState = { ok: boolean; error?: string; fieldErrors?: Record<string, string> };
+/**
+ * Everything they typed, as they typed it.
+ *
+ * Strings, not parsed values: this exists to put the form back the way
+ * they left it, and the thing worth putting back is what is in the box,
+ * not what zod managed to make of it. A rate of "eight thousand" fails to
+ * parse and still has to reappear in the field so it can be corrected.
+ */
+export type ApplyValues = {
+  name: string;
+  email: string;
+  phone: string;
+  headline: string;
+  bio: string;
+  background: string;
+  specialties: string[];
+  yearsExperience: string;
+  askedRupees: string;
+  sebiRegType: string;
+  sebiRegNumber: string;
+  links: string;
+  note: string;
+};
+
+export type ApplyState = {
+  ok: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+  /*
+     What they typed, sent back with the refusal.
+
+     A form action resets the form when it returns, and a reset puts every
+     uncontrolled field back to its defaultValue — which was empty. So a
+     single short answer used to cost somebody the three paragraphs they
+     had written about their career, and the most likely thing they do next
+     is give up rather than type it again. The fields default to these
+     instead, so the reset lands on their own words.
+  */
+  values?: ApplyValues;
+  /*
+     Counts refusals, and nothing else reads it as a number. The form uses
+     it as a key so the fields remount on each attempt and pick up the
+     values above, rather than depending on when React's reset happens
+     relative to the re-render.
+  */
+  attempt?: number;
+};
+
+/**
+ * Long enough for anything a person meant to write — the fields cap out at
+ * 1200 characters — and short enough that a scripted post cannot make the
+ * server echo a large payload back into the page.
+ */
+const ECHO_MAX = 4000;
+
+function echo(formData: FormData): ApplyValues {
+  const one = (key: string) => String(formData.get(key) ?? "").slice(0, ECHO_MAX);
+  return {
+    name: one("name"),
+    email: one("email"),
+    phone: one("phone"),
+    headline: one("headline"),
+    bio: one("bio"),
+    background: one("background"),
+    specialties: formData.getAll("specialties").map(String),
+    yearsExperience: one("yearsExperience"),
+    askedRupees: one("askedRupees"),
+    sebiRegType: one("sebiRegType"),
+    sebiRegNumber: one("sebiRegNumber"),
+    links: one("links"),
+    note: one("note"),
+  };
+}
 
 /**
  * How many applications one source may send in an hour.
@@ -95,9 +167,16 @@ function isUniqueViolation(err: unknown): boolean {
 }
 
 export async function submitApplication(
-  _prev: ApplyState,
+  prev: ApplyState,
   formData: FormData,
 ): Promise<ApplyState> {
+  /* Every refusal below hands the answers back; only success may drop them. */
+  const refused = (state: Omit<ApplyState, "ok" | "values" | "attempt">): ApplyState => ({
+    ...state,
+    ok: false,
+    values: echo(formData),
+    attempt: (prev.attempt ?? 0) + 1,
+  });
   const parsed = Body.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -120,7 +199,7 @@ export async function submitApplication(
       const key = String(issue.path[0]);
       if (!fieldErrors[key]) fieldErrors[key] = issue.message;
     }
-    return { ok: false, error: "Some answers need another look.", fieldErrors };
+    return refused({ error: "Some answers need another look.", fieldErrors });
   }
 
   const data = parsed.data;
@@ -139,10 +218,9 @@ export async function submitApplication(
 
     if ((recent?.n ?? 0) >= MAX_PER_SOURCE_PER_HOUR) {
       // Says only what the sender already knows about their own behaviour.
-      return {
-        ok: false,
+      return refused({
         error: "That is several applications in a short time. Give us a while to read them.",
-      };
+      });
     }
   }
 
@@ -153,11 +231,10 @@ export async function submitApplication(
    * page as a bare "RIA" with no number to check.
    */
   if (data.sebiRegType !== "none" && !data.sebiRegNumber) {
-    return {
-      ok: false,
+    return refused({
       error: "Some answers need another look.",
       fieldErrors: { sebiRegNumber: "Add the registration number, or select Not registered." },
-    };
+    });
   }
 
   try {
@@ -188,7 +265,7 @@ export async function submitApplication(
      */
     if (isUniqueViolation(err)) return { ok: true };
     console.error("[apply] could not record application", err);
-    return { ok: false, error: "We could not record that. Please try again shortly." };
+    return refused({ error: "We could not record that. Please try again shortly." });
   }
 
   return { ok: true };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { submitApplication, type ApplyState } from "@/app/apply/actions";
+import { submitApplication, type ApplyState, type ApplyValues } from "@/app/apply/actions";
 import {
   EXPERT_SHARE_BPS,
   PRICE_MAX_PAISE,
@@ -11,6 +11,23 @@ import {
 import { rupees } from "@/lib/format";
 
 const INITIAL: ApplyState = { ok: false };
+
+/** An untouched form: every field empty, nothing ticked. */
+const BLANK: ApplyValues = {
+  name: "",
+  email: "",
+  phone: "",
+  headline: "",
+  bio: "",
+  background: "",
+  specialties: [],
+  yearsExperience: "",
+  askedRupees: "",
+  sebiRegType: "none",
+  sebiRegNumber: "",
+  links: "",
+  note: "",
+};
 
 const SPECIALTIES = [
   { value: "portfolio_audit", label: "Portfolio audits" },
@@ -38,17 +55,36 @@ export default function ApplyForm() {
 
   const err = (field: string) => state.fieldErrors?.[field];
 
+  /*
+    What goes back in the boxes.
+
+    Empty on a first visit, and on every refusal it is what they typed. This
+    form asks for three paragraphs of writing, and React resets a form when
+    its action returns — so without this, one short answer emptied the lot and
+    the honest guess about what somebody does next is close the tab.
+
+    The key remounts the fields on each attempt so they pick these up, rather
+    than relying on where React's reset falls relative to the re-render.
+  */
+  const v = state.values ?? BLANK;
+
   return (
-    <form action={action} className="form">
+    <form action={action} className="form" key={state.attempt ?? 0}>
       <div className="row2">
         <label className="f">
           <span>Your name</span>
-          <input name="name" autoComplete="name" required />
+          <input name="name" autoComplete="name" defaultValue={v.name} required />
           {err("name") ? <em className="err">{err("name")}</em> : null}
         </label>
         <label className="f">
           <span>Email</span>
-          <input name="email" type="email" autoComplete="email" required />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            defaultValue={v.email}
+            required
+          />
           {err("email") ? <em className="err">{err("email")}</em> : null}
         </label>
       </div>
@@ -58,11 +94,18 @@ export default function ApplyForm() {
           <span>
             Phone <em>optional</em>
           </span>
-          <input name="phone" autoComplete="tel" />
+          <input name="phone" autoComplete="tel" defaultValue={v.phone} />
         </label>
         <label className="f">
           <span>Years doing this</span>
-          <input name="yearsExperience" type="number" min={0} max={60} required />
+          <input
+            name="yearsExperience"
+            type="number"
+            min={0}
+            max={60}
+            defaultValue={v.yearsExperience}
+            required
+          />
           {err("yearsExperience") ? <em className="err">{err("yearsExperience")}</em> : null}
         </label>
       </div>
@@ -89,6 +132,7 @@ export default function ApplyForm() {
           min={PRICE_MIN_PAISE / 100}
           max={PRICE_MAX_PAISE / 100}
           placeholder={String(SINGLE_CALL_PAISE / 100)}
+          defaultValue={v.askedRupees}
         />
         {err("askedRupees") ? <em className="err">{err("askedRupees")}</em> : null}
       </label>
@@ -100,7 +144,13 @@ export default function ApplyForm() {
 
       <label className="f">
         <span>One line, as it would appear on your card</span>
-        <input name="headline" placeholder="Portfolio audits · 9 yrs" maxLength={90} required />
+        <input
+          name="headline"
+          placeholder="Portfolio audits · 9 yrs"
+          maxLength={90}
+          defaultValue={v.headline}
+          required
+        />
         {err("headline") ? <em className="err">{err("headline")}</em> : null}
       </label>
 
@@ -114,6 +164,7 @@ export default function ApplyForm() {
           name="background"
           rows={3}
           placeholder="Firms, desks and roles — the experience you would want someone to know about before they book you."
+          defaultValue={v.background}
           required
         />
         {err("background") ? <em className="err">{err("background")}</em> : null}
@@ -125,6 +176,7 @@ export default function ApplyForm() {
           name="bio"
           rows={5}
           placeholder="Write it the way you would say it to someone on the call."
+          defaultValue={v.bio}
           required
         />
         {err("bio") ? <em className="err">{err("bio")}</em> : null}
@@ -135,7 +187,12 @@ export default function ApplyForm() {
         <div className="checks">
           {SPECIALTIES.map((s) => (
             <label key={s.value} className="check">
-              <input type="checkbox" name="specialties" value={s.value} />
+              <input
+                type="checkbox"
+                name="specialties"
+                value={s.value}
+                defaultChecked={v.specialties.includes(s.value)}
+              />
               <span>{s.label}</span>
             </label>
           ))}
@@ -154,7 +211,7 @@ export default function ApplyForm() {
         <div className="row2">
           <label className="f">
             <span>Type</span>
-            <select name="sebiRegType" defaultValue="none">
+            <select name="sebiRegType" defaultValue={v.sebiRegType || "none"}>
               <option value="none">Not registered</option>
               <option value="ria">Registered Investment Adviser (RIA)</option>
               <option value="ra">Research Analyst (RA)</option>
@@ -164,7 +221,7 @@ export default function ApplyForm() {
             <span>
               Registration number <em>if registered</em>
             </span>
-            <input name="sebiRegNumber" placeholder="INA000000000" />
+            <input name="sebiRegNumber" placeholder="INA000000000" defaultValue={v.sebiRegNumber} />
             {err("sebiRegNumber") ? <em className="err">{err("sebiRegNumber")}</em> : null}
           </label>
         </div>
@@ -178,14 +235,18 @@ export default function ApplyForm() {
         <span>
           Where your work can be seen <em>optional</em>
         </span>
-        <input name="links" placeholder="A site, a newsletter, a handle — whatever is real" />
+        <input
+          name="links"
+          placeholder="A site, a newsletter, a handle — whatever is real"
+          defaultValue={v.links}
+        />
       </label>
 
       <label className="f">
         <span>
           Anything else <em>optional</em>
         </span>
-        <textarea name="note" rows={3} />
+        <textarea name="note" rows={3} defaultValue={v.note} />
       </label>
 
       {state.error ? <p className="err">{state.error}</p> : null}
