@@ -3200,12 +3200,32 @@
        coloured with that would disappear the moment it sat on an alt
        band, and the expert grid appears on two pages with different
        backgrounds behind it.
+
+       IN LIGHT MODE the card used to be nothing at all: transparent, square,
+       a hairline along the top. That reads as a drawn object on a dark page
+       and as an absence on a white one — the card was the same white as the
+       ground, so the only thing separating one expert from the next was a
+       rule, and the card itself was invisible.
+
+       So light takes the glass sheet the nav and the booking sheet are made
+       of. On a white page that sheet alone would still be white on white;
+       what makes it read is --glass-shadow, which carries the bright inner
+       rim and the soft lift under it. The tint is almost nothing and the
+       EDGES are the whole effect — which is what frosted glass on a pale
+       ground actually looks like.
+
+       Padding and gap come across from dark at the same time. 18px 0 0 was
+       right for text sitting directly on the page; a drawn panel has to
+       inset its content from its own edges, and needs less air between it
+       and the next one than two undrawn columns did.
     */
-    --card: transparent;
-    --card-radius: 0;
-    --card-edge: 1px solid var(--rule);
-    --card-pad: 18px 0 0;
-    --card-gap: 36px;
+    --card: linear-gradient(152deg, var(--glass-sheet-1) 0%, var(--glass-sheet-2) 100%);
+    --card-radius: 16px;
+    --card-edge: 0;
+    --card-pad: 28px;
+    --card-pad-sm: 22px;
+    --card-gap: 20px;
+    --card-shadow: var(--glass-shadow);
     --btn-soft: #EFF0F3;
     --btn-soft-hover: #E5E7EC;
     --nav-hover: rgba(252, 253, 255, 0.92);
@@ -3291,6 +3311,8 @@
       --card: #181818;
       --card-radius: 16px;
       --card-edge: 0;
+      /* A fill, not a pane: the lift is the colour against the page. */
+      --card-shadow: none;
       --card-pad: 28px;
       --card-pad-sm: 22px;
       --card-gap: 20px;
@@ -3344,6 +3366,8 @@
     --card: #181818;
     --card-radius: 16px;
     --card-edge: 0;
+    /* A fill, not a pane: the lift is the colour against the page. */
+    --card-shadow: none;
     --card-pad: 28px;
     --card-pad-sm: 22px;
     --card-gap: 20px;
@@ -3945,16 +3969,24 @@
      6.5% of the width, and 28 here is 8. The colours are our own --card
      against our own grounds.
 
-     Still not glass: no backdrop-filter, so the levels note above stays
-     true. A tinted surface and a pane of glass are different claims — one
-     says nearer, the other says floating over.
+     Still not glass, and the distinction is finer than it was. In light
+     mode the card is finished with the glass SHEET and RIM, because a white
+     card on a white page has to be drawn by its edges or it is not drawn at
+     all. What it does not take is the backdrop-filter, and that is the part
+     that would make it level 1 — the levels are about what a panel does to
+     the page BEHIND it, and this one does nothing to it.
+
+     Not a technicality dressed up, either. The grid sits on a flat band with
+     nothing moving behind it, so a blur here would blur a solid colour: a
+     compositing layer per card for a result identical to the one without it.
+     Same reasoning as the level 1 panels above.
   */
   .site .xcard {
     border: 0;
     border-top: var(--card-edge);
     border-radius: var(--card-radius);
     background: var(--card);
-    box-shadow: none;
+    box-shadow: var(--card-shadow);
   }
 
   .site .glassy {
@@ -4111,7 +4143,17 @@
      open.
   */
   /* Filled cards hold themselves apart; ruled columns need the gap to. */
-  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--card-gap); }
+  /*
+     auto-FILL, not auto-fit.
+
+     auto-fit collapses the tracks nothing is in and lets what is left
+     stretch across them, so a directory of one expert rendered as one card
+     1,092px wide with a full-width Book a call along the bottom — a single
+     person presented as a banner. auto-fill keeps the empty tracks, so a
+     card is one column whether there is one of them or nine, and the grid
+     stops being a different shape at every headcount.
+  */
+  .site .grid3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--card-gap); }
   .site .xcard { padding: var(--card-pad); display: flex; flex-direction: column; }
   .site .xcard-top { display: flex; align-items: center; gap: 14px; }
   /*
