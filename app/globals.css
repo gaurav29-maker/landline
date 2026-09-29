@@ -3219,17 +3219,19 @@
        from the page, which is the only thing that stays calm when there are
        nine of them in a grid rather than one. Shadows do not stack quietly.
 
-       Cool rather than neutral. Pure grey on a white page reads as an
-       absence of colour; this leans a few degrees toward the blue the site
-       already uses for everything it wants you to touch, so the card reads
-       as chosen rather than as unpainted.
+       Neutral, and that is a reversal. It was briefly cooled a few degrees
+       toward the site's blue, on the usual argument that a chosen grey
+       beats an inherited one. Against the reference the tint was the thing
+       you noticed — a faintly blue card behind black type, on a page whose
+       blue is otherwise reserved for things you can press. The grey is not
+       where this page should be spending colour.
 
        Padding and gap come across from dark at the same time. 18px 0 0 was
        right for text sitting directly on the page; a drawn panel has to
        inset its content from its own edges, and needs less air between it
        and the next one than two undrawn columns did.
     */
-    --card: #F3F5F9;
+    --card: #F7F7F7;
     --card-radius: 16px;
     --card-edge: 0;
     --card-pad: 28px;
@@ -4182,10 +4184,35 @@
   .site .xrole { font-size: 13px; color: var(--ink-mute); margin-top: 2px; }
   /* The one rule inside the card: it separates who from what, as x.ai's
      hairline separates the lede from the ticked list under it. */
-  .site .rec { margin: 20px 0 0; padding: 18px 0 4px; border-top: 1px solid var(--hairline); display: grid; gap: 10px; }
-  .site .rec > div { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+  /*
+     Label column, value column — not a row pushed apart.
+
+     Each pair used to be its own flex row with the value shoved to the far
+     edge, so the values ended flush right and started wherever they
+     happened to: ₹5,499 / call, 45 min, video, Not registered, three
+     different left edges down a card 300px wide. Ragged in the direction
+     you read.
+
+     The rows are the grid now, so every value begins at the same x and the
+     four of them read as a column. display: contents on the wrapper divs
+     is what lets the dt and dd take part — the div is a grouping element
+     with no meaning of its own, and the dl/dt/dd relationship survives it.
+     max-content sizes the label column to the longest label rather than to
+     a number somebody guessed.
+  */
+  .site .rec {
+    margin: 20px 0 0;
+    padding: 18px 0 4px;
+    border-top: 1px solid var(--hairline);
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 18px;
+    row-gap: 10px;
+    align-items: baseline;
+  }
+  .site .rec > div { display: contents; }
   .site .rec dt { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }
-  .site .rec dd { margin: 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
+  .site .rec dd { margin: 0; font-family: var(--mono); font-size: 12.5px; color: var(--ink); font-variant-numeric: tabular-nums; }
   .site .rec .rate { font-size: 15px; font-weight: 500; }
   .site .rec .rate small { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-faint); }
   .site .unreg { color: var(--ink-mute); }
