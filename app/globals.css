@@ -1432,13 +1432,16 @@
      here, so the console and the marketing page are the same white.
   */
   .site-dark {
+    /* The reference exactly: white ground, PURE black ink, and the two
+       greys it recedes through. #171A20 was a warm near-black chosen for
+       the marketing site; that site keeps it, this one does not. */
     --canvas:     #FFFFFF;
     --white:      #FFFFFF;
     --surface:    #F4F4F4;
     --line:       #E3E4E6;
-    --ink-dark:   #171A20;
-    --ink:        #393C41;
-    --ink-soft:   #5C5E62;
+    --ink-dark:   #000000;
+    --ink:        #000000;
+    --ink-soft:   rgba(0, 0, 0, 0.3);
     /* A field reads as a well on a dark ground and as an outline on a
        light one, so on white it is the page colour and the border does
        the work. Tinting it grey would have made every input look
@@ -5441,198 +5444,262 @@
   }
 
   /* ============================================================ console
-     Landline OS, in one material.
+     Landline OS, in yuriroga.com's system, measured rather than eyeballed.
 
-     The console was the marketing site's components wearing a dark palette:
-     blue selection, blue links, blue tints, blue rules, four different corner
-     radii and three different panel colours. On black that reads as accent.
-     On white it reads as decoration, and on a page of dates, money and
-     cancellation windows, decoration is noise competing with the only thing
-     that matters — the figures.
+     Every value below was read off the reference with getComputedStyle. The
+     system is unusually strict and that is the point of it:
 
-     Three rules, and everything below is one of them:
+       face     Helvetica, Arial, sans-serif — ONE family, no mono, no serif
+       type     10px / 400 / 0.2px tracking / 13px line-height — ONE SIZE
+                for every element on the page, headings included
+       label    the same 10px at rgba(ink, 0.3), 0.8px tracking, uppercase,
+                over a 0.8px rule at rgba(ink, 0.05)
+       ground   #FFFFFF, ink pure #000000
+       panel    #F7F7F7, 15px corner, 20px 20px 40px
+       pill     30px tall, 0 20px, 15px corner, rgba(240,240,240,0.5)
+                behind blur(50px)
+       accent   none. There is no colour on that site.
 
-       1  ONE SURFACE. Every panel is --panel. Not a tint per meaning.
-       2  ONE CORNER. 15px, on panels, fields, buttons and pills alike.
-       3  ONE ACCENT, SPENT ONCE. Blue survives on the primary button and
-          nowhere else. Selection, links, labels and notes are ink, because
-          a page where six things are blue has no accent, it has a colour
-          scheme.
+     THE ONE SIZE IS THE WHOLE IDEA. With no type scale, hierarchy has to
+     come from colour and position instead: a label is the same 10px as the
+     figure under it and recedes because it is 30% black. Nothing is
+     important because it is big.
 
-     Ink carries what blue used to: a selected day is FILLED, a selected slot
-     is BORDERED, a link is UNDERLINED. Those are three different signals a
-     single hue was being asked to send at three different strengths.
+     It is also the part that costs something here, and it is worth writing
+     down rather than discovering. That reference is a portfolio where
+     images carry the page and the text is a caption. This is a console
+     carrying session times, cancellation windows and amounts of money, and
+     10px is below what most people read comfortably — a member checking
+     whether a refund window has closed is doing close work on a phone.
+     Asked for exactly, built exactly; --os-size is the single knob, and
+     raising it to 12px moves the whole console in proportion because
+     everything below is expressed in these tokens.
+
+     SCOPED TO .os. The marketing site keeps its own type, colour and scale;
+     nothing here reaches it.
   */
 
-  .os {
-    /* The one corner. Named so the next person changes it in one place. */
+  .site-dark.os {
+    --os-face: Helvetica, Arial, sans-serif;
+    --os-size: 10px;
+    --os-lh: 13px;
+    --os-ls: 0.2px;
+    --os-label-ls: 0.8px;
     --os-corner: 15px;
-    /* A label that is present without being read first: the reference's
-       30% black, expressed against whichever ink the theme is using. */
-    --os-label: color-mix(in srgb, var(--ink-dark) 42%, transparent);
+    --os-pill-h: 30px;
+    --os-pill-pad: 0 20px;
+    --os-panel-pad: 20px 20px 40px;
+    /* The reference's 30% and 5% black, against whichever ink is in play. */
+    --os-label: color-mix(in srgb, var(--ink-dark) 30%, transparent);
+    --os-rule: color-mix(in srgb, var(--ink-dark) 5%, transparent);
+    --os-pill-bg: color-mix(in srgb, var(--panel) 92%, var(--canvas));
+
+    font-family: var(--os-face);
+    font-size: var(--os-size);
+    line-height: var(--os-lh);
+    letter-spacing: var(--os-ls);
+    color: var(--ink-dark);
   }
 
-  /* ---- section labels: quiet, ruled, the width of what they introduce ---- */
-  .os .ops-h1 {
-    font-size: 21px;
-    letter-spacing: -0.02em;
-    margin: 0 0 6px;
+  /*
+     One size means one declaration, applied to everything rather than to a
+     list of components somebody has to keep up to date.
+  */
+  .site-dark.os *,
+  .site-dark.os h1, .site-dark.os h2, .site-dark.os h3, .site-dark.os p, .site-dark.os a, .site-dark.os b, .site-dark.os em, .site-dark.os small,
+  .site-dark.os button, .site-dark.os input, .site-dark.os select, .site-dark.os textarea, .site-dark.os dt, .site-dark.os dd {
+    font-family: var(--os-face);
+    font-size: var(--os-size);
+    line-height: var(--os-lh);
+    letter-spacing: var(--os-ls);
+    font-weight: 400;
   }
-  .os .ops-h2,
-  .os .member-pass-label,
-  .os .member-note-label,
-  .os .member-section > .eyebrow {
-    font-family: var(--mono);
-    font-size: 10.5px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+
+  /* Bold survives only where the markup means "this word, not that one". */
+  .site-dark.os b, .site-dark.os strong { font-weight: 700; }
+
+  /* ---- labels ---- */
+  .site-dark.os .ops-h2,
+  .site-dark.os .member-h2,
+  .site-dark.os .member-pass-label,
+  .site-dark.os .member-note-label,
+  .site-dark.os .os-status,
+  .site-dark.os .eyebrow {
     color: var(--os-label);
+    letter-spacing: var(--os-label-ls);
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+  .site-dark.os .member-h2,
+  .site-dark.os .ops-h2 {
+    padding: 0 0 10px;
+    border-bottom: 0.8px solid var(--os-rule);
+    margin: 0 0 14px;
+  }
+  .site-dark.os .os-status-user,
+  .site-dark.os .os-status-plan,
+  .site-dark.os .os-status-days { color: var(--os-label); }
+  .site-dark.os .os-status-sep { color: var(--os-rule); }
+
+  /* The page title is a label too. Nothing on that site is 22px. */
+  .site-dark.os .ops-h1 {
+    color: var(--ink-dark);
+    margin: 0 0 14px;
+    letter-spacing: var(--os-ls);
   }
 
-  /* ---- one surface, one corner ---- */
-  .os .bp-panel,
-  .os .member-pass,
-  .os .member-confirm,
-  .os .receipt,
-  .os .os-renew,
-  .os .bp-sheet {
+  /* ---- panels ---- */
+  .site-dark.os .bp-panel,
+  .site-dark.os .member-pass,
+  .site-dark.os .member-confirm,
+  .site-dark.os .receipt,
+  .site-dark.os .os-renew,
+  .site-dark.os .bp-sheet {
     background: var(--panel);
     border: 0;
     border-radius: var(--os-corner);
+    padding: var(--os-panel-pad);
+    box-shadow: none;
   }
+  .site-dark.os .member-pass-main { font-size: var(--os-size); font-weight: 700; letter-spacing: var(--os-ls); }
+
+  /* ---- pills: chrome, buttons and choices are one object ---- */
+  .site-dark.os .os-bar .os-mark,
+  .site-dark.os .os-nav > a,
+  .site-dark.os .os-nav > span,
+  .site-dark.os .os-nav .ops-signout,
+  .site-dark.os .ops-btn,
+  .site-dark.os .b,
+  .site-dark.os .btn-primary,
+  .site-dark.os .bp-day,
+  .site-dark.os .bp-slot,
+  .site-dark.os .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--os-pill-h);
+    padding: var(--os-pill-pad);
+    border: 0;
+    border-radius: var(--os-corner);
+    background: var(--os-pill-bg);
+    -webkit-backdrop-filter: blur(50px);
+    backdrop-filter: blur(50px);
+    color: var(--ink-dark);
+    font-weight: 400;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .site-dark.os .os-nav > span { cursor: default; }
+  .site-dark.os .os-bar .os-mark:hover,
+  .site-dark.os .os-nav > a:hover,
+  .site-dark.os .ops-btn:hover,
+  .site-dark.os .b:hover,
+  .site-dark.os .bp-day:hover,
+  .site-dark.os .bp-slot:hover { background: var(--panel); }
 
   /*
-     Fields are the exception that proves it: a well inside a panel has to be
-     distinguishable FROM the panel, so it takes the page's own ground and a
-     hairline rather than the panel grey.
+     Chosen is ink-filled. With no accent and no second size, inversion is
+     the only signal left that reads instantly at 10px.
   */
-  .os .ops-input,
-  .os .bp-field input,
-  .os .bp-field textarea,
-  .os .bp-field select {
-    background: var(--canvas);
-    border: 1px solid var(--hair-strong);
-    border-radius: var(--os-corner);
-  }
-  .os .ops-input:focus,
-  .os .bp-field input:focus,
-  .os .bp-field textarea:focus {
-    outline: none;
-    border-color: var(--ink-dark);
-  }
-
-  /* ---- selection is ink, at three strengths ---- */
-
-  /* Filled: the day you are looking at. One per strip, so it can be loud. */
-  .os .bp-day {
-    border-radius: var(--os-corner);
-    border-color: var(--hair-strong);
-    background: var(--canvas);
-  }
-  .os .bp-day:hover { border-color: var(--ink-mute, var(--ink-soft)); }
-  .os .bp-day.is-active {
-    background: var(--ink-dark);
-    border-color: var(--ink-dark);
-    color: var(--canvas);
-  }
-
-  /* Bordered: a time, or an expert. Several on screen, so they stay quiet. */
-  .os .bp-slot,
-  .os .member-expert,
-  .os .bp-product-opt {
-    border-radius: var(--os-corner);
-    border-color: var(--hair-strong);
-    background: var(--canvas);
-  }
-  .os .bp-slot:hover,
-  .os .member-expert:hover,
-  .os .bp-product-opt:hover { border-color: var(--ink-mute, var(--ink-soft)); }
-  .os .bp-slot.is-active,
-  .os .member-expert.is-active,
-  .os .bp-product-opt.is-active {
-    background: var(--panel);
-    border-color: var(--ink-dark);
-    color: var(--ink-dark);
-    font-weight: 600;
-  }
-  .os .bp-product-opt.is-active .bp-product-name,
-  .os .bp-product-opt.is-active .bp-product-price { color: var(--ink-dark); }
-
-  /* The avatar disc was the accent's last unearned appearance in a list. */
-  .os .member-expert-av {
-    background: var(--panel);
-    color: var(--ink-mute, var(--ink-soft));
-  }
-  .os .member-expert.is-active .member-expert-av {
+  .site-dark.os .bp-day.is-active,
+  .site-dark.os .bp-slot.is-active,
+  .site-dark.os .ops-filter.is-active {
     background: var(--ink-dark);
     color: var(--canvas);
+    font-weight: 400;
   }
 
-  /* ---- links: underlined, not coloured ---- */
-  /*
-     Blue was doing the work of saying "this is a link". Underline says it
-     without spending the accent, and it keeps saying it for a reader who
-     cannot separate the hue from the text around it. Faint at rest so a
-     column of them is not a ladder of lines; solid on hover.
-  */
-  .os .ops-link,
-  .os .member-list-right a,
-  .os .member-intake a {
+  /* An expert row is a panel, not a pill: it holds two lines. */
+  .site-dark.os .member-expert,
+  .site-dark.os .bp-product-opt {
+    height: auto;
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: var(--os-corner);
+    background: var(--os-pill-bg);
+  }
+  .site-dark.os .member-expert.is-active,
+  .site-dark.os .bp-product-opt.is-active { background: var(--panel); box-shadow: inset 0 0 0 1px var(--ink-dark); }
+  .site-dark.os .member-expert-av {
+    background: var(--ink-dark);
+    color: var(--canvas);
+    border-radius: var(--os-corner);
+  }
+
+  /* ---- fields ---- */
+  .site-dark.os .ops-input,
+  .site-dark.os .bp-field input,
+  .site-dark.os .bp-field textarea,
+  .site-dark.os .bp-field select {
+    background: var(--canvas);
+    border: 0.8px solid var(--os-rule);
+    border-radius: var(--os-corner);
+    padding: 0 20px;
+    height: var(--os-pill-h);
     color: var(--ink-dark);
-    font-weight: 500;
+  }
+  .site-dark.os .bp-field textarea { height: auto; padding: 10px 20px; }
+  .site-dark.os .ops-input:focus,
+  .site-dark.os .bp-field input:focus,
+  .site-dark.os .bp-field textarea:focus { outline: none; border-color: var(--ink-dark); }
+
+  /* ---- links: underlined, never coloured ---- */
+  .site-dark.os a { color: var(--ink-dark); }
+  .site-dark.os .ops-link,
+  .site-dark.os .member-list-right a,
+  .site-dark.os .member-intake a,
+  .site-dark.os .bp-muted a {
     text-decoration: underline;
-    text-decoration-thickness: 1px;
+    text-decoration-thickness: 0.8px;
     text-underline-offset: 3px;
-    text-decoration-color: var(--hair-strong);
+    text-decoration-color: var(--os-label);
+    font-weight: 400;
   }
-  .os .ops-link:hover,
-  .os .member-list-right a:hover,
-  .os .member-intake a:hover { text-decoration-color: var(--ink-dark); }
+  .site-dark.os .ops-link:hover,
+  .site-dark.os .member-list-right a:hover,
+  .site-dark.os .member-intake a:hover { text-decoration-color: var(--ink-dark); }
 
-  /* ---- the status line and the pass ---- */
-  .os .os-status-plan { color: var(--ink-dark); }
-  .os .member-pass-sub { color: var(--ink-mute, var(--ink-soft)); }
-
-  /* ---- what the expert wrote ---- */
-  /*
-     It was a blue-tinted block with a blue rule and a blue label — the most
-     decorated thing on the page, holding the least decorative content on it.
-     Grey panel, ink rule, quiet label: it reads as a quotation, which is
-     what it is.
-  */
-  .os .member-note {
+  /* ---- everything else that was carrying colour ---- */
+  .site-dark.os .member-note {
     background: var(--panel);
-    border-left: 2px solid var(--ink-dark);
-    border-radius: 0 var(--os-corner) var(--os-corner) 0;
+    border-left: 0;
+    border-radius: var(--os-corner);
     padding: 14px 16px;
   }
+  .site-dark.os .bp-muted,
+  .site-dark.os .ops-sub,
+  .site-dark.os .ops-muted,
+  .site-dark.os .member-pass-sub { color: var(--os-label); }
 
-  /* ---- buttons take the corner ---- */
-  .os .ops-btn,
-  .os .b,
-  .os .btn-primary,
-  .os .bp-btn { border-radius: var(--os-corner); }
-  .os .ops-btn { border-color: var(--hair-strong); }
-  .os .ops-btn:hover { border-color: var(--ink-dark); color: var(--ink-dark); }
+  /* A status pill states a fact; it is not a warning light. */
+  .site-dark.os .pill,
+  .site-dark.os .pill.ok,
+  .site-dark.os .pill.warn,
+  .site-dark.os .pill.big,
+  .site-dark.os .pill[class*="s-"] {
+    background: var(--os-pill-bg);
+    color: var(--os-label);
+    text-transform: uppercase;
+    letter-spacing: var(--os-label-ls);
+  }
 
-  /*
-     The one place the accent is still spent. A console has exactly one
-     thing per screen it wants you to press, and that is what an accent is
-     for — everything above gave its blue back so this one keeps meaning
-     something.
-  */
-  .os .btn-primary,
-  .os .b-fill { background: var(--blue); color: var(--on-accent); border: 0; }
-
-  /* ---- the day strip scrolls without announcing it ---- */
-  /*
-     A grey bar across a panel is chrome, and the cut-off card at the edge
-     already says there is more. The strip keeps its scroll and loses the
-     drawn one.
-  */
-  .os .bp-day-tabs {
+  /* ---- the day strip scrolls without drawing a bar ---- */
+  .site-dark.os .bp-day-tabs {
     scrollbar-width: none;
     padding-bottom: 2px;
+    gap: 8px;
   }
-  .os .bp-day-tabs::-webkit-scrollbar { height: 0; }
+  .site-dark.os .bp-day-tabs::-webkit-scrollbar { height: 0; }
+
+  .site-dark.os .member-list li { border-color: var(--os-rule); }
+  .site-dark.os .member-section { margin-bottom: 40px; }
+
+  /*
+     The wordmark keeps its blue syllable on the marketing site and loses
+     it here. That letter is the last colour in the console, and a system
+     with no accent cannot make an exception for a logo.
+  */
+  .site-dark.os .os-mark span,
+  .site-dark.os .os-mark .mark-r { color: inherit; }
