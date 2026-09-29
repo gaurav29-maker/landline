@@ -5725,3 +5725,99 @@
     line-height: 20px;
     letter-spacing: normal;
   }
+
+  /* ---------------------------------------------------- the tint
+     Blue back in, in the four places Apple puts it and nowhere else.
+
+     iOS has one accent — the tint — and a short list of jobs for it. The
+     list is the useful part, because it is mostly about restraint: the tint
+     marks what you can TOUCH and what you have CHOSEN, and nothing else.
+     Section headers stay grey. Body text stays black. Separators stay
+     hairlines. Status badges stay neutral. A tinted label that does nothing
+     when you press it is the single most common way an interface built this
+     way goes wrong.
+
+       1  TAPPABLE TEXT IS TINTED, and not underlined. Every text button in
+          iOS — Cancel, Done, Edit, a link in Settings — is the tint colour
+          with no decoration. Colour is the affordance.
+       2  A FILLED BUTTON TAKES THE TINT as its fill, with a white label.
+          One per screen; the rest stay grey.
+       3  A SELECTED DATE IS A FILLED SHAPE. Straight out of Calendar.
+       4  A SELECTED ROW IS TINT-WASHED, label and all — the lighter,
+          quieter cousin of 3, for when several can be on screen.
+
+     Plus the two small ones iOS tints without anyone noticing: the caret,
+     and the border of the field you are typing in.
+
+     --blue-deep for text and --blue for fills: the same hue at the two
+     values that clear contrast on their own grounds. Both flip with the
+     theme, so this reads on white and on black without a second list.
+
+     WHAT IS DELIBERATELY NOT TINTED: CANCEL. Apple's answer for a
+     destructive action is red, not the tint, and half of these cancel a
+     paid booking inside a refund window. Blue would say "this is the safe
+     one". Left neutral until that is a decision somebody makes.
+  */
+
+  /* 1 — tappable text */
+  .site-dark.os .ops-link:not(.signin *),
+  .site-dark.os .member-list-right a:not(.signin *),
+  .site-dark.os .member-intake a:not(.signin *),
+  .site-dark.os .bp-muted a:not(.signin *),
+  .site-dark.os .member-section a:not(.signin *) {
+    color: var(--blue-deep);
+    text-decoration: none;
+  }
+  .site-dark.os .ops-link:not(.signin *):hover,
+  .site-dark.os .member-list-right a:not(.signin *):hover,
+  .site-dark.os .member-intake a:not(.signin *):hover,
+  .site-dark.os .bp-muted a:not(.signin *):hover,
+  .site-dark.os .member-section a:not(.signin *):hover {
+    text-decoration: underline;
+    text-decoration-thickness: 0.8px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--blue-deep);
+  }
+
+  /* 2 — the filled button */
+  .site-dark.os .b-fill:not(.signin *),
+  .site-dark.os .btn-primary:not(.signin *),
+  .site-dark.os .ops-btn.primary:not(.signin *) {
+    background: var(--blue);
+    color: var(--on-accent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .site-dark.os .b-fill:not(.signin *):hover,
+  .site-dark.os .btn-primary:not(.signin *):hover,
+  .site-dark.os .ops-btn.primary:not(.signin *):hover { background: var(--blue-deep); }
+
+  /* 3 — the selected date */
+  .site-dark.os .bp-day.is-active {
+    background: var(--blue);
+    color: var(--on-accent);
+  }
+
+  /* 4 — the selected row */
+  .site-dark.os .bp-slot.is-active,
+  .site-dark.os .ops-filter.is-active {
+    background: var(--blue-tint);
+    color: var(--blue-deep);
+  }
+  .site-dark.os .member-expert.is-active,
+  .site-dark.os .bp-product-opt.is-active {
+    background: var(--blue-tint);
+    box-shadow: inset 0 0 0 1px var(--blue);
+  }
+  .site-dark.os .member-expert.is-active .member-expert-av {
+    background: var(--blue);
+    color: var(--on-accent);
+  }
+
+  /* the two nobody notices */
+  .site-dark.os .ops-input:not(.signin *),
+  .site-dark.os .bp-field input:not(.signin *),
+  .site-dark.os .bp-field textarea:not(.signin *) { caret-color: var(--blue); }
+  .site-dark.os .ops-input:not(.signin *):focus,
+  .site-dark.os .bp-field input:not(.signin *):focus,
+  .site-dark.os .bp-field textarea:not(.signin *):focus { border-color: var(--blue); }
