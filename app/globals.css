@@ -3849,68 +3849,28 @@
   .site .b-line:hover { border-color: var(--ink); }
 
   /*
-     SOFT — the third variant, after x.ai's.
+     Sign-in is the hero's outline button, in the bar.
 
-     Theirs is color-mix(in srgb, primary 3%, card) for the surface with
-     the accent itself as the label, no border, and a hover that only
-     moves the mix from 3% to 7%. The whole button is the accent at two
-     strengths: a trace of it in the ground, all of it in the word.
+     This control has been four things, and the file had three of the
+     rationales stacked on top of each other, two of them describing a
+     button that no longer existed. One comment now, and it is this one.
 
-     It solves the thing a nav actually has: an action that is real but is
-     not the page's main one. A fill claims to be the main action; an
-     outline reads as the lesser half of a pair it does not have. This
-     reads as neither — it belongs to the accent without competing for it.
+     It was outlined once and moved off it, on the argument that an outline
+     with nothing behind it reads as a stray rule rather than an object.
+     That argument was about the PHONE, where the nav floats as a capsule
+     over the scrolling page — and below 900 this button is not rendered at
+     all. On a desktop the nav is a bar with a ground, the button sits on
+     that ground, and an outline on a surface is exactly what it looks
+     like: a button drawn on a thing.
 
-     3% is barely a colour. That is the point: on a light ground it is a
-     grey with a reason, and the blue in it is only legible once you see
-     the label it is under.
+     So it takes .b-line unmodified, which makes it the same object as
+     Audit my portfolio in the hero — transparent, --ink label, --ink-mute
+     hairline, fully round. Two secondary actions on one page that are the
+     same shape, rather than two that merely coexist.
+
+     The sizing below still belongs to the bar: 44 tall and 20px of side
+     padding, because the hero's 68 is a hero's number.
   */
-  .site .b-soft {
-    background: color-mix(in srgb, var(--accent) 3%, var(--btn-soft));
-    color: var(--accent-ink);
-    border-color: transparent;
-    font-weight: 500;
-  }
-  .site .b-soft:hover {
-    background: color-mix(in srgb, var(--accent) 7%, var(--btn-soft));
-    border-color: transparent;
-  }
-  /*
-     Sign-in, made of the same glass as the capsule.
-
-     It was a transparent pill with a hairline border, which is what a
-     button drawn ON a surface looks like. This one is not on anything:
-     it floats beside the capsule with the page scrolling under it, and
-     an outline with nothing behind it reads as a stray rule rather than
-     an object. Same tokens as .nav-in, so the two things beside each
-     other are one substance rather than two that merely match.
-
-     border-color rather than border: 0 — .b sets 1px all round, and
-     removing it would make this button 2px shorter than every other .b
-     on the site for no reason anybody could see.
-  */
-  /*
-     Sign-in, measured off x.ai's "Contact Sales" rather than approximated:
-     40px tall, 10px/18px of padding, 14px type, a fully round radius, and
-     a SOLID soft fill — rgb(32,32,32) on their ground — with no border and
-     no shadow at all.
-
-     That last part is the change. This was glass: translucent, blurred,
-     and carrying --nav-rim. Glass made sense when it floated beside a
-     capsule over the page; in a bar that is itself glass, a second pane
-     of it is a bump on a window. Theirs is a quiet filled shape and that
-     is what a secondary action in a bar should be.
-
-     --btn-soft rather than --card, because a control and a surface should
-     be free to differ, and this one needs a hover that a card never does.
-  */
-  /* Size first, and for whichever variant the button is wearing. These
-     were fused with the soft-grey fill below, so changing the sign-in
-     button to a solid one dropped its height and padding along with its
-     colour. */
-  /* 44 and 0 20px, which is x.ai's button measured: 44 tall, 12px 20px,
-     14px at 500. Vertical padding as a min-height because .b centres its
-     label with flex rather than with padding. */
   .site .nav-aside .b {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -3919,15 +3879,6 @@
     min-width: 0;
     padding: 0 20px;
     font-size: 14px;
-  }
-  .site .nav-aside .b-line {
-    background: var(--btn-soft);
-    border-color: transparent;
-    color: var(--ink);
-  }
-  .site .nav-aside .b-line:hover {
-    background: var(--btn-soft-hover);
-    border-color: transparent;
   }
 
   /*

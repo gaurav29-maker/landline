@@ -106,15 +106,11 @@ export default function NavMenu({
         {/*
           Above 900 this is a button in the bar; below, it opens the sheet.
 
-          Soft, not filled and not outlined.
-
-          It was outlined, then filled to match editlobby, and neither is
-          right for it: a fill claims to be the page's main action next to
-          a Find an expert that already is one, and an outline reads as the
-          lesser half of a pair this button is not part of. The soft
-          variant belongs to the accent without competing for it.
+          The same outline button as Audit my portfolio in the hero: a
+          secondary action drawn on the bar it sits on. See the note on
+          .nav-aside .b for why this stopped being a fill.
         */}
-        <Link className="b b-soft b-sm" href={signInHref}>
+        <Link className="b b-line b-sm" href={signInHref}>
           Landline OS
         </Link>
 
