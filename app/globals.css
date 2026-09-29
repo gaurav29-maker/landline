@@ -3325,6 +3325,8 @@
       --card-edge: 0;
       /* A fill, not a pane: the lift is the colour against the page. */
       --card-shadow: none;
+      /* An inverted band cannot go blacker than a black page; see .band.ink. */
+      --band-ink-bg: var(--bg-alt);
       --card-pad: 28px;
       --card-pad-sm: 22px;
       --card-gap: 20px;
@@ -3380,6 +3382,8 @@
     --card-edge: 0;
     /* A fill, not a pane: the lift is the colour against the page. */
     --card-shadow: none;
+    /* An inverted band cannot go blacker than a black page; see .band.ink. */
+    --band-ink-bg: var(--bg-alt);
     --card-pad: 28px;
     --card-pad-sm: 22px;
     --card-gap: 20px;
@@ -3448,6 +3452,43 @@
   /* ---- bands ---- */
   .site .band { padding: 88px 0; }
   .site .band.alt { background: var(--bg-alt); }
+
+  /*
+     One band inverted.
+
+     Not a background colour on a section — that would black the ground and
+     leave black type on it. Everything in a band reads its colour from a
+     token, so flipping the band means flipping the TOKENS inside it and
+     letting the cascade do the rest: the heading, the eyebrow, the panel,
+     the hairlines between findings, the record rows, all of it follows
+     without a single rule naming them. The values are the dark theme's own
+     rather than a second set invented here, so there is one definition of
+     what this site looks like on black.
+
+     --accent-ink moves with them. The disclaimer flag on the audit panel is
+     drawn in the accent, and #3159C9 is a colour chosen to clear WHITE —
+     on black it is the one thing on the band you would struggle to read.
+
+     IN DARK MODE the page is already black, so forcing #000 here would
+     erase the band rather than invert it. --band-ink-bg is declared only in
+     the dark token lists, where it points at --bg-alt; in light it is
+     undefined and the fallback applies. The band is the darkest thing on a
+     light page and a normal alt band on a dark one, which is the same
+     intent expressed twice.
+  */
+  .site .band.ink {
+    background: var(--band-ink-bg, #000000);
+    --ink:        #F5F6F7;
+    --ink-body:   #D3D6DA;
+    --ink-mute:   #9AA0A8;
+    --ink-faint:  #8B929B;
+    --rule:       #2A2A2A;
+    --hairline:   rgba(255, 255, 255, 0.09);
+    --accent-ink: #8AA5F0;
+    --card:       #181818;
+    --card-edge:  0;
+    --card-shadow: none;
+  }
   .site .band-head {
     display: flex; flex-direction: column; gap: 12px;
     align-items: center; text-align: center; margin-bottom: 44px;

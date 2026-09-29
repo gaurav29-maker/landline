@@ -280,7 +280,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <section className="band alt" id="audit">
+      <section className="band ink" id="audit">
         <div className="wrap">
           <div className="band-head idx">
             <span className="eyebrow">Audit my portfolio</span>
