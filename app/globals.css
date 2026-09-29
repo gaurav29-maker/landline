@@ -5439,3 +5439,200 @@
     overflow: hidden; white-space: nowrap;
     clip-path: inset(50%);
   }
+
+  /* ============================================================ console
+     Landline OS, in one material.
+
+     The console was the marketing site's components wearing a dark palette:
+     blue selection, blue links, blue tints, blue rules, four different corner
+     radii and three different panel colours. On black that reads as accent.
+     On white it reads as decoration, and on a page of dates, money and
+     cancellation windows, decoration is noise competing with the only thing
+     that matters — the figures.
+
+     Three rules, and everything below is one of them:
+
+       1  ONE SURFACE. Every panel is --panel. Not a tint per meaning.
+       2  ONE CORNER. 15px, on panels, fields, buttons and pills alike.
+       3  ONE ACCENT, SPENT ONCE. Blue survives on the primary button and
+          nowhere else. Selection, links, labels and notes are ink, because
+          a page where six things are blue has no accent, it has a colour
+          scheme.
+
+     Ink carries what blue used to: a selected day is FILLED, a selected slot
+     is BORDERED, a link is UNDERLINED. Those are three different signals a
+     single hue was being asked to send at three different strengths.
+  */
+
+  .os {
+    /* The one corner. Named so the next person changes it in one place. */
+    --os-corner: 15px;
+    /* A label that is present without being read first: the reference's
+       30% black, expressed against whichever ink the theme is using. */
+    --os-label: color-mix(in srgb, var(--ink-dark) 42%, transparent);
+  }
+
+  /* ---- section labels: quiet, ruled, the width of what they introduce ---- */
+  .os .ops-h1 {
+    font-size: 21px;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  .os .ops-h2,
+  .os .member-pass-label,
+  .os .member-note-label,
+  .os .member-section > .eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--os-label);
+  }
+
+  /* ---- one surface, one corner ---- */
+  .os .bp-panel,
+  .os .member-pass,
+  .os .member-confirm,
+  .os .receipt,
+  .os .os-renew,
+  .os .bp-sheet {
+    background: var(--panel);
+    border: 0;
+    border-radius: var(--os-corner);
+  }
+
+  /*
+     Fields are the exception that proves it: a well inside a panel has to be
+     distinguishable FROM the panel, so it takes the page's own ground and a
+     hairline rather than the panel grey.
+  */
+  .os .ops-input,
+  .os .bp-field input,
+  .os .bp-field textarea,
+  .os .bp-field select {
+    background: var(--canvas);
+    border: 1px solid var(--hair-strong);
+    border-radius: var(--os-corner);
+  }
+  .os .ops-input:focus,
+  .os .bp-field input:focus,
+  .os .bp-field textarea:focus {
+    outline: none;
+    border-color: var(--ink-dark);
+  }
+
+  /* ---- selection is ink, at three strengths ---- */
+
+  /* Filled: the day you are looking at. One per strip, so it can be loud. */
+  .os .bp-day {
+    border-radius: var(--os-corner);
+    border-color: var(--hair-strong);
+    background: var(--canvas);
+  }
+  .os .bp-day:hover { border-color: var(--ink-mute, var(--ink-soft)); }
+  .os .bp-day.is-active {
+    background: var(--ink-dark);
+    border-color: var(--ink-dark);
+    color: var(--canvas);
+  }
+
+  /* Bordered: a time, or an expert. Several on screen, so they stay quiet. */
+  .os .bp-slot,
+  .os .member-expert,
+  .os .bp-product-opt {
+    border-radius: var(--os-corner);
+    border-color: var(--hair-strong);
+    background: var(--canvas);
+  }
+  .os .bp-slot:hover,
+  .os .member-expert:hover,
+  .os .bp-product-opt:hover { border-color: var(--ink-mute, var(--ink-soft)); }
+  .os .bp-slot.is-active,
+  .os .member-expert.is-active,
+  .os .bp-product-opt.is-active {
+    background: var(--panel);
+    border-color: var(--ink-dark);
+    color: var(--ink-dark);
+    font-weight: 600;
+  }
+  .os .bp-product-opt.is-active .bp-product-name,
+  .os .bp-product-opt.is-active .bp-product-price { color: var(--ink-dark); }
+
+  /* The avatar disc was the accent's last unearned appearance in a list. */
+  .os .member-expert-av {
+    background: var(--panel);
+    color: var(--ink-mute, var(--ink-soft));
+  }
+  .os .member-expert.is-active .member-expert-av {
+    background: var(--ink-dark);
+    color: var(--canvas);
+  }
+
+  /* ---- links: underlined, not coloured ---- */
+  /*
+     Blue was doing the work of saying "this is a link". Underline says it
+     without spending the accent, and it keeps saying it for a reader who
+     cannot separate the hue from the text around it. Faint at rest so a
+     column of them is not a ladder of lines; solid on hover.
+  */
+  .os .ops-link,
+  .os .member-list-right a,
+  .os .member-intake a {
+    color: var(--ink-dark);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--hair-strong);
+  }
+  .os .ops-link:hover,
+  .os .member-list-right a:hover,
+  .os .member-intake a:hover { text-decoration-color: var(--ink-dark); }
+
+  /* ---- the status line and the pass ---- */
+  .os .os-status-plan { color: var(--ink-dark); }
+  .os .member-pass-sub { color: var(--ink-mute, var(--ink-soft)); }
+
+  /* ---- what the expert wrote ---- */
+  /*
+     It was a blue-tinted block with a blue rule and a blue label — the most
+     decorated thing on the page, holding the least decorative content on it.
+     Grey panel, ink rule, quiet label: it reads as a quotation, which is
+     what it is.
+  */
+  .os .member-note {
+    background: var(--panel);
+    border-left: 2px solid var(--ink-dark);
+    border-radius: 0 var(--os-corner) var(--os-corner) 0;
+    padding: 14px 16px;
+  }
+
+  /* ---- buttons take the corner ---- */
+  .os .ops-btn,
+  .os .b,
+  .os .btn-primary,
+  .os .bp-btn { border-radius: var(--os-corner); }
+  .os .ops-btn { border-color: var(--hair-strong); }
+  .os .ops-btn:hover { border-color: var(--ink-dark); color: var(--ink-dark); }
+
+  /*
+     The one place the accent is still spent. A console has exactly one
+     thing per screen it wants you to press, and that is what an accent is
+     for — everything above gave its blue back so this one keeps meaning
+     something.
+  */
+  .os .btn-primary,
+  .os .b-fill { background: var(--blue); color: var(--on-accent); border: 0; }
+
+  /* ---- the day strip scrolls without announcing it ---- */
+  /*
+     A grey bar across a panel is chrome, and the cut-off card at the edge
+     already says there is more. The strip keeps its scroll and loses the
+     drawn one.
+  */
+  .os .bp-day-tabs {
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .os .bp-day-tabs::-webkit-scrollbar { height: 0; }
