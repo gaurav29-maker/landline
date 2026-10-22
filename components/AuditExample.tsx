@@ -50,6 +50,18 @@ type Shape = {
      100 — a proportion of the same book, not a score and not a rating.
   */
   bar: { aLabel: string; aPct: number; bLabel: string; bPct: number };
+  /*
+     The one number worth setting large, after Tesla — whose product pages
+     put a bare figure at 48px, the same size as the product name, with a
+     small label under it and nothing else competing.
+
+     Written per shape rather than generated from the bar, because the most
+     striking framing is different each time: the concentrated book is about
+     how MUCH is in three names, the scattered one about how LITTLE the
+     largest is. A template would have produced three sentences and one
+     good one.
+  */
+  figure: { value: string; caption: string };
   when: string;
   /** The date the real filename leads with, so a folder sorts by call. */
   stamp: string;
@@ -70,6 +82,7 @@ const SHAPES: Shape[] = [
     key: "concentrated",
     chip: "A few big positions",
     summary: "14 stocks and 3 funds, with half the money in three names.",
+    figure: { value: "51%", caption: "of the book sits in three names" },
     bar: {
       aLabel: "Top three",
       aPct: 51,
@@ -99,6 +112,7 @@ const SHAPES: Shape[] = [
     key: "scattered",
     chip: "A long list of small ones",
     summary: "41 stocks and 9 funds, with nothing large enough to matter on its own.",
+    figure: { value: "4%", caption: "is the largest single holding, across fifty of them" },
     bar: {
       aLabel: "Top three",
       aPct: 11,
@@ -128,6 +142,7 @@ const SHAPES: Shape[] = [
     key: "derivatives",
     chip: "Mostly F&O",
     summary: "A small cash book, and most of the risk in open positions.",
+    figure: { value: "62%", caption: "of capital is margin, not holdings" },
     bar: {
       aLabel: "Cash book",
       aPct: 38,
@@ -201,6 +216,8 @@ function recordFor(s: Shape): string {
 
 export default function AuditExample() {
   const [key, setKey] = useState(SHAPES[0].key);
+  /* Closed by default; the figure above is the thing to read first. */
+  const [open, setOpen] = useState(false);
   const shape = SHAPES.find((s) => s.key === key) ?? SHAPES[0];
 
   return (
@@ -242,7 +259,15 @@ export default function AuditExample() {
         ))}
       </div>
 
-      <p className="spec-summary">{shape.summary}</p>
+      {/*
+        The figure, large, after Tesla. The same number that is a row in the
+        record below and a segment in the bar under it — said once at the
+        size it deserves rather than three times quietly.
+      */}
+      <p className="spec-figure">
+        <b>{shape.figure.value}</b>
+        <span>{shape.figure.caption}</span>
+      </p>
 
       {/*
         THE SHAPE, DRAWN — the gap a page using the word twice in copy
@@ -281,12 +306,21 @@ export default function AuditExample() {
         builds — date first, so a folder of these sorts by when the call
         happened.
       */}
-      <figure className="spec-file">
-        <figcaption className="spec-file-name">
-          {`landline-${shape.stamp}-gaurav-khona.txt`}
-        </figcaption>
+      {/*
+        The record, with a lid on it.
+
+        It was 969px of a 2,239px section on a phone — the whole band was
+        2.8 screens, and 30% of the home page. Apple does not put the manual
+        on the product page; the detail is real and it is one link away.
+        Open is still one tap, and the file is the same file.
+      */}
+      <details className="spec-file" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+        <summary className="spec-file-name">
+          <span>{`landline-${shape.stamp}-gaurav-khona.txt`}</span>
+          <span className="spec-file-cue">{open ? "Hide" : "The whole record"}</span>
+        </summary>
         <pre className="spec-file-body">{recordFor(shape)}</pre>
-      </figure>
+      </details>
 
       {/*
         The four actions, in the reader's words.
