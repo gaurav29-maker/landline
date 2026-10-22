@@ -10,6 +10,7 @@ import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import AuditExample from "@/components/AuditExample";
+import PhoneCta from "@/components/PhoneCta";
 import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
 import { TESTIMONIALS } from "@/lib/testimonials";
 
@@ -614,6 +615,9 @@ export default async function Home() {
       </section>
 
       <SiteFooter onLanding />
+
+      {/* Phone only, and only once the hero has scrolled away. */}
+      <PhoneCta />
     </div>
   );
 }

@@ -4084,6 +4084,72 @@
      rather than the words: uppercase mono at this size can lose 0.04em and
      still read as a label.
   */
+  /*
+     ---- the bottom capsule ----
+
+     The nav capsule's twin: same ground, same rim, same lift, same fully
+     round radius, at the other end of the phone. Two objects on the
+     screen and both of them the same substance.
+
+     FIXED, not sticky, because this one is chrome rather than a thing in
+     the flow — it should sit over the page wherever the page happens to
+     be. The footer gets padding to match so the last link is never under
+     it.
+
+     z-index 40, under the nav's 50: the phone menu is fixed inset:0
+     inside the nav, and a CTA floating over an open full-screen menu is
+     the kind of thing nobody tests until a customer reports it.
+
+     Hidden above 900, where the bar carries its own Find an expert and
+     this would be a third copy of one label.
+  */
+  .site .phone-cta {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .site .phone-cta {
+      display: block;
+      position: fixed;
+      left: 50%;
+      bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      transform: translate(-50%, 16px);
+      z-index: 40;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .site .phone-cta.is-up {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+    .site .phone-cta-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 28px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--accent-ink);
+      background: var(--nav-bg);
+      -webkit-backdrop-filter: var(--glass-near);
+      backdrop-filter: var(--glass-near);
+      box-shadow: var(--nav-rim), var(--nav-lift);
+    }
+    /* The last thing on the page should not end under the capsule. */
+    .site .foot { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  }
+
+  /* A capsule that slides into place is motion nobody asked for. */
+  @media (prefers-reduced-motion: reduce) {
+    .site .phone-cta { transition: none; transform: translate(-50%, 0); }
+  }
+
   @media (max-width: 460px) {
     .site .hero-badge { font-size: 10px; letter-spacing: 0.1em; gap: 7px; }
   }
