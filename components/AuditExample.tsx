@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { INTAKE_RETENTION_DAYS } from "@/lib/constants";
 
 /**
@@ -230,118 +230,205 @@ function recordFor(s: Shape): string {
   return lines.join("\n");
 }
 
+/*
+   THE FILM.
+
+   editlobby.com's introduction block is one thing: a 16:9 card, 16px of
+   radius, a 72px white circle in the middle of it, centred on the black
+   page with 20px of air above and below and NOTHING else in the section —
+   no heading, no copy, no list. Measured off the live page rather than
+   guessed, and those are the numbers below.
+
+   What the card plays is the only part that is ours. We have no video,
+   and a play button that does nothing is a lie, so the film is built out
+   of the section's own content: five frames, cross-faded, on a loop —
+   what you send, the same question asked of three different books, and
+   the file you keep. The whole product in seventeen seconds, which reads
+   at a glance where 1,337px of text did not.
+
+   WHEN A REAL FILM EXISTS this is one swap: a <video muted loop playsInline
+   poster> goes into .reel-card in place of the frames and the control row
+   stays as it is. The shape of the card does not change.
+*/
+
+type Frame =
+  | { kind: "intake"; lead: string }
+  | { kind: "shape"; shape: Shape }
+  | { kind: "record"; lead: string };
+
+const FRAMES: Frame[] = [
+  { kind: "intake", lead: "You send what you hold." },
+  ...SHAPES.map((s): Frame => ({ kind: "shape", shape: s })),
+  { kind: "record", lead: "You keep the record." },
+];
+
+/* Long enough to read a twelve-word question without hurrying. */
+const FRAME_MS = 3400;
+
 export default function AuditExample() {
-  const [key, setKey] = useState(SHAPES[0].key);
-  /* Closed by default; the figure above is the thing to read first. */
-  const [open, setOpen] = useState(false);
-  const shape = SHAPES.find((s) => s.key === key) ?? SHAPES[0];
+  const [i, setI] = useState(0);
+  /*
+     Starts stopped, the way editlobby's does, so the first frame a
+     thumbnail or a skimming reader gets is a still one. It starts itself
+     when it is actually on screen and stops when it is not — nothing
+     should be animating in a band nobody is looking at.
+  */
+  const [playing, setPlaying] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const started = useRef(false);
+
+  /*
+     Anybody who has asked their system for less motion gets the film as a
+     still card they step through themselves. Read once on mount rather
+     than watched, because the answer does not change mid-session.
+  */
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || still) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !started.current) {
+          started.current = true;
+          setPlaying(true);
+        } else if (!e.isIntersecting) {
+          setPlaying(false);
+        }
+      },
+      { threshold: 0.45 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [still]);
+
+  useEffect(() => {
+    if (!playing) return;
+    const t = setInterval(() => setI((n) => (n + 1) % FRAMES.length), FRAME_MS);
+    return () => clearInterval(t);
+  }, [playing]);
 
   return (
-    /*
-      THE APPLE PLAYBOOK, as it applies to a section rather than a page.
-
-      Four moves, and the first two are subtractions.
-
-      DEFERENCE. The panel is gone. iOS's second principle is content over
-      chrome, and everything here was sitting inside a rounded card that
-      said nothing — a container drawn because the content felt like it
-      needed one. The content is on the band now, separated by hairlines,
-      the way a grouped list separates rows.
-
-      ONE IDEA PER BEAT. Three of them, each a single line of large type
-      with one piece of evidence under it: the shape, the question, the
-      record. Nothing explains anything twice.
-
-      DETAIL DEFERRED. Apple does not put the manual on the product page.
-      The record stays one line until it is asked for.
-
-      THE FOOTNOTE. The disclaimer was a grey paragraph at the top, which
-      is where a reader skips. Apple marks the claim and puts the
-      qualification at the foot, where somebody checking can find it and
-      somebody reading is not stopped by it. On a page selling portfolio
-      reviews that is the better arrangement, not the looser one: the mark
-      sits ON the headline, so the thing it qualifies is unmissable.
-    */
-    <div className="aud">
+    <div className="reel">
       <div
-        className="aud-pick"
-        role="radiogroup"
-        aria-label="Which of these looks most like your portfolio?"
+        ref={cardRef}
+        className={`reel-card${playing ? " on" : ""}`}
+        role="group"
+        aria-label="A worked example of a Landline session, in five frames"
       >
-        {SHAPES.map((s) => (
-          <button
-            key={s.key}
-            type="button"
-            role="radio"
-            aria-checked={s.key === key}
-            className={`chip${s.key === key ? " on" : ""}`}
-            onClick={() => setKey(s.key)}
+        {FRAMES.map((f, n) => (
+          <div
+            key={n}
+            className={`reel-frame${n === i ? " on" : ""}`}
+            aria-hidden={n === i ? undefined : true}
           >
-            {s.chip}
+            {f.kind === "intake" ? (
+              <>
+                <p className="reel-lead">{f.lead}</p>
+                <ul className="reel-mono">
+                  {SHAPES[0].holdings.map((h) => (
+                    <li key={h.label}>
+                      <b>{h.pct}%</b>
+                      <span>{h.label}</span>
+                    </li>
+                  ))}
+                  <li className="reel-more">
+                    <b>&hellip;</b>
+                    <span>and nine more</span>
+                  </li>
+                </ul>
+              </>
+            ) : null}
+
+            {f.kind === "shape" ? (
+              <>
+                <p className="reel-fig">
+                  <b>{f.shape.figure.value}</b>
+                  <span>{f.shape.figure.caption}</span>
+                </p>
+                <div className="reel-bar">
+                  <span style={{ width: `${f.shape.bar.aPct}%` }} />
+                </div>
+                <blockquote className="reel-ask">{f.shape.expertAsks}</blockquote>
+              </>
+            ) : null}
+
+            {f.kind === "record" ? (
+              <>
+                <p className="reel-lead">{f.lead}</p>
+                <pre className="reel-file">
+                  {recordFor(SHAPES[0]).split("\n").slice(0, 8).join("\n")}
+                </pre>
+                <p className="reel-name">
+                  {`landline-${SHAPES[0].stamp}-gaurav-khona.txt`}
+                </p>
+              </>
+            ) : null}
+          </div>
+        ))}
+
+        {/*
+          The 72px white circle, at editlobby's own rgba(255,255,255,0.9).
+          It is the whole control while the film is stopped and it shrinks
+          out of the way the moment it is running.
+        */}
+        <button
+          type="button"
+          className="reel-play"
+          onClick={() => setPlaying((p) => !p)}
+          aria-label={playing ? "Pause the example" : "Play the example"}
+        >
+          {playing ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5.5l10.5 6.5L8 18.5z" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {/*
+        The scrubber is also the chapter list: five real buttons, so the
+        film is reachable with a keyboard and by anybody who would rather
+        read it than watch it go past.
+      */}
+      <div className="reel-track">
+        {FRAMES.map((f, n) => (
+          <button
+            key={n}
+            type="button"
+            className={`reel-seg${n === i ? " on" : ""}${n === i && playing ? " run" : ""}`}
+            onClick={() => {
+              setI(n);
+              setPlaying(false);
+            }}
+            aria-label={`Frame ${n + 1} of ${FRAMES.length}`}
+            aria-current={n === i ? "true" : undefined}
+          >
+            <span style={{ animationDuration: `${FRAME_MS}ms` }} />
           </button>
         ))}
       </div>
 
-      {/* One: the shape. */}
-      <section className="aud-beat">
-        <p className="aud-figure">
-          <b>{shape.figure.value}</b>
-          <span>{shape.figure.caption}</span>
-        </p>
-        <div className="aud-bar" role="img" aria-label={`${shape.bar.aLabel}, ${shape.bar.aPct} per cent. ${shape.bar.bLabel}, ${shape.bar.bPct} per cent.`}>
-          <span className="aud-bar-a" style={{ width: `${shape.bar.aPct}%` }} />
-        </div>
-        <p className="aud-key">
-          <span>
-            {shape.bar.aLabel} <b>{shape.bar.aPct}%</b>
-          </span>
-          <span>
-            {shape.bar.bLabel} <b>{shape.bar.bPct}%</b>
-          </span>
-        </p>
-      </section>
-
-      {/* Two: the question. The product is the conversation. */}
-      <section className="aud-beat">
-        <p className="aud-lead">They ask about it.</p>
-        <blockquote className="aud-quote">{shape.expertAsks}</blockquote>
-      </section>
-
-      {/* Three: the artefact, one line until it is wanted. */}
-      <section className="aud-beat">
-        <p className="aud-lead">You keep the record.</p>
-        <details className="aud-file" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-          <summary>
-            <span>{`landline-${shape.stamp}-gaurav-khona.txt`}</span>
-            <span className="aud-file-cue">{open ? "Hide" : "Read it"}</span>
-          </summary>
-          <pre className="aud-file-body">{recordFor(shape)}</pre>
-        </details>
-      </section>
-
-      {/* The four actions, as a spec list rather than four columns. */}
-      <dl className="aud-spec">
-        <div>
-          <dt>Gone</dt>
-          <dd>No recommendation, no price target, no model portfolio.</dd>
-        </div>
-        <div>
-          <dt>Once</dt>
-          <dd>Forty-five minutes. No mandate, no monthly fee, nothing to cancel.</dd>
-        </div>
-        <div>
-          <dt>Open</dt>
-          <dd>The rate, the background and the SEBI answer, all before you pay.</dd>
-        </div>
-        <div>
-          <dt>Yours</dt>
-          <dd>We delete our copy on the retention clock. Yours we cannot reach.</dd>
-        </div>
-      </dl>
-
-      <p className="aud-note" id="audit-note">
-        <sup>1</sup> An example, and not a client. All three describe nobody, no security is
-        named, and no Landline session has been reproduced here.
+      {/*
+        What survives of the four actions, on one line. They were a spec
+        list of four rows, and the card is the section now — but they are
+        commercial and legal facts, not decoration, so they stay visible
+        rather than going inside the film where they would be on screen
+        for three seconds in every seventeen. The footnote mark on the
+        headline lands here.
+      */}
+      <p className="reel-cap" id="audit-note">
+        <sup>1</sup> An example, and not a client &mdash; nobody is described and no security is
+        named. No recommendation, no price target, no model portfolio. Forty-five minutes, no
+        mandate and nothing to cancel. The rate and the SEBI answer are on the expert&rsquo;s page
+        before you pay.
       </p>
     </div>
   );

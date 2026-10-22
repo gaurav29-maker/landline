@@ -5153,205 +5153,298 @@
 
   /* ---- audit my portfolio ---- */
 
-  /*
-     The section in Apple's grammar.
+  /* ============================================================== the reel
+     One card, after editlobby.com's introduction block.
 
-     No panel. iOS's second principle is deference — content over chrome —
-     and everything here used to sit inside a rounded card drawn for no
-     reason other than that the content felt like it needed one. The
-     content is on the band now, with hairlines between the beats the way
-     a grouped list separates its rows.
+     Their numbers, read off the live page with getComputedStyle rather
+     than eyeballed: 16:9, 16px of radius, object-fit cover, a 72px circle
+     at rgba(255,255,255,0.9) in the middle, and a wrapper that is centred
+     with 20px of air above and below. Their section contains the card and
+     nothing else — no heading, no copy, no list.
 
-     One idea per beat, and the qualification at the foot under a mark
-     rather than in grey at the top, which is where a reader skips.
+     Ours keeps the band's heading above it, because it is the only place
+     on the page that states what the product does, and one line under it,
+     because the facts on that line are commercial and legal rather than
+     decorative. Everything between those two — the chips, the three
+     beats, the spec list — is in the film now.
   */
-  .site .aud { margin-top: 40px; }
-
   /* The mark on the headline. Small, the accent, and a real anchor. */
-  .site .aud-mark { color: var(--accent-ink); text-decoration: none; margin-left: 2px; }
-  .site .aud-mark sup { font-size: 0.42em; vertical-align: super; }
+  .site .reel-mark { color: var(--accent-ink); text-decoration: none; margin-left: 2px; }
+  .site .reel-mark sup { font-size: 0.42em; vertical-align: super; }
 
-  .site .aud-pick { display: flex; flex-wrap: wrap; gap: 10px; }
-  /*
-     These chips are BUTTONS, not the links the /experts filters are, so
-     the user agent paints them buttonface - #F0F0F0 - and the band's own
-     --ink-body then wrote #D3D6DA on it: 1.08:1, two of the three answers
-     invisible. The reset is on :not(.on) because .site .chip.on is only
-     (0,2,0); an unqualified background here would outrank it and the
-     selected chip would lose its fill instead.
-  */
-  .site .aud-pick .chip { font-family: inherit; cursor: pointer; }
-  .site .aud-pick .chip:not(.on) { background: transparent; }
-
-  /*
-     A beat. One idea, a rule above it, and enough room that the next one
-     does not start before this one has finished being read.
-  */
-  .site .aud-beat {
-    margin-top: 44px;
-    /*
-       Answers `section { padding: 72px 0 }` — the landing page's band
-       rhythm, which lands on every <section> on the site and so landed on
-       these. Setting only padding-top left all 72px of the bottom half in
-       place: 108px above each hairline and 28px below it, and the record
-       line floating in a void above the spec list. Stated in full here so
-       the next person reads the real figure rather than half of it.
-    */
-    padding: 36px 0 0;
-    border-top: 1px solid var(--hairline);
+  .site .reel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 0;
   }
 
-  /* The figure, at Tesla's proportions inside Apple's spacing. */
-  .site .aud-figure {
+  /*
+     The card. aspect-ratio rather than a padding-top box, so the frames
+     inside can be laid out normally and the height is one declaration.
+
+     The ground is the same move as theirs — flat black on one corner
+     opening into the brand colour on the other — in our blue rather than
+     their purple. Deep enough that white type on it clears AA across the
+     whole sweep: #16305C is the lightest point and white on it is 11.4:1.
+  */
+  .site .reel-card {
+    position: relative;
+    width: 100%;
+    max-width: 880px;
+    aspect-ratio: 16 / 9;
+    border-radius: 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 120% at 100% 100%, rgba(56, 126, 209, 0.38) 0%, transparent 62%),
+      linear-gradient(135deg, #000000 0%, #0A1A30 58%, #16305C 100%);
+  }
+
+  /*
+     Every frame is stacked in the same place and only one is lit. Opacity
+     and not display, so the cross-fade has something to fade; the ones
+     that are out carry aria-hidden, so a screen reader is not read five
+     frames at once.
+  */
+  .site .reel-frame {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+    padding: clamp(24px, 4.4vw, 54px);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .55s ease, transform .55s ease;
+    pointer-events: none;
+  }
+  .site .reel-frame.on { opacity: 1; transform: none; }
+
+  /* The lead line of a frame. */
+  .site .reel-lead {
+    margin: 0;
+    font-size: clamp(17px, 2.1vw, 24px);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: #FFFFFF;
+  }
+
+  /* What you send: the intake, in the font the intake is actually in. */
+  .site .reel-mono {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(4px, 0.7vw, 9px);
+    font-family: var(--mono);
+    font-size: clamp(11px, 1.35vw, 15px);
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .site .reel-mono li { display: flex; gap: 14px; }
+  .site .reel-mono b {
+    min-width: 3.5ch;
+    text-align: right;
+    font-weight: 500;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+  }
+  .site .reel-more { color: rgba(255, 255, 255, 0.5); }
+
+  /* The figure, the one number worth setting large. */
+  .site .reel-fig {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 4px 16px;
+    gap: 2px 16px;
     margin: 0;
   }
-  .site .aud-figure b {
-    font-size: clamp(40px, 6.5vw, 72px);
+  .site .reel-fig b {
+    font-size: clamp(38px, 6.6vw, 76px);
     font-weight: 500;
     letter-spacing: -0.04em;
     line-height: 1;
-    color: var(--ink-dark);
+    color: #FFFFFF;
     font-variant-numeric: tabular-nums;
   }
-  .site .aud-figure span {
-    font-size: 16px;
-    line-height: 23px;
-    color: var(--ink-mute);
-    max-width: 30ch;
+  .site .reel-fig span {
+    font-size: clamp(12px, 1.5vw, 16px);
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 28ch;
   }
 
-  /* One bar, one filled segment. The track carries the remainder. */
-  .site .aud-bar {
-    margin-top: 26px;
-    height: 6px;
+  .site .reel-bar {
+    /*
+       A flex child shrinks before it overflows, and on a phone this one
+       was being squeezed to 0px — the frame still "fitted" and the bar
+       had simply stopped existing. Pin it.
+    */
+    flex: 0 0 5px;
+    height: 5px;
     border-radius: 999px;
-    background: var(--hairline);
+    background: rgba(255, 255, 255, 0.16);
     overflow: hidden;
   }
-  .site .aud-bar-a { display: block; height: 100%; background: var(--accent); }
-  .site .aud-key {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 24px;
-    margin: 12px 0 0;
-    font-size: 13px;
-    color: var(--ink-mute);
-  }
-  .site .aud-key b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .site .reel-bar span { display: block; height: 100%; background: #FFFFFF; }
 
-  /* The lead line of a beat: a short sentence at heading size. */
-  .site .aud-lead {
+  /* The question. The only italic on the card, because it is spoken. */
+  .site .reel-ask {
     margin: 0;
-    font-size: clamp(22px, 3vw, 30px);
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: var(--ink-dark);
-  }
-
-  /*
-     The question, set as what it is. Larger than body, lighter than a
-     heading, and the only italic on the band — it is somebody speaking.
-  */
-  .site .aud-quote {
-    margin: 18px 0 0;
     padding: 0;
     border: 0;
     font-family: var(--display);
     font-style: italic;
-    font-size: clamp(24px, 3.6vw, 38px);
+    font-size: clamp(17px, 2.7vw, 32px);
     line-height: 1.25;
     letter-spacing: -0.01em;
-    color: var(--ink);
-    max-width: 24ch;
+    color: #FFFFFF;
+    max-width: 26ch;
+  }
+
+  /* The artefact: the file's own first lines, in the file's own font. */
+  .site .reel-file {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: clamp(9.5px, 1.2vw, 13px);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.78);
+    white-space: pre;
+    overflow: hidden;
+  }
+  .site .reel-name {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    color: rgba(255, 255, 255, 0.52);
   }
 
   /*
-     The record: one line, until it is asked for.
-
-     It was 969px of a 2,239px section on a phone. Apple does not put the
-     manual on the product page; the detail is real and it is one tap away.
+     The circle. 72px and rgba(255,255,255,0.9) are editlobby's own values.
+     While the film is stopped it is the whole control, centred; once it is
+     running it steps down into the corner so it is still reachable without
+     sitting on top of the frame.
   */
-  .site .aud-file { margin-top: 18px; }
-  .site .aud-file > summary {
+  .site .reel-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000000;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    justify-content: center;
+    transition: width .3s ease, height .3s ease, left .3s ease, top .3s ease,
+                transform .3s ease, background-color .2s ease, opacity .3s ease;
+  }
+  .site .reel-play svg { width: 26px; height: 26px; fill: currentColor; transition: width .3s ease, height .3s ease; }
+  .site .reel-play:hover { background: #FFFFFF; }
+
+  .site .reel-card.on .reel-play {
+    left: auto;
+    top: auto;
+    right: 14px;
+    bottom: 14px;
+    transform: none;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF;
+    /*
+       Quiet while it runs, not gone. Hiding it outright and bringing it
+       back on hover leaves a phone with no way to stop the film at all,
+       since the only other control is a chapter button that jumps as
+       well as pauses.
+    */
+    opacity: 0.55;
+  }
+  .site .reel-play svg { pointer-events: none; }
+  .site .reel-card.on .reel-play svg { width: 15px; height: 15px; }
+  .site .reel-card.on:hover .reel-play,
+  .site .reel-card.on .reel-play:focus-visible { opacity: 1; background: rgba(255, 255, 255, 0.26); }
+
+  /*
+     The scrubber, which is also the chapter list: five real buttons, so
+     the film is reachable with a keyboard and by anybody who would rather
+     read it than watch it go past.
+  */
+  .site .reel-track {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    max-width: 880px;
+    margin-top: 14px;
+  }
+  .site .reel-seg {
+    flex: 1;
+    /* 45px of target around a 3px line; the hit area is padding, not ink. */
+    padding: 21px 0;
+    border: 0;
+    background: transparent;
     cursor: pointer;
-    list-style: none;
-    padding: 14px 0;
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
-    font-family: var(--mono);
-    font-size: 12.5px;
-    color: var(--ink-mute);
+    line-height: 0;
   }
-  .site .aud-file > summary::-webkit-details-marker { display: none; }
-  .site .aud-file-cue { color: var(--accent-ink); white-space: nowrap; }
-  .site .aud-file-body {
-    margin: 0;
-    padding: 20px 0 4px;
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 19px;
-    color: var(--ink-body);
-    overflow-x: auto;
-    white-space: pre;
+  .site .reel-seg > span {
+    display: block;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--hairline);
+    transform-origin: left center;
   }
+  .site .reel-seg.on > span { background: rgba(255, 255, 255, 0.34); }
+  .site .reel-seg.run > span {
+    background: linear-gradient(to right, #FFFFFF 0 50%, rgba(255, 255, 255, 0.22) 50% 100%);
+    background-size: 200% 100%;
+    animation: reel-fill linear forwards;
+  }
+  @keyframes reel-fill {
+    from { background-position: 100% 0; }
+    to { background-position: 0 0; }
+  }
+  .site .reel-seg:hover > span { background: rgba(255, 255, 255, 0.5); }
 
-  /*
-     The four actions as a spec list, after Apple's tech specs: label in a
-     fixed column, value beside it, a hairline between rows. Four columns
-     read as a feature grid; this reads as a sheet of facts.
-  */
-  .site .aud-spec { margin: 56px 0 0; }
-  .site .aud-spec > div {
-    display: grid;
-    grid-template-columns: 110px 1fr;
-    gap: 20px;
-    padding: 16px 0;
-    border-top: 1px solid var(--hairline);
-  }
-  .site .aud-spec dt {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-  }
-  .site .aud-spec dd {
-    margin: 0;
-    font-size: 15px;
-    line-height: 23px;
-    color: var(--ink-body);
-  }
-
-  /*
-     The qualification, at the foot, where Apple puts it.
-
-     scroll-margin-top because the mark on the headline is a real anchor
-     and the nav floats over the top of the page: without it the jump
-     lands the first line of the note underneath the bar.
-  */
-  .site .aud-note {
-    margin: 40px 0 0;
+  /* The one line under the card. */
+  .site .reel-cap {
+    width: 100%;
+    max-width: 880px;
+    margin: 18px 0 0;
     scroll-margin-top: 96px;
-    padding-top: 20px;
-    border-top: 1px solid var(--hairline);
     font-size: 12.5px;
     line-height: 19px;
     color: var(--ink-faint);
-    max-width: 72ch;
   }
-  .site .aud-note sup { margin-right: 3px; }
+  .site .reel-cap sup { margin-right: 3px; }
+
+  /*
+     Asked for less motion: nothing fades, nothing fills, and the film does
+     not start itself. The five buttons under the card are then the whole
+     interface, which is why they are buttons.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .site .reel-frame { transition: none; transform: none; }
+    .site .reel-seg.run > span { animation: none; background: #FFFFFF; }
+    .site .reel-play { transition: none; }
+  }
 
   @media (max-width: 640px) {
-    .site .aud-beat { margin-top: 36px; padding: 28px 0 0; }
-    .site .aud-spec > div { grid-template-columns: 1fr; gap: 6px; }
+    .site .reel { padding-top: 12px; }
+    /*
+       editlobby's card is 16:9 because it holds a video. Ours holds type,
+       and at 375px a 16:9 box is 184px tall with 136px of room inside it —
+       four of the five frames overflowed it, silently, because a frame is
+       centred and clipped and so shows no scrollbar to say so. 4:3 gives
+       245px and 197px of room, against a worst frame of 178px.
+    */
+    .site .reel-card { aspect-ratio: 4 / 3; }
+    .site .reel-play { width: 56px; height: 56px; }
+    .site .reel-play svg { width: 20px; height: 20px; }
   }
 
 

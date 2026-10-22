@@ -244,7 +244,7 @@ export default async function Home() {
             {/* The mark sits on the claim; the qualification is at the band foot. */}
             <h2>
               A real expert reads your actual portfolio.
-              <a className="aud-mark" href="#audit-note" aria-label="See the note about this example">
+              <a className="reel-mark" href="#audit-note" aria-label="See the note about this example">
                 <sup>1</sup>
               </a>
             </h2>
