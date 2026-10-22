@@ -233,11 +233,55 @@ export default function AuditExample() {
         <pre className="spec-file-body">{recordFor(shape)}</pre>
       </figure>
 
-      <p className="spec-not">
-        This is the whole of it: what you sent, what was discussed, and the retention rule. There
-        is no report, no score and no rating, because a session is a conversation and this is the
-        note that outlives it.
-      </p>
+      {/*
+        The four actions, in the reader's words.
+
+        This was one paragraph saying what the record does not contain. It
+        is four now, because those four ARE the strategy rather than a
+        disclaimer under it: what the category does that this does not,
+        what it asks of you that this does not, what it hides that this
+        states, and the one thing it does not give you at all.
+
+        Written as facts about this product, not as comparisons. No
+        alternative is named and no claim is made about what anybody else
+        does — partly because that is unfalsifiable and partly because the
+        interesting half is true on its own.
+
+        Each line is checkable in the code: no recommendation exists in
+        any output, there is one product and it does not recur, the rate
+        and the SEBI answer are on the card before checkout, and the
+        record is the file above with the retention rule in its own foot.
+      */}
+      <ul className="spec-curve">
+        <li>
+          <span className="eyebrow">Gone</span>
+          <p>
+            No recommendation, no price target, no model portfolio. Nobody here tells you what
+            to buy.
+          </p>
+        </li>
+        <li>
+          <span className="eyebrow">Once</span>
+          <p>
+            Forty-five minutes, and it is over. No mandate, no monthly fee, nothing running in
+            the background, nothing to cancel.
+          </p>
+        </li>
+        <li>
+          <span className="eyebrow">Open</span>
+          <p>
+            The rate, the person&rsquo;s background and their SEBI registration — or its absence —
+            are all on the page before you pay.
+          </p>
+        </li>
+        <li>
+          <span className="eyebrow">Yours</span>
+          <p>
+            The record above. We delete our copy on the retention clock; yours is a file we
+            cannot reach.
+          </p>
+        </li>
+      </ul>
     </div>
   );
 }

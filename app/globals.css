@@ -5152,6 +5152,34 @@
     tab-size: 2;
   }
 
+  /*
+     The four actions under the record. Four across where there is room,
+     two on a tablet, one on a phone — they are read as a set, so the
+     breakpoints keep whole rows rather than leaving one stranded.
+  */
+  .site .spec-curve {
+    list-style: none;
+    margin: 22px 0 0;
+    padding: 20px 0 0;
+    border-top: 1px solid var(--hairline);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px 28px;
+  }
+  .site .spec-curve .eyebrow { display: block; margin-bottom: 7px; }
+  .site .spec-curve p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 20px;
+    color: var(--ink-mute);
+  }
+  @media (max-width: 860px) {
+    .site .spec-curve { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 460px) {
+    .site .spec-curve { grid-template-columns: 1fr; gap: 18px; }
+  }
+
   .site .spec-summary {
     margin: 14px 0 0;
     font-size: 14px;
