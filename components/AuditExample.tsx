@@ -45,6 +45,11 @@ type Shape = {
   key: string;
   chip: string;
   summary: string;
+  /*
+     The one fact that defines the shape, drawn. Two segments that sum to
+     100 — a proportion of the same book, not a score and not a rating.
+  */
+  bar: { aLabel: string; aPct: number; bLabel: string; bPct: number };
   when: string;
   /** The date the real filename leads with, so a folder sorts by call. */
   stamp: string;
@@ -65,6 +70,12 @@ const SHAPES: Shape[] = [
     key: "concentrated",
     chip: "A few big positions",
     summary: "14 stocks and 3 funds, with half the money in three names.",
+    bar: {
+      aLabel: "Top three",
+      aPct: 51,
+      bLabel: "The other 14 holdings",
+      bPct: 49,
+    },
     when: "Tue, 16 Sept, 10:00 am IST",
     stamp: "2026-09-16",
     holdings: [
@@ -88,6 +99,12 @@ const SHAPES: Shape[] = [
     key: "scattered",
     chip: "A long list of small ones",
     summary: "41 stocks and 9 funds, with nothing large enough to matter on its own.",
+    bar: {
+      aLabel: "Top three",
+      aPct: 11,
+      bLabel: "The other 47 holdings",
+      bPct: 89,
+    },
     when: "Thu, 18 Sept, 6:30 pm IST",
     stamp: "2026-09-18",
     holdings: [
@@ -111,6 +128,12 @@ const SHAPES: Shape[] = [
     key: "derivatives",
     chip: "Mostly F&O",
     summary: "A small cash book, and most of the risk in open positions.",
+    bar: {
+      aLabel: "Cash book",
+      aPct: 38,
+      bLabel: "Margin in use",
+      bPct: 62,
+    },
     when: "Mon, 22 Sept, 8:00 pm IST",
     stamp: "2026-09-22",
     holdings: [
@@ -220,6 +243,38 @@ export default function AuditExample() {
       </div>
 
       <p className="spec-summary">{shape.summary}</p>
+
+      {/*
+        THE SHAPE, DRAWN — the gap a page using the word twice in copy
+        containing no picture had left. After Tijori, whose whole
+        contribution to Indian retail is drawing the structure underneath
+        a number rather than printing the number again.
+
+        Two segments and nothing else. It is the same figure that is
+        already a row in the record below — top three, or the split
+        between the cash book and the margin — so it adds no fact and
+        therefore no judgement. No score, no rating, no benchmark, no
+        comparison to anybody else's portfolio: those are all opinions
+        wearing a chart, and the headline above this promises the
+        opposite.
+
+        A list of percentages IS a picture, badly drawn. This is the same
+        picture, drawn.
+      */}
+      <div className="spec-shape">
+        <div className="spec-shape-bar" role="img" aria-label={`${shape.bar.aLabel}, ${shape.bar.aPct} per cent. ${shape.bar.bLabel}, ${shape.bar.bPct} per cent.`}>
+          <span className="spec-shape-a" style={{ width: `${shape.bar.aPct}%` }} />
+          <span className="spec-shape-b" style={{ width: `${shape.bar.bPct}%` }} />
+        </div>
+        <p className="spec-shape-key">
+          <span className="spec-shape-k spec-shape-k-a">
+            {shape.bar.aLabel} <b>{shape.bar.aPct}%</b>
+          </span>
+          <span className="spec-shape-k">
+            {shape.bar.bLabel} <b>{shape.bar.bPct}%</b>
+          </span>
+        </p>
+      </div>
 
       {/*
         A file, drawn as one. The name bar is the filename the route really
