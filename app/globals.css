@@ -5153,6 +5153,150 @@
 
   /* ---- audit my portfolio ---- */
 
+  /* ======================================================= what people said
+     editlobby.com's testimonial block, measured off the live page: cards
+     410 wide at 24px of radius with 100px 36px of padding on a ground one
+     step off the page, two visible at a time, a hairline between the name
+     and the quote, and a 40x40 pair of arrows at the top right.
+
+     Both their name and their quote are 18px at 500 in the SAME grey.
+     That is the part worth copying and the part that looks like a
+     mistake: a testimonial block that sets the client's name larger and
+     brighter than what they said is selling the logo, not the sentence.
+  */
+  /*
+     NOT .said. That class already exists on this site — it is the serif
+     italic on one word of the hero tagline and two headings — and a
+     second `.site .said` further down the file simply won over the first,
+     turning an inline emphasis span into a flex column. Same specificity,
+     later rule, no warning. The block is .heard for that reason alone.
+  */
+  .site .heard { display: flex; flex-direction: column; }
+
+  /*
+     The pill and the arrows share a line, which is the only reason the
+     arrows have anywhere to be. Theirs sit above the right-hand card with
+     nothing beside them; ours sit opposite the heading, so the row means
+     something at one card as well as at six.
+  */
+  .site .heard-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .site .heard-arrows { display: flex; gap: 8px; }
+  .site .heard-arrow {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .12s ease, color .12s ease, opacity .12s ease;
+  }
+  .site .heard-arrow svg {
+    width: 18px; height: 18px;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .site .heard-arrow:hover:not(:disabled) { border-color: var(--ink-mute); }
+  /* Still there, still readable, and plainly not available. */
+  .site .heard-arrow:disabled { opacity: 0.32; cursor: default; }
+
+  /*
+     Bleeds past the wrap's right-hand padding, so the card after the last
+     visible one is cut off by the window. With the scrollbar hidden that
+     cut is the only thing saying there is more.
+  */
+  .site .heard-rail {
+    margin-top: 24px;
+    width: calc(100% + 24px);
+    margin-right: -24px;
+    padding: 2px 24px 2px 0;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .site .heard-rail::-webkit-scrollbar { display: none; }
+  .site .heard-rail:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 24px;
+  }
+
+  .site .heard-card {
+    flex: 0 0 auto;
+    width: 410px;
+    max-width: 82vw;
+    margin: 0;
+    /*
+       Theirs is 100px 36px, which buys a 726px-tall card the air to hold
+       one quote and nothing else. Ours is shorter because our quotes will
+       be shorter — the vertical is the same gesture at our scale.
+    */
+    padding: 56px 36px;
+    border-radius: 24px;
+    background: var(--card);
+    border-top: var(--card-edge);
+    box-shadow: var(--card-shadow);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /*
+     The name leads and the quote follows, which is the order editlobby
+     uses and the right one here for the opposite reason to the old grid's:
+     a stranger's name means nothing until you have read what they said,
+     so it is set no louder than the sentence it belongs to.
+  */
+  .site .heard-who {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ink-mute);
+  }
+  .site .heard-who span {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-faint);
+  }
+
+  .site .heard-quote {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 27px;
+    color: var(--ink-body);
+  }
+
+  @media (max-width: 640px) {
+    .site .heard-rail {
+      width: calc(100% + 20px);
+      margin-right: -20px;
+      padding-right: 20px;
+      gap: 16px;
+    }
+    .site .heard-card { padding: 34px 24px; max-width: 86vw; }
+    .site .heard-who, .site .heard-quote { font-size: 16px; }
+    .site .heard-quote { line-height: 25px; }
+  }
+
   /* ============================================================== the reel
      One card, after editlobby.com's introduction block.
 
@@ -5472,8 +5616,18 @@
      is something behind it to blur — on the ink band there is, and on a
      light ground this element never appears.
   */
-  .site .work-pill {
-    /* It is an h2, so the band's heading margins have to be answered. */
+  /*
+     NOT .pill. That is the console's status badge — "paid", "active",
+     "claims no SEBI registration" — with a dozen state modifiers behind
+     it, used across member, ops and receipts. Naming this one .pill gave
+     the heading of two home-page sections a status badge's white fill and
+     dark ink, in a block whose whole point is that it is transparent.
+     Grep before you name something; this is the second collision in this
+     block, after .said.
+  */
+  .site .band-pill {
+    /* It is an h2 in both places it is used, so the band's heading
+       margins have to be answered. */
     margin: 0;
     line-height: 1;
     padding: 8px 14px;
@@ -5483,7 +5637,15 @@
     font-size: 14px;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--ink-dark);
+    /*
+       --ink and NOT --ink-dark. .band.ink defines --ink-dark and the two
+       .site dark token lists do not, so an element reaching for it OUTSIDE
+       the ink band gets the light value — this pill came out #171A20 on a
+       dark band, which is exactly the heading-you-cannot-see the comment
+       on .band.ink is about. No public .site rule read --ink-dark directly
+       before this one did; it should not be the rule that starts.
+    */
+    color: var(--ink);
   }
 
   /*
@@ -5612,53 +5774,6 @@
   }
 
 
-  /*
-     What people said.
-
-     Same card as an expert record — --card, 16px, 28px of padding — so
-     the site has one card and not three. The quote leads and the name
-     follows it, which is the order editlobby.com uses and the right one:
-     a stranger's name means nothing until you have read what they said.
-
-     No quotation marks drawn in CSS. The blockquote already says what
-     this is, and a 60px open-quote glyph is the decoration a page that
-     has just cut its selling does not need.
-  */
-  .site .voices {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--card-gap);
-  }
-  .site .voice {
-    margin: 0;
-    padding: var(--card-pad);
-    border-top: var(--card-edge);
-    border-radius: var(--card-radius);
-    background: var(--card);
-    display: flex;
-    flex-direction: column;
-    /* The name sits on the floor of the card however long the quote is. */
-    justify-content: space-between;
-    gap: 20px;
-  }
-  .site .voice blockquote {
-    margin: 0;
-    font-size: 15px;
-    line-height: 24px;
-    color: var(--ink-body);
-  }
-  .site .voice figcaption {
-    font-size: 13px;
-    color: var(--ink);
-    font-weight: 500;
-  }
-  /* The qualifier is quieter than the name and on its own line. */
-  .site .voice figcaption span {
-    display: block;
-    margin-top: 2px;
-    font-weight: 400;
-    color: var(--ink-mute);
-  }
 
   /* ---- the six-step process ---- */
   /*

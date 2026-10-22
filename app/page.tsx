@@ -11,6 +11,7 @@ import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import AuditExample from "@/components/AuditExample";
 import QuestionsStrip from "@/components/QuestionsStrip";
+import Testimonials from "@/components/Testimonials";
 import PhoneCta from "@/components/PhoneCta";
 import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
 import { TESTIMONIALS } from "@/lib/testimonials";
@@ -463,20 +464,7 @@ export default async function Home() {
       {TESTIMONIALS.length > 0 ? (
         <section className="band">
           <div className="wrap">
-            <div className="band-head idx">
-              <span className="eyebrow">What people said</span>
-            </div>
-            <div className="voices">
-              {TESTIMONIALS.map((t) => (
-                <figure className="voice" key={t.name + t.quote.slice(0, 24)}>
-                  <blockquote>{t.quote}</blockquote>
-                  <figcaption>
-                    {t.name}
-                    {t.note ? <span>{t.note}</span> : null}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+            <Testimonials />
           </div>
         </section>
       ) : null}

@@ -70,7 +70,7 @@ export default function QuestionsStrip() {
   return (
     <div className="work">
       {/* The pill is the section's heading, not a label above one. */}
-      <h2 className="work-pill">What it is for</h2>
+      <h2 className="band-pill">What it is for</h2>
 
       {/*
         A scroll container is only reachable with a keyboard if it can take
