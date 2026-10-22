@@ -5154,243 +5154,198 @@
   /* ---- audit my portfolio ---- */
 
   /*
-     The worked example under the audit section.
+     The section in Apple's grammar.
 
-     A card, because it is a specimen: one object you can look at, set
-     apart from the page making the argument around it. Same --card fill,
-     radius and padding as an expert record, so the site has one kind of
-     card and not two.
+     No panel. iOS's second principle is deference — content over chrome —
+     and everything here used to sit inside a rounded card drawn for no
+     reason other than that the content felt like it needed one. The
+     content is on the band now, with hairlines between the beats the way
+     a grouped list separates its rows.
 
-     The flag is not decoration. This is invented content on a page that
-     sells portfolio reviews, so it says so at the top, in the accent, and
-     again at the bottom in different words.
+     One idea per beat, and the qualification at the foot under a mark
+     rather than in grey at the top, which is where a reader skips.
   */
-  .site .spec {
-    margin-top: 40px;
-    padding: var(--card-pad);
-    border-top: var(--card-edge);
-    border-radius: var(--card-radius);
-    background: var(--card);
+  .site .aud { margin-top: 40px; }
+
+  /* The mark on the headline. Small, the accent, and a real anchor. */
+  .site .aud-mark { color: var(--accent-ink); text-decoration: none; margin-left: 2px; }
+  .site .aud-mark sup { font-size: 0.42em; vertical-align: super; }
+
+  .site .aud-pick { display: flex; flex-wrap: wrap; gap: 10px; }
+  /*
+     These chips are BUTTONS, not the links the /experts filters are, so
+     the user agent paints them buttonface - #F0F0F0 - and the band's own
+     --ink-body then wrote #D3D6DA on it: 1.08:1, two of the three answers
+     invisible. The reset is on :not(.on) because .site .chip.on is only
+     (0,2,0); an unqualified background here would outrank it and the
+     selected chip would lose its fill instead.
+  */
+  .site .aud-pick .chip { font-family: inherit; cursor: pointer; }
+  .site .aud-pick .chip:not(.on) { background: transparent; }
+
+  /*
+     A beat. One idea, a rule above it, and enough room that the next one
+     does not start before this one has finished being read.
+  */
+  .site .aud-beat {
+    margin-top: 44px;
+    padding-top: 36px;
+    border-top: 1px solid var(--hairline);
   }
-  .site .spec-flag {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 6px 14px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--hairline);
-  }
-  /* The accent, so the disclaimer reads before the content does. */
-  .site .spec-flag .eyebrow { color: var(--accent-ink); }
-  .site .spec-note { font-size: 13px; line-height: 20px; color: var(--ink-mute); }
 
-  /*
-     The picker. A question and three answers, on one line where there is
-     room and wrapped where there is not — the label is part of it rather
-     than a heading above it, so the row reads as a sentence being answered
-     instead of a toolbar.
-  */
-  .site .spec-pick {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 12px;
-    margin-top: 18px;
-  }
-  .site .spec-pick .eyebrow { margin-right: 4px; }
-  .site .spec-pick .chip { font-family: inherit; cursor: pointer; background: transparent; }
-  /* One line naming the shape, so the chip label does not have to carry it
-     all and the two columns below start from a stated premise. */
-  /*
-     The record, drawn as the file it is.
-
-     A name bar and a monospace body, because the thing a member downloads
-     is a .txt and dressing it as a designed panel would be the same lie
-     the two-column report was. The only liberties are a readable size and
-     a scrollbar — the bytes are the bytes.
-
-     overflow-x on the <pre> and not on the page: the banner rule is 25
-     characters and some lines run long, so this is one of the three places
-     in the file allowed to scroll sideways on its own.
-  */
-  /*
-     The shape. One bar, two segments, a key under it.
-
-     The accent carries the segment the sentence above is about and the
-     rest is the hairline grey, so the picture says the same thing as the
-     summary rather than a second thing. 10px tall: it is a proportion,
-     not a chart, and anything taller starts implying precision the
-     figures do not have.
-  */
-  /*
-     The figure, after Tesla: a bare number at the size of a headline with
-     a small label beside it and nothing competing. Theirs sit at 48px,
-     weight 500, the same size as the product name.
-
-     clamp so it lands near 48 on a desktop and does not take a phone
-     screen to itself. tabular-nums so 51% and 4% do not shift the line
-     when the picker changes.
-  */
-  .site .spec-figure {
+  /* The figure, at Tesla's proportions inside Apple's spacing. */
+  .site .aud-figure {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 4px 14px;
-    margin: 18px 0 0;
+    gap: 4px 16px;
+    margin: 0;
   }
-  .site .spec-figure b {
-    font-size: clamp(34px, 5vw, 48px);
+  .site .aud-figure b {
+    font-size: clamp(40px, 6.5vw, 72px);
     font-weight: 500;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
     line-height: 1;
     color: var(--ink-dark);
     font-variant-numeric: tabular-nums;
   }
-  .site .spec-figure span {
-    font-size: 14px;
-    line-height: 20px;
+  .site .aud-figure span {
+    font-size: 16px;
+    line-height: 23px;
     color: var(--ink-mute);
-    max-width: 34ch;
+    max-width: 30ch;
   }
 
-  .site .spec-shape { margin: 16px 0 0; }
-  .site .spec-shape-bar {
-    display: flex;
-    height: 10px;
+  /* One bar, one filled segment. The track carries the remainder. */
+  .site .aud-bar {
+    margin-top: 26px;
+    height: 6px;
     border-radius: 999px;
-    overflow: hidden;
     background: var(--hairline);
+    overflow: hidden;
   }
-  .site .spec-shape-a { background: var(--accent); }
-  .site .spec-shape-b { background: color-mix(in srgb, var(--ink-dark) 18%, transparent); }
-  .site .spec-shape-key {
+  .site .aud-bar-a { display: block; height: 100%; background: var(--accent); }
+  .site .aud-key {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 20px;
-    margin: 10px 0 0;
-    font-size: 12.5px;
+    gap: 4px 24px;
+    margin: 12px 0 0;
+    font-size: 13px;
     color: var(--ink-mute);
   }
-  .site .spec-shape-k { display: inline-flex; align-items: baseline; gap: 6px; }
-  .site .spec-shape-k b { color: var(--ink); font-variant-numeric: tabular-nums; }
-  /* A dot in the segment's own colour, so the key needs no legend. */
-  .site .spec-shape-k::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--ink-dark) 18%, transparent);
-    align-self: center;
-  }
-  .site .spec-shape-k-a::before { background: var(--accent); }
+  .site .aud-key b { color: var(--ink); font-variant-numeric: tabular-nums; }
 
-  .site .spec-file {
-    margin: 18px 0 0;
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
-    overflow: hidden;
-    /*
-       A step off the panel it sits in, in whichever direction the ink
-       runs — NOT var(--bg). The audit band overrides the ink tokens and
-       not --bg, so a file grounded in --bg came out white inside a black
-       band with the band’s light-on-dark text on it. Mixing off --card
-       follows the surface instead of assuming the page.
-    */
-    background: color-mix(in srgb, var(--ink-dark) 5%, var(--card));
+  /* The lead line of a beat: a short sentence at heading size. */
+  .site .aud-lead {
+    margin: 0;
+    font-size: clamp(22px, 3vw, 30px);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink-dark);
   }
-  /* A <details> now, so the summary carries the name bar and the cue. */
-  .site .spec-file > summary { cursor: pointer; list-style: none; }
-  .site .spec-file > summary::-webkit-details-marker { display: none; }
-  .site .spec-file-cue { color: var(--accent-ink); }
-  .site .spec-file-name {
+
+  /*
+     The question, set as what it is. Larger than body, lighter than a
+     heading, and the only italic on the band — it is somebody speaking.
+  */
+  .site .aud-quote {
+    margin: 18px 0 0;
+    padding: 0;
+    border: 0;
+    font-family: var(--display);
+    font-style: italic;
+    font-size: clamp(24px, 3.6vw, 38px);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    max-width: 24ch;
+  }
+
+  /*
+     The record: one line, until it is asked for.
+
+     It was 969px of a 2,239px section on a phone. Apple does not put the
+     manual on the product page; the detail is real and it is one tap away.
+  */
+  .site .aud-file { margin-top: 18px; }
+  .site .aud-file > summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    font-family: var(--mono);
-    font-size: 11.5px;
-    letter-spacing: 0.02em;
-    color: var(--ink-faint);
-    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    padding: 14px 0;
+    border-top: 1px solid var(--hairline);
     border-bottom: 1px solid var(--hairline);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-mute);
   }
-  .site .spec-file-body {
+  .site .aud-file > summary::-webkit-details-marker { display: none; }
+  .site .aud-file-cue { color: var(--accent-ink); white-space: nowrap; }
+  .site .aud-file-body {
     margin: 0;
-    padding: 16px 14px 18px;
+    padding: 20px 0 4px;
     font-family: var(--mono);
     font-size: 12px;
     line-height: 19px;
     color: var(--ink-body);
     overflow-x: auto;
     white-space: pre;
-    tab-size: 2;
   }
 
   /*
-     The four actions under the record. Four across where there is room,
-     two on a tablet, one on a phone — they are read as a set, so the
-     breakpoints keep whole rows rather than leaving one stranded.
+     The four actions as a spec list, after Apple's tech specs: label in a
+     fixed column, value beside it, a hairline between rows. Four columns
+     read as a feature grid; this reads as a sheet of facts.
   */
-  .site .spec-curve {
-    list-style: none;
-    margin: 22px 0 0;
-    padding: 20px 0 0;
-    border-top: 1px solid var(--hairline);
+  .site .aud-spec { margin: 56px 0 0; }
+  .site .aud-spec > div {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 22px 28px;
+    grid-template-columns: 110px 1fr;
+    gap: 20px;
+    padding: 16px 0;
+    border-top: 1px solid var(--hairline);
   }
-  .site .spec-curve .eyebrow { display: block; margin-bottom: 7px; }
-  .site .spec-curve p {
+  .site .aud-spec dt {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .site .aud-spec dd {
     margin: 0;
-    font-size: 13.5px;
-    line-height: 20px;
-    color: var(--ink-mute);
-  }
-  @media (max-width: 860px) {
-    .site .spec-curve { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 460px) {
-    .site .spec-curve { grid-template-columns: 1fr; gap: 18px; }
-  }
-
-  .site .spec-summary {
-    margin: 14px 0 0;
-    font-size: 14px;
-    line-height: 21px;
+    font-size: 15px;
+    line-height: 23px;
     color: var(--ink-body);
   }
 
-  .site .spec-body {
-    display: grid;
-    /* The record is narrow and fixed; the writing takes what is left. */
-    grid-template-columns: minmax(200px, 260px) 1fr;
-    gap: 40px;
-    margin-top: 22px;
-  }
-  .site .spec-col > .eyebrow { display: block; margin-bottom: 14px; }
-  /* .rec draws its own top rule; the eyebrow above is the divider here. */
-  .site .spec-rec { margin: 0; padding: 0; border-top: 0; }
+  /*
+     The qualification, at the foot, where Apple puts it.
 
-  .site .spec-findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
-  .site .spec-findings li + li { border-top: 1px solid var(--hairline); padding-top: 18px; }
-  .site .spec-findings h3 { font-size: 15px; font-weight: 500; margin-bottom: 5px; }
-  .site .spec-findings p { font-size: 14px; line-height: 22px; color: var(--ink-mute); }
-  .site .spec-not {
-    margin-top: 22px;
-    padding-top: 18px;
+     scroll-margin-top because the mark on the headline is a real anchor
+     and the nav floats over the top of the page: without it the jump
+     lands the first line of the note underneath the bar.
+  */
+  .site .aud-note {
+    margin: 40px 0 0;
+    scroll-margin-top: 96px;
+    padding-top: 20px;
     border-top: 1px solid var(--hairline);
-    font-size: 13.5px;
-    line-height: 21px;
-    color: var(--ink-body);
+    font-size: 12.5px;
+    line-height: 19px;
+    color: var(--ink-faint);
+    max-width: 72ch;
+  }
+  .site .aud-note sup { margin-right: 3px; }
+
+  @media (max-width: 640px) {
+    .site .aud-beat { margin-top: 36px; padding-top: 28px; }
+    .site .aud-spec > div { grid-template-columns: 1fr; gap: 6px; }
   }
 
-  /* One column under 760: 200px of labels beside prose stops being a read. */
-  @media (max-width: 760px) {
-    /* Dark tightens its padding here; light has none to tighten. */
-    .site .spec { padding: var(--card-pad-sm, var(--card-pad)); }
-    .site .spec-body { grid-template-columns: 1fr; gap: 26px; }
-  }
 
   /*
      What people said.

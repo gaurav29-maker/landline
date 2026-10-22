@@ -241,7 +241,13 @@ export default async function Home() {
         <div className="wrap">
           <div className="band-head idx">
             <span className="eyebrow">Audit my portfolio</span>
-            <h2>A real expert reads your actual portfolio.</h2>
+            {/* The mark sits on the claim; the qualification is at the band foot. */}
+            <h2>
+              A real expert reads your actual portfolio.
+              <a className="aud-mark" href="#audit-note" aria-label="See the note about this example">
+                <sup>1</sup>
+              </a>
+            </h2>
             <p>Not an automated score.</p>
           </div>
 

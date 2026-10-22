@@ -62,6 +62,19 @@ type Shape = {
      good one.
   */
   figure: { value: string; caption: string };
+  /*
+     What the expert asks about it.
+
+     The beat this section never had. The product is a conversation, and the
+     most convincing thing about a good one is the question — not the
+     finding, which reads as a verdict, but the thing somebody says out loud
+     that you had not asked yourself.
+
+     Observational by construction: each is about the book's SHAPE and how
+     it came to be, and none of them has a right answer that would amount to
+     advice. "What should I do about it" is the question we do not print.
+  */
+  expertAsks: string;
   when: string;
   /** The date the real filename leads with, so a folder sorts by call. */
   stamp: string;
@@ -83,6 +96,7 @@ const SHAPES: Shape[] = [
     chip: "A few big positions",
     summary: "14 stocks and 3 funds, with half the money in three names.",
     figure: { value: "51%", caption: "of the book sits in three names" },
+    expertAsks: "Was that a decision, or did it arrive one buy at a time?",
     bar: {
       aLabel: "Top three",
       aPct: 51,
@@ -113,6 +127,7 @@ const SHAPES: Shape[] = [
     chip: "A long list of small ones",
     summary: "41 stocks and 9 funds, with nothing large enough to matter on its own.",
     figure: { value: "4%", caption: "is the largest single holding, across fifty of them" },
+    expertAsks: "Which of these could you still give me the reason for?",
     bar: {
       aLabel: "Top three",
       aPct: 11,
@@ -143,6 +158,7 @@ const SHAPES: Shape[] = [
     chip: "Mostly F&O",
     summary: "A small cash book, and most of the risk in open positions.",
     figure: { value: "62%", caption: "of capital is margin, not holdings" },
+    expertAsks: "What are you expressing with the seven that share an underlying?",
     bar: {
       aLabel: "Cash book",
       aPct: 38,
@@ -221,30 +237,37 @@ export default function AuditExample() {
   const shape = SHAPES.find((s) => s.key === key) ?? SHAPES[0];
 
   return (
-    <div className="spec">
-      {/*
-        The flag is the first thing in the block and the file repeats the
-        disclaimer at its foot, because this is the one place on the site
-        where being mistaken for a real client's numbers would matter.
-      */}
-      <p className="spec-flag">
-        <span className="eyebrow">An example — not a client</span>
-        <span className="spec-note">
-          Invented to show the shape of a record. All three describe nobody, no security is named,
-          and no Landline session has been reproduced here.
-        </span>
-      </p>
+    /*
+      THE APPLE PLAYBOOK, as it applies to a section rather than a page.
 
-      {/*
-        Radio rather than tabs: three answers to one question, and the
-        question is asked out loud so the row is not decoration.
-      */}
+      Four moves, and the first two are subtractions.
+
+      DEFERENCE. The panel is gone. iOS's second principle is content over
+      chrome, and everything here was sitting inside a rounded card that
+      said nothing — a container drawn because the content felt like it
+      needed one. The content is on the band now, separated by hairlines,
+      the way a grouped list separates rows.
+
+      ONE IDEA PER BEAT. Three of them, each a single line of large type
+      with one piece of evidence under it: the shape, the question, the
+      record. Nothing explains anything twice.
+
+      DETAIL DEFERRED. Apple does not put the manual on the product page.
+      The record stays one line until it is asked for.
+
+      THE FOOTNOTE. The disclaimer was a grey paragraph at the top, which
+      is where a reader skips. Apple marks the claim and puts the
+      qualification at the foot, where somebody checking can find it and
+      somebody reading is not stopped by it. On a page selling portfolio
+      reviews that is the better arrangement, not the looser one: the mark
+      sits ON the headline, so the thing it qualifies is unmissable.
+    */
+    <div className="aud">
       <div
-        className="spec-pick"
+        className="aud-pick"
         role="radiogroup"
         aria-label="Which of these looks most like your portfolio?"
       >
-        <span className="eyebrow">Which looks most like yours?</span>
         {SHAPES.map((s) => (
           <button
             key={s.key}
@@ -259,118 +282,67 @@ export default function AuditExample() {
         ))}
       </div>
 
-      {/*
-        The figure, large, after Tesla. The same number that is a row in the
-        record below and a segment in the bar under it — said once at the
-        size it deserves rather than three times quietly.
-      */}
-      <p className="spec-figure">
-        <b>{shape.figure.value}</b>
-        <span>{shape.figure.caption}</span>
-      </p>
-
-      {/*
-        THE SHAPE, DRAWN — the gap a page using the word twice in copy
-        containing no picture had left. After Tijori, whose whole
-        contribution to Indian retail is drawing the structure underneath
-        a number rather than printing the number again.
-
-        Two segments and nothing else. It is the same figure that is
-        already a row in the record below — top three, or the split
-        between the cash book and the margin — so it adds no fact and
-        therefore no judgement. No score, no rating, no benchmark, no
-        comparison to anybody else's portfolio: those are all opinions
-        wearing a chart, and the headline above this promises the
-        opposite.
-
-        A list of percentages IS a picture, badly drawn. This is the same
-        picture, drawn.
-      */}
-      <div className="spec-shape">
-        <div className="spec-shape-bar" role="img" aria-label={`${shape.bar.aLabel}, ${shape.bar.aPct} per cent. ${shape.bar.bLabel}, ${shape.bar.bPct} per cent.`}>
-          <span className="spec-shape-a" style={{ width: `${shape.bar.aPct}%` }} />
-          <span className="spec-shape-b" style={{ width: `${shape.bar.bPct}%` }} />
+      {/* One: the shape. */}
+      <section className="aud-beat">
+        <p className="aud-figure">
+          <b>{shape.figure.value}</b>
+          <span>{shape.figure.caption}</span>
+        </p>
+        <div className="aud-bar" role="img" aria-label={`${shape.bar.aLabel}, ${shape.bar.aPct} per cent. ${shape.bar.bLabel}, ${shape.bar.bPct} per cent.`}>
+          <span className="aud-bar-a" style={{ width: `${shape.bar.aPct}%` }} />
         </div>
-        <p className="spec-shape-key">
-          <span className="spec-shape-k spec-shape-k-a">
+        <p className="aud-key">
+          <span>
             {shape.bar.aLabel} <b>{shape.bar.aPct}%</b>
           </span>
-          <span className="spec-shape-k">
+          <span>
             {shape.bar.bLabel} <b>{shape.bar.bPct}%</b>
           </span>
         </p>
-      </div>
+      </section>
 
-      {/*
-        A file, drawn as one. The name bar is the filename the route really
-        builds — date first, so a folder of these sorts by when the call
-        happened.
-      */}
-      {/*
-        The record, with a lid on it.
+      {/* Two: the question. The product is the conversation. */}
+      <section className="aud-beat">
+        <p className="aud-lead">They ask about it.</p>
+        <blockquote className="aud-quote">{shape.expertAsks}</blockquote>
+      </section>
 
-        It was 969px of a 2,239px section on a phone — the whole band was
-        2.8 screens, and 30% of the home page. Apple does not put the manual
-        on the product page; the detail is real and it is one link away.
-        Open is still one tap, and the file is the same file.
-      */}
-      <details className="spec-file" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-        <summary className="spec-file-name">
-          <span>{`landline-${shape.stamp}-gaurav-khona.txt`}</span>
-          <span className="spec-file-cue">{open ? "Hide" : "The whole record"}</span>
-        </summary>
-        <pre className="spec-file-body">{recordFor(shape)}</pre>
-      </details>
+      {/* Three: the artefact, one line until it is wanted. */}
+      <section className="aud-beat">
+        <p className="aud-lead">You keep the record.</p>
+        <details className="aud-file" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+          <summary>
+            <span>{`landline-${shape.stamp}-gaurav-khona.txt`}</span>
+            <span className="aud-file-cue">{open ? "Hide" : "Read it"}</span>
+          </summary>
+          <pre className="aud-file-body">{recordFor(shape)}</pre>
+        </details>
+      </section>
 
-      {/*
-        The four actions, in the reader's words.
+      {/* The four actions, as a spec list rather than four columns. */}
+      <dl className="aud-spec">
+        <div>
+          <dt>Gone</dt>
+          <dd>No recommendation, no price target, no model portfolio.</dd>
+        </div>
+        <div>
+          <dt>Once</dt>
+          <dd>Forty-five minutes. No mandate, no monthly fee, nothing to cancel.</dd>
+        </div>
+        <div>
+          <dt>Open</dt>
+          <dd>The rate, the background and the SEBI answer, all before you pay.</dd>
+        </div>
+        <div>
+          <dt>Yours</dt>
+          <dd>We delete our copy on the retention clock. Yours we cannot reach.</dd>
+        </div>
+      </dl>
 
-        This was one paragraph saying what the record does not contain. It
-        is four now, because those four ARE the strategy rather than a
-        disclaimer under it: what the category does that this does not,
-        what it asks of you that this does not, what it hides that this
-        states, and the one thing it does not give you at all.
-
-        Written as facts about this product, not as comparisons. No
-        alternative is named and no claim is made about what anybody else
-        does — partly because that is unfalsifiable and partly because the
-        interesting half is true on its own.
-
-        Each line is checkable in the code: no recommendation exists in
-        any output, there is one product and it does not recur, the rate
-        and the SEBI answer are on the card before checkout, and the
-        record is the file above with the retention rule in its own foot.
-      */}
-      <ul className="spec-curve">
-        <li>
-          <span className="eyebrow">Gone</span>
-          <p>
-            No recommendation, no price target, no model portfolio. Nobody here tells you what
-            to buy.
-          </p>
-        </li>
-        <li>
-          <span className="eyebrow">Once</span>
-          <p>
-            Forty-five minutes, and it is over. No mandate, no monthly fee, nothing running in
-            the background, nothing to cancel.
-          </p>
-        </li>
-        <li>
-          <span className="eyebrow">Open</span>
-          <p>
-            The rate, the person&rsquo;s background and their SEBI registration — or its absence —
-            are all on the page before you pay.
-          </p>
-        </li>
-        <li>
-          <span className="eyebrow">Yours</span>
-          <p>
-            The record above. We delete our copy on the retention clock; yours is a file we
-            cannot reach.
-          </p>
-        </li>
-      </ul>
+      <p className="aud-note" id="audit-note">
+        <sup>1</sup> An example, and not a client. All three describe nobody, no security is
+        named, and no Landline session has been reproduced here.
+      </p>
     </div>
   );
 }
