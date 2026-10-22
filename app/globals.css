@@ -5189,7 +5189,15 @@
   */
   .site .aud-beat {
     margin-top: 44px;
-    padding-top: 36px;
+    /*
+       Answers `section { padding: 72px 0 }` — the landing page's band
+       rhythm, which lands on every <section> on the site and so landed on
+       these. Setting only padding-top left all 72px of the bottom half in
+       place: 108px above each hairline and 28px below it, and the record
+       line floating in a void above the spec list. Stated in full here so
+       the next person reads the real figure rather than half of it.
+    */
+    padding: 36px 0 0;
     border-top: 1px solid var(--hairline);
   }
 
@@ -5342,7 +5350,7 @@
   .site .aud-note sup { margin-right: 3px; }
 
   @media (max-width: 640px) {
-    .site .aud-beat { margin-top: 36px; padding-top: 28px; }
+    .site .aud-beat { margin-top: 36px; padding: 28px 0 0; }
     .site .aud-spec > div { grid-template-columns: 1fr; gap: 6px; }
   }
 
