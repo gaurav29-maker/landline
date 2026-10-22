@@ -5447,6 +5447,170 @@
     .site .reel-play svg { width: 20px; height: 20px; }
   }
 
+  /* ============================================================== the rail
+     editlobby.com's "Our Work" block, measured rather than eyeballed: a
+     pill at 50px radius over 1px of rgba(255,255,255,0.1) with a 10px
+     backdrop blur, 64px of air, then 9:16 cards 255x453 at 20px of radius
+     with a 10px gap, scrolling under a hidden scrollbar.
+
+     It sits in the same ink band as the audit card, with no padding of
+     its own at the top, so the two read as one dark stretch the way the
+     two blocks on their page do rather than as two bands with 176px of
+     black between them.
+  */
+  /* No top padding: the band above it already supplies the air. */
+  .site .band.ink.work-band { padding-top: 0; }
+
+  .site .work {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /*
+     The pill. Transparent over a hairline, which only works because there
+     is something behind it to blur — on the ink band there is, and on a
+     light ground this element never appears.
+  */
+  .site .work-pill {
+    /* It is an h2, so the band's heading margins have to be answered. */
+    margin: 0;
+    line-height: 1;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink-dark);
+  }
+
+  /*
+     The rail bleeds past the wrap's right-hand padding so the next card is
+     cut off by the window rather than by a container — that cut IS the
+     affordance, since the scrollbar is hidden. The left stays on the
+     grid, so the first card lines up with the heading above it.
+  */
+  .site .work-rail {
+    margin-top: 44px;
+    width: calc(100% + 24px);
+    margin-right: -24px;
+    padding: 2px 24px 2px 0;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .site .work-rail::-webkit-scrollbar { display: none; }
+
+  .site .work-card {
+    flex: 0 0 auto;
+    width: 255px;
+    aspect-ratio: 9 / 16;
+    border-radius: 20px;
+    padding: 22px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    /*
+       The tag at the head and everything else at the FOOT, which is where
+       a burned-in caption sits on the stills this is copied from. Laid
+       out space-between first, which with three children drops the dead
+       space between the question and the line under it rather than above
+       the question — the one place on the card you can see it.
+    */
+    justify-content: flex-end;
+    gap: 18px;
+    overflow: hidden;
+  }
+
+  /*
+     Three grounds rather than one. Their cards differ because each is a
+     still from a different film; ours would be six identical rectangles
+     without this, and six identical rectangles read as a template. The
+     hue is the brand blue throughout — this is variety, not a palette.
+  */
+  .site .work-card[data-tone="0"] {
+    background: linear-gradient(160deg, #000000 0%, #0A1A30 60%, #16305C 100%);
+  }
+  .site .work-card[data-tone="1"] {
+    background: linear-gradient(200deg, #050B16 0%, #102748 55%, #0A1A30 100%);
+  }
+  .site .work-card[data-tone="2"] {
+    background: linear-gradient(140deg, #0A1A30 0%, #060D1A 55%, #000000 100%);
+  }
+
+  /* The chip. Theirs is 12px of plain white on the still; ours needs a
+     ground of its own, because the card under it is type and not video. */
+  .site .work-tag {
+    align-self: flex-start;
+    margin-bottom: auto;
+    padding: 5px 10px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.12);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #FFFFFF;
+  }
+
+  /*
+     The member's question, upright. The expert's question on the audit
+     card is Instrument Serif in italic; keeping these two apart is the
+     only thing on the page that says which of the two people is talking.
+  */
+  .site .work-ask {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+    color: #FFFFFF;
+  }
+
+  .site .work-does {
+    margin: 0;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 13px;
+    line-height: 19px;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .site .work-note {
+    align-self: flex-start;
+    margin: 22px 0 0;
+    font-size: 12.5px;
+    line-height: 19px;
+    color: var(--ink-faint);
+  }
+
+  /*
+     A focusable scroll container with no visible focus state is a place a
+     keyboard lands and cannot see itself. The site's own ring, inset so it
+     does not sit under the card that is bleeding past the edge.
+  */
+  .site .work-rail:focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: -2px;
+    border-radius: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .site .work-rail {
+      margin-top: 32px;
+      width: calc(100% + 20px);
+      margin-right: -20px;
+      padding-right: 20px;
+    }
+    /* Narrower, so the cut-off edge of the next card is still visible. */
+    .site .work-card { width: 215px; padding: 18px; }
+    .site .work-ask { font-size: 18px; }
+  }
+
 
   /*
      What people said.

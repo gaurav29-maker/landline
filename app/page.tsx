@@ -10,6 +10,7 @@ import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import AuditExample from "@/components/AuditExample";
+import QuestionsStrip from "@/components/QuestionsStrip";
 import PhoneCta from "@/components/PhoneCta";
 import { BRAND_TAGLINE_PARTS } from "@/lib/brand";
 import { TESTIMONIALS } from "@/lib/testimonials";
@@ -259,6 +260,19 @@ export default async function Home() {
             against — is in components/AuditExample.
           */}
           <AuditExample />
+        </div>
+      </section>
+
+      {/*
+        The rail sits in the same ink run as the card above it and carries
+        no top padding of its own, so the two blocks read as one dark
+        stretch — which is how editlobby's intro card and work carousel sit
+        on their page, 64px apart on one continuous ground rather than as
+        two bands with the sum of their paddings between them.
+      */}
+      <section className="band ink work-band">
+        <div className="wrap">
+          <QuestionsStrip />
         </div>
       </section>
 
