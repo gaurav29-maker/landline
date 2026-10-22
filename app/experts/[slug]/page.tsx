@@ -87,6 +87,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
     displayName: expert.displayName,
     initials: expert.initials,
     headline: expert.headline,
+    background: expert.background,
     pricePaise: expert.pricePaise,
     sebiRegType: expert.sebiRegType,
     sebiRegNumber: expert.sebiRegNumber,

@@ -67,6 +67,7 @@ export default async function FindAnExpert({
       displayName: e.displayName,
       initials: e.initials,
       headline: e.headline,
+      background: e.background,
       pricePaise: e.pricePaise,
       sebiRegType: e.sebiRegType,
       sebiRegNumber: e.sebiRegNumber,

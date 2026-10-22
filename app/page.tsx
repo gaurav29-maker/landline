@@ -63,6 +63,7 @@ async function load(): Promise<{
         displayName: expertsTable.displayName,
         initials: expertsTable.initials,
         headline: expertsTable.headline,
+        background: expertsTable.background,
         pricePaise: expertsTable.pricePaise,
         sebiRegType: expertsTable.sebiRegType,
         sebiRegNumber: expertsTable.sebiRegNumber,
@@ -258,11 +259,28 @@ export default async function Home() {
       <section className="band" id="experts">
         <div className="wrap">
           <div className="band-head idx">
-            <span className="eyebrow">The expert network</span>
+            {/*
+              "The expert network" was a claim about quantity, printed above a
+              grid that currently holds one person — a section undermining
+              itself in its own first three words.
+
+              The standard is the claim worth making instead: true at one
+              expert and still true at fifty, and it is what separates this
+              from a directory anybody can buy a listing on. Every clause
+              below is enforced in code — the background is checked by a
+              person and locked after approval, the SEBI row renders "Not
+              registered" rather than vanishing, and nobody is paid for
+              distributing anything.
+            */}
+            <span className="eyebrow">Who you would be talking to</span>
             <h2>
               The right expert changes the <span className="said">conversation</span>.
             </h2>
-            <p>Every expert shows their SEBI registration, or says plainly that they have none.</p>
+            <p>
+              Where each of them has worked is checked by a person before they are listed, and
+              they cannot edit it afterwards. Their SEBI registration is shown either way. None
+              of them earns anything from what you hold.
+            </p>
           </div>
           <ExpertGrid experts={experts} dbReady={dbReady} />
           {/*

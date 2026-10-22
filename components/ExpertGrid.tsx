@@ -10,6 +10,19 @@ export type ExpertCard = {
   displayName: string;
   initials: string;
   headline: string;
+  /*
+     Where they have actually worked.
+
+     The schema calls this the platform's whole claim, and it was on the
+     profile page, the expert's own console and the ops queue — everywhere
+     except the two places somebody decides from. The card said "Portfolio
+     audits · F&O · 10 yrs", which the expert wrote about themselves, and a
+     price. Nothing a reader could weigh.
+
+     This is the one fact on the card that was checked by a person before
+     the expert went live, and that the expert cannot edit afterwards.
+  */
+  background: string;
   pricePaise: number;
   sebiRegType: "ria" | "ra" | "none";
   sebiRegNumber: string | null;
@@ -74,6 +87,14 @@ export default function ExpertGrid({
                 </div>
               </div>
             </Link>
+
+            {/*
+              Verified, and above the record because it is the reason to
+              read the record. Clamped to three lines so a long one cannot
+              make its card taller than the one beside it — the whole
+              paragraph is on the profile the name links to.
+            */}
+            {e.background ? <p className="xbg">{e.background}</p> : null}
 
             {/*
               A record rather than a paragraph: label left, value right,

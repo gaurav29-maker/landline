@@ -4478,6 +4478,27 @@
      on the page. If real photographs ever arrive this is where they go.
   */
   .site .xrole { font-size: 13px; color: var(--ink-mute); margin-top: 2px; }
+
+  /*
+     Where they have worked, on the card.
+
+     Clamped to three lines so one long history cannot make its card taller
+     than the one beside it in a grid that reads across. The whole thing is
+     on the profile the name links to, which is what Read more is for.
+
+     Not italic, not quoted, not styled as a testimonial: it is a checked
+     fact, and dressing it as a voice would make it sound like a claim.
+  */
+  .site .xbg {
+    margin: 14px 0 0;
+    font-size: 13px;
+    line-height: 19px;
+    color: var(--ink-body);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   /* The one rule inside the card: it separates who from what, as x.ai's
      hairline separates the lede from the ticked list under it. */
   /*
