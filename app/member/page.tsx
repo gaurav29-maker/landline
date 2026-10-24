@@ -5,7 +5,12 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, experts, intakeSubmissions, memberships } from "@/lib/db/schema";
 import { currentCustomerId } from "@/lib/member-session";
-import { MEMBERSHIP_TIERS, RENEWAL_WINDOW_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
+import {
+  INTAKE_RETENTION_DAYS,
+  MEMBERSHIP_TIERS,
+  RENEWAL_WINDOW_DAYS,
+  SINGLE_CALL_PAISE,
+} from "@/lib/constants";
 import { istDateTime, rupees } from "@/lib/format";
 import MemberBooking, { type BookableExpert } from "@/components/member/MemberBooking";
 import { liveBundlesForCustomer, recordForCustomer } from "@/lib/record";
@@ -280,6 +285,74 @@ export default async function MemberConsole({
               </li>
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {/*
+        The first session, which is the emptiest this console ever is.
+
+        Every block that makes it worth signing into needs history: The
+        Log wants two intakes with something moved between them, Past
+        sessions wants a finished call, receipts want a payment to have
+        settled. So the one moment every member passes through — just
+        paid, nothing happened yet, least certain they will ever be — is
+        the moment the page has least to say. A booking row and an
+        invitation to book another.
+
+        This is what goes there instead, and it is deliberately NOT a
+        second copy of the booking. The row above owns the facts and the
+        actions: who, when, the intake link, move and cancel. This owns
+        the shape of the thing they have bought and have not yet had.
+
+        It leaves when it stops being true. The gate is a finished call,
+        not a dismissal, because somebody who books three and attends
+        none has not learned any of this yet.
+
+        ON THE WORDING. "Your holdings are in front of them for the call"
+        is the storefront's own line and the careful one. It is not "they
+        read it beforehand" — that claim came off this site in thirteen
+        places, including a legal document and a transactional email,
+        because it was not true. Everything happens on the call.
+      */}
+      {upcoming.length > 0 && past.length === 0 ? (
+        <section className="member-section">
+          <h2 className="member-h2">Your first session</h2>
+          <ol className="first-run">
+            <li>
+              <span className="first-run-n">1</span>
+              <div>
+                <b>Tell them what you hold.</b>
+                <span>
+                  Five minutes, from the link above. It is what puts your book on their
+                  screen.
+                </span>
+              </div>
+            </li>
+            <li>
+              <span className="first-run-n">2</span>
+              <div>
+                <b>Forty-five minutes, one to one.</b>
+                <span>
+                  Video, at the time above. Your holdings are in front of them for the call.
+                </span>
+              </div>
+            </li>
+            <li>
+              <span className="first-run-n">3</span>
+              <div>
+                <b>You keep the record.</b>
+                <span>
+                  What they wrote back, and a plain-text file of the whole session. Both
+                  appear here afterwards.
+                </span>
+              </div>
+            </li>
+          </ol>
+          <p className="first-run-note">
+            Nobody will tell you what to buy. We keep what you share for{" "}
+            {INTAKE_RETENTION_DAYS} days after the call and then delete it &mdash; the file
+            you download is yours, and we cannot reach that one.
+          </p>
         </section>
       ) : null}
 

@@ -2514,6 +2514,70 @@
   .os .os-renew .member-h2 { margin-bottom: 6px; }
   .os .os-renew-after { margin: 10px 0 0; max-width: 60ch; }
 
+  /*
+     The first session, before there is any history to show.
+
+     NO FONT SIZES HERE, and that is the point. The console sets one:
+
+       .site-dark.os *:not(.signin):not(.signin *) { font-size: var(--os-size) }
+
+     — a universal selector at (0,3,0), documented a few hundred lines
+     down as "one size means one declaration, applied to everything
+     rather than to a list of components somebody has to keep up to
+     date". It is deliberate, and it is why .os .member-h2 at (0,2,0)
+     also computes 10px rather than the 0.6875rem it asks for.
+
+     This block was first written in the marketing site's sizes — 14px
+     title, 13px body, 12.5px note — and every one of them was overridden
+     before it reached the screen. It LOOKED right in the browser, which
+     is the trap: the console had quietly corrected it. Declaring them
+     again here would just be three lines that do nothing and one more
+     place for the next person to think the console has sizes.
+
+     What is left is what the console does not already own: the layout,
+     the step markers, the rules between steps, and the colours. The
+     titles are <b>, which the console gives 700 a few rules below.
+  */
+  .os .first-run { list-style: none; padding: 0; margin: 0; }
+  .os .first-run li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--os-rule);
+  }
+  .os .first-run li:first-child { border-top: 0; padding-top: 0; }
+  .os .first-run-n {
+    flex: 0 0 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink-dark) 12%, transparent);
+    color: var(--ink-dark);
+  }
+  .os .first-run b { display: block; color: var(--ink-dark); }
+  .os .first-run li span:not(.first-run-n) {
+    display: block;
+    margin-top: 3px;
+    color: var(--ink-mute, var(--ink-soft));
+    max-width: 62ch;
+  }
+  .os .first-run-note {
+    margin: 16px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--os-rule);
+    /*
+       --ink-mute and not --os-label. --os-label is 30% of the ink, drawn
+       for uppercase micro-labels a few characters long; on this ground a
+       whole sentence in it measured 1.1:1. The border above and the
+       position make this a footnote — it does not also need to be faint.
+    */
+    color: var(--ink-mute, var(--ink-soft));
+    max-width: 68ch;
+  }
+
   .os .os-moves { list-style: none; padding: 0; margin: 0; }
   .os .os-moves li {
     display: flex;
@@ -6875,8 +6939,25 @@
     font-weight: 400;
   }
 
-  /* Bold survives only where the markup means "this word, not that one". */
-  .site-dark.os b, .site-dark.os strong { font-weight: 700; }
+  /*
+     Bold survives only where the markup means "this word, not that one".
+
+     THIS RULE HAD NEVER ONCE FIRED. It was `.site-dark.os b` at (0,2,1),
+     and the one-size declaration above it is
+     `.site-dark.os *:not(.signin):not(.signin *)` — two classes plus two
+     :not()s carrying a class each, so (0,4,0). Four beats two, and every
+     <b> and <strong> in the console has rendered at 400 since the day
+     the one-size rule went in: the booking date on every upcoming row,
+     every emphasised figure, all of it.
+
+     Found by measuring rather than reading — the arithmetic is easy to
+     get wrong in your head, and the page looks deliberate either way.
+
+     Written as the universal selector plus an :is() so it is (0,4,1),
+     one step above the rule it has to answer and obviously related to
+     it. Anything less specific loses again and nobody notices.
+  */
+  .site-dark.os *:not(.signin):not(.signin *):is(b, strong) { font-weight: 700; }
 
   /* ---- labels ---- */
   .site-dark.os .ops-h2,
