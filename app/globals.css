@@ -3458,8 +3458,15 @@
       --ink-body:   #D3D6DA;
       --ink-mute:   #9AA0A8;
       --ink-faint:  #8B929B;
-      --bg:         #000000;
-      --bg-alt:     #0D0D0D;
+      /*
+         NOT #000000. visionOS does not ship pure black — on a device
+         with passthrough it is not a colour, it is a hole — and Apple's
+         dark surfaces are an off-black with a slight cool cast rather
+         than a neutral zero. It also stops white text halating on OLED,
+         which is the reason the same decision reads well on a phone.
+      */
+      --bg:         #08080A;
+      --bg-alt:     #111114;
       --rule:       #2A2A2A;
       --hairline:   rgba(255, 255, 255, 0.09);
       --accent-ink: #5CA8FF;
@@ -3514,8 +3521,9 @@
     --ink-body:   #D3D6DA;
     --ink-mute:   #9AA0A8;
     --ink-faint:  #8B929B;
-    --bg:         #000000;
-    --bg-alt:     #0D0D0D;
+    /* Same two values as the system-dark list above; see the note there. */
+    --bg:         #08080A;
+    --bg-alt:     #111114;
     --rule:       #2A2A2A;
     --hairline:   rgba(255, 255, 255, 0.09);
     --accent-ink: #5CA8FF;
@@ -3622,7 +3630,7 @@
      intent expressed twice.
   */
   .site .band.ink {
-    background: var(--band-ink-bg, #000000);
+    background: var(--band-ink-bg, #08080A);
     --ink:        #F5F6F7;
     /*
        --ink-dark was missing from this list and it is the trap in it.
@@ -6328,6 +6336,145 @@
     margin: -1px; padding: 0; border: 0;
     overflow: hidden; white-space: nowrap;
     clip-path: inset(50%);
+  }
+
+
+  /* ================================================ the scroll edge effect
+     Apple's materials guidance, verbatim: "Scroll edge effects further
+     enhance legibility by blurring and reducing the opacity of background
+     content." It is the thing that makes floating chrome work, and the
+     piece this site was missing — the nav floats, the page runs under it,
+     and until now it ran under there at full contrast, so a headline
+     sliding behind the bar competed with the links printed on it.
+
+     A band of blur pinned to the top of the viewport, masked so it falls
+     off to nothing below the bar. BELOW the nav in z-order and above the
+     page, so it treats the content and never the controls.
+
+     The mask does the whole job: the blur is strongest where the bar is
+     and gone by the bottom edge, which is what stops it reading as a grey
+     stripe across the top of the page.
+  */
+  .site .scroll-edge {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 104px;
+    z-index: 45;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 38%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 1) 38%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  /*
+     "and reducing the opacity of background content" — the second half of
+     the sentence. A wash of the page's own ground, carried by the same
+     mask, so what passes under the bar loses contrast as well as focus.
+  */
+  .site .scroll-edge::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg) 72%, transparent) 0%,
+      transparent 100%
+    );
+  }
+
+  /* It is an effect made of transparency; asked for less, it goes. */
+  @media (prefers-reduced-transparency: reduce) {
+    .site .scroll-edge { display: none; }
+  }
+
+  /* ========================================================= the highlight
+     visionOS's one unmistakable interaction: look at a control and it
+     lights from within and lifts a little. A pointer is the nearest thing
+     a browser has to a gaze, so that is what drives it.
+
+     ON CONTROLS ONLY, which is the same line the material is held to.
+     Apple's words: "Limit these effects to the most important functional
+     elements." A card that happens to be a link is content.
+
+     hover: hover so a touch device never latches a highlight it has no
+     way to clear, and the lift goes when less motion is asked for.
+  */
+  @media (hover: hover) {
+    .site .b,
+    .site .chip,
+    .site .heard-arrow,
+    .site .reel-play,
+    .site .reel-seg > span,
+    .site .nav-burger {
+      transition:
+        background-color .14s ease,
+        border-color .14s ease,
+        color .14s ease,
+        box-shadow .18s ease,
+        transform .18s ease;
+    }
+
+    /*
+       The light comes from inside the shape, not from a ring round it.
+       These are all transparent or near-transparent controls over a dark
+       ground, so lighting them from within is both the visionOS gesture
+       and the legible one.
+    */
+    .site .b-line:hover,
+    .site .chip:hover,
+    .site .heard-arrow:hover:not(:disabled),
+    .site .reel-play:hover,
+    .site .nav-burger:hover {
+      box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /*
+       THE FILLED BUTTON GOES THE OTHER WAY, and the numbers are why.
+
+       A white inner light is the right move on a control that is a hole
+       in a dark page. On one that is already a bright blue fill carrying
+       white text it is exactly wrong: it lightens the ground under the
+       label. Measured on the hero's primary call to action —
+
+         rest                      white on #387ED1   4.14:1
+         hover, as it already was  white on #5CA8FF   2.47:1
+         hover plus a white wash   white on #70B2FF   2.21:1
+
+       — so the button was already getting HARDER to read the moment you
+       pointed at it, because .b-fill:hover swapped the fill for
+       --accent-ink, a value picked for blue TEXT on dark grounds rather
+       than as a fill. Lighting it from within only deepened that.
+
+       Darkening instead gives the same sense of the control answering,
+       and takes the label to 5.36:1 — better than the resting state and
+       clear of AA, which the resting state is not.
+    */
+    .site .b-fill:hover {
+      background: color-mix(in srgb, var(--accent) 86%, #000000);
+      transform: translateY(-1px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site .b:hover,
+    .site .chip:hover,
+    .site .heard-arrow:hover:not(:disabled),
+    .site .reel-play:hover,
+    .site .nav-burger:hover { transform: none; }
   }
 
   /* ===================================== the rest of Apple's accessibility
