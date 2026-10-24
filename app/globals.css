@@ -4954,9 +4954,70 @@
      and the pair went 60px tall. Below 360 they stack, which is what the
      smallest phones get and it is the right answer for them.
   */
+  /*
+     THE PHONE PAIR, at editlobby.com's numbers.
+
+     Measured off their hero at 375: 36px tall, padding 9px 13px, radius
+     999px, label 14px at 500 and -0.02em, 24px between the two. The part
+     that is not a number: theirs HUG their labels and sit centred as a
+     pair, where ours each took half the row whatever the label said.
+
+     Hugging only works because the labels fit. "Find an expert" and
+     "Audit my portfolio" come to about 260px of pill at this type size,
+     plus the 24px gap is 284, against a 312px column at 360 — the floor
+     this block already had, and still the right one. Below it they stack.
+
+     9 + 18 + 9 is the 36. Their label carries a 24px line-height inside a
+     36px pill, which only works because the text is centred in a flex box
+     and the overflow is invisible; 18px lands the same height honestly.
+
+     DESKTOP IS UNTOUCHED. All of this is inside the phone query.
+  */
   @media (min-width: 360px) and (max-width: 460px) {
-    .site .b-pair { flex-direction: row; gap: 10px; }
-    .site .b-pair .b { flex: 1 1 0; min-width: 0; padding-left: 10px; padding-right: 10px; }
+    .site .b-pair { flex-direction: row; gap: 24px; }
+    .site .b-pair .b {
+      flex: 0 0 auto;
+      /*
+         width:auto undoes a `.site .b { width: 100% }` in an earlier
+         phone query. flex:0 0 auto alone did not: it governs how a flex
+         item grows and shrinks, not what its width was set to, so both
+         buttons stayed full-column and the row wrapped into a stack.
+      */
+      width: auto;
+      min-width: 0;
+      min-height: 0;
+      /*
+         An explicit height rather than 9px of padding, because .b carries
+         a 1px transparent border and 9+18+9 plus that border measured
+         37.6. Height lands the 36 exactly; the sides keep their 13.
+      */
+      height: 36px;
+      padding: 0 13px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 18px;
+      position: relative;
+    }
+
+    /*
+       The pill is 36px; the thing you tap is 44.
+
+       36 clears WCAG 2.5.8 (24px, AA) comfortably, so this is not a
+       conformance fix — it is that every other control on this layout is
+       44 and the primary call to action should not be the one exception.
+       An invisible box centred on the pill buys the 8px back without
+       moving a pixel of what you can see.
+    */
+    .site .b-pair .b::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 44px;
+      transform: translateY(-50%);
+    }
   }
 
   /*
