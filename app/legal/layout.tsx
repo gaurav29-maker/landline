@@ -14,6 +14,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="legal-doc">
@@ -28,6 +29,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );

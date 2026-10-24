@@ -128,6 +128,7 @@ export default async function Home() {
   return (
     <div className="site">
       <SiteNav onLanding />
+      <main id="main">
 
       <header className="hero-band">
         <div className="wrap">
@@ -640,6 +641,7 @@ export default async function Home() {
         </div>
       </section>
 
+      </main>
       <SiteFooter onLanding />
 
       {/* Phone only, and only once the hero has scrolled away. */}

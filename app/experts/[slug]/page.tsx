@@ -68,6 +68,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
     return (
       <div className="site">
         <SiteNav />
+        <main id="main">
         <div className="wrap bp-page">
           <div className="bp-panel">
             <h1>Not available right now</h1>
@@ -77,6 +78,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
             </Link>
           </div>
         </div>
+        </main>
         <SiteFooter />
       </div>
     );
@@ -115,6 +117,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="doc">
@@ -301,6 +304,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );

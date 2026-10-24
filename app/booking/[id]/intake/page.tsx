@@ -230,6 +230,7 @@ export default function IntakePage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
       <div className="wrap">
         <div className="doc">
           <Suspense fallback={<p className="muted">Loading…</p>}>
@@ -237,6 +238,7 @@ export default function IntakePage({ params }: { params: Promise<{ id: string }>
           </Suspense>
         </div>
       </div>
+      </main>
       <SiteFooter />
     </div>
   );

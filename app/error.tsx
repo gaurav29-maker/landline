@@ -38,6 +38,7 @@ export default function ErrorPage({
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="doc">
@@ -83,6 +84,7 @@ export default function ErrorPage({
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );

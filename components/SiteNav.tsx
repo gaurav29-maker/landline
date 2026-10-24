@@ -35,6 +35,21 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
   return (
     <>
       {/*
+        WCAG 2.4.1 Bypass Blocks, Level A, and the audit that found it was
+        not subtle: the first SEVEN tab stops on the home page are the
+        wordmark, the menu button, the wordmark again, the theme toggle,
+        the close button and two nav links. Somebody on a keyboard went
+        through all of that on every page before reaching a word of the
+        page they asked for.
+
+        Off-screen until focused rather than display:none — a hidden
+        element cannot take focus, so a skip link that is truly hidden is
+        a skip link that does not work.
+      */}
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      {/*
         THE SCROLL EDGE EFFECT.
 
         Apple's materials guidance: "Scroll edge effects further enhance

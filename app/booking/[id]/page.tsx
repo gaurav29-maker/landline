@@ -75,6 +75,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="doc">
@@ -197,6 +198,7 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );

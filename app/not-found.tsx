@@ -24,6 +24,7 @@ export default function NotFound() {
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="doc">
@@ -64,6 +65,7 @@ export default function NotFound() {
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );

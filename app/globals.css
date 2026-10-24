@@ -6670,6 +6670,53 @@
     .site .nav-burger:active { transform: none; }
   }
 
+  /*
+     The skip link. Parked above the viewport, and it comes down when it
+     is focused — the one control on the site that is invisible until a
+     keyboard asks for it.
+
+     Not display:none and not visibility:hidden: both remove the element
+     from the focus order, which would make it a skip link nobody can
+     reach. Moving it off-screen keeps it focusable.
+
+     z-index above the nav's 50 and the scroll edge's 45, or it arrives
+     underneath the bar it exists to skip.
+  */
+  .site .skip-link {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -140%);
+    z-index: 60;
+    padding: 12px 20px;
+    border-radius: 0 0 12px 12px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: transform .14s ease;
+  }
+  /*
+     :focus and not :focus-visible. This control sits off-screen and is
+     only ever reached by Tab, so the narrower pseudo buys nothing and
+     costs the one case that matters: a programmatic focus() — which is
+     how a test reaches it, and how some assistive software does — does
+     not match :focus-visible, so the link stayed off-screen while
+     claiming to be focused.
+  */
+  .site .skip-link:focus {
+    transform: translate(-50%, 0);
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site .skip-link { transition: none; }
+  }
+
+  /* The target takes focus programmatically; it should not draw a ring. */
+  .site main:focus { outline: none; }
+
   /* ================================================ the scroll edge effect
      Apple's materials guidance, verbatim: "Scroll edge effects further
      enhance legibility by blurring and reducing the opacity of background

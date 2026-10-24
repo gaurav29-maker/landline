@@ -112,6 +112,7 @@ export default async function FindAnExpert({
   return (
     <div className="site">
       <SiteNav />
+      <main id="main">
 
       <div className="wrap">
         <div className="doc find">
@@ -192,6 +193,7 @@ export default async function FindAnExpert({
         </div>
       </div>
 
+      </main>
       <SiteFooter />
     </div>
   );
