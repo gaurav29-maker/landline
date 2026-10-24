@@ -6047,16 +6047,120 @@
      dead space to find the next thing, and this is a screen where somebody
      is already slightly unsure they are in the right place.
   */
+  /* ====================================================== the front door
+     editlobby.com's console login, measured off their markup: the whole
+     screen at 48px of side padding, a rounded panel taking half of it on
+     the left with 24px of margin and 48px of inner padding, the form in
+     the other half, and the panel gone below their lg breakpoint with
+     the mark moving above the form.
+
+     Their headline is 3.5rem at a 1.1 leading; the form heading is 3rem
+     semibold with a 20px line under it. Ours keeps the serif for the
+     heading, which this page has used since it was built and is the one
+     place on the site the display face carries a whole heading alone.
+  */
   .site.signin {
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    padding: 48px 24px;
+    gap: 0;
+    padding: 0;
     background: var(--bg);
   }
-  .site .signin-col { width: 100%; max-width: 340px; }
-  .site .signin-mark { margin: 0 0 40px; }
+
+  /* The panel. Half the screen, inset, rounded, and its own weather. */
+  .site .signin-brand {
+    display: none;
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 50%;
+    margin: 24px;
+    padding: 44px 48px 40px;
+    border-radius: 16px;
+    flex-direction: column;
+    justify-content: space-between;
+    background:
+      radial-gradient(120% 110% at 100% 100%, rgba(56, 126, 209, 0.42) 0%, transparent 62%),
+      linear-gradient(150deg, #050B16 0%, #0A1A30 52%, #16305C 100%);
+  }
+  /*
+     Theirs sets the logo at 112px, which is most of why their panel
+     reads as a product and not as a background. Ours is type rather
+     than artwork, so it is a font size instead of a height — and when
+     public/brand/landline.svg finally lands, Wordmark swaps to the image
+     and this becomes the box it sits in.
+  */
+  .site .signin-brand-mark {
+    margin: 0;
+    font-size: 1.75rem;
+    letter-spacing: -0.01em;
+    color: #FFFFFF;
+  }
+  .site .signin-brand-mark span { color: #FFFFFF; }
+  /* The suffix is the only thing that separates the console's mark from
+     the site's, so it stays legible rather than decorative. */
+  .site .signin-brand-mark em {
+    font-style: normal;
+    font-size: 0.72em;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .site .signin-brand-line {
+    margin: 0;
+    font-size: clamp(30px, 3.4vw, 50px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: #FFFFFF;
+    max-width: 14ch;
+  }
+  .site .signin-brand-more {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .site .signin-brand-more:hover { color: #FFFFFF; }
+
+  /* The form side. */
+  .site .signin-pane {
+    flex: 1 1 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .site .signin-col { width: 100%; max-width: 420px; }
+  .site .signin-mark { margin: 0 0 36px; }
+
+  /*
+     The footer row, after theirs: the things somebody who cannot get in
+     might actually want, which is not a sitemap. Wraps rather than
+     scrolling, because four links on a 320px screen is two lines.
+  */
+  .site .signin-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 36px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.8125rem;
+  }
+  .site .signin-foot a {
+    color: var(--ink-faint);
+    text-decoration: none;
+  }
+  .site .signin-foot a:hover { color: var(--ink); text-decoration: underline; }
+
+  @media (min-width: 1024px) {
+    .site .signin-brand { display: flex; }
+    /* The panel carries the mark at this width, so the form stops doing it. */
+    .site .signin-mark { display: none; }
+    .site .signin-pane { padding: 48px; }
+  }
 
   /*
      The serif, used once.
@@ -6252,7 +6356,14 @@
   .site .signin-form .cf-turnstile { margin-top: 18px; max-width: 100%; overflow: hidden; }
 
   @media (max-width: 420px) {
-    .site.signin { padding: 32px 20px; align-items: flex-start; }
+    /*
+       The padding moved to .signin-pane when this page became a split,
+       so setting it on the flex container again would stack the two.
+       The pane keeps the small-screen inset; the container only has to
+       stop centring, so a long form starts at the top of the screen.
+    */
+    .site.signin { align-items: flex-start; }
+    .site .signin-pane { padding: 32px 20px; }
     .site .signin-h { font-size: 1.875rem; }
     .site .signin-code { font-size: 1.375rem; letter-spacing: 0.26em; text-indent: 0.26em; }
   }

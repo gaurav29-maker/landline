@@ -8,7 +8,7 @@ import { SIGN_IN_THROTTLE_SECONDS } from "@/lib/constants";
 import { memberSignInLink, sendRaw } from "@/lib/email";
 import { turnstileSiteKey } from "@/lib/turnstile";
 import PhoneSignIn from "@/components/PhoneSignIn";
-import Wordmark from "@/components/Wordmark";
+import SignInFrame from "@/components/SignInFrame";
 
 export const metadata: Metadata = { title: "Sign in — Landline", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -74,9 +74,7 @@ export default async function MemberLogin({
   }
 
   return (
-    <main className="site signin">
-      <div className="signin-col">
-        <Wordmark className="logo signin-mark" as="p" sub="os" />
+    <SignInFrame>
 
         {/*
           Signing out is not the same as being timed out, and the page
@@ -136,7 +134,6 @@ export default async function MemberLogin({
         ) : (
           <PhoneSignIn siteKey={turnstileSiteKey()} />
         )}
-      </div>
-    </main>
+    </SignInFrame>
   );
 }

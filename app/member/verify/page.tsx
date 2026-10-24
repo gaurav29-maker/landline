@@ -7,7 +7,7 @@ import { CODE_MINUTES } from "@/lib/member-auth";
 import { issueCode, spendCode } from "@/lib/member-code";
 import { markVerified, readSession } from "@/lib/member-session";
 import { phoneTail } from "@/lib/phone";
-import Wordmark from "@/components/Wordmark";
+import SignInFrame from "@/components/SignInFrame";
 
 export const metadata: Metadata = { title: "Confirm it is you — Landline", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -92,9 +92,7 @@ export default async function MemberVerify({
   }
 
   return (
-    <main className="site signin">
-      <div className="signin-col">
-        <Wordmark className="logo signin-mark" as="p" sub="os" />
+    <SignInFrame>
 
         <div className="signin-body">
           <h1 className="signin-h">Confirm it&rsquo;s you</h1>
@@ -151,7 +149,6 @@ export default async function MemberVerify({
             </a>
           </p>
         </div>
-      </div>
-    </main>
+    </SignInFrame>
   );
 }
