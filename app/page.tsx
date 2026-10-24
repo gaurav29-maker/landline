@@ -325,7 +325,93 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="band alt" id="how">
+      {/*
+        How somebody gets onto this page at all.
+
+        The biggest unanswered question on a marketplace carrying one
+        expert is who let that person on here, and the experts section
+        above asserts the answer in a single clause nobody slows down for.
+        This is the clause, opened out.
+
+        EVERY LINE IS ENFORCED SOMEWHERE, which is the only reason it is
+        worth printing:
+
+          "a person" — approveApplication calls requireOperator(). There
+          is no self-serve listing and no automatic approval.
+          "whose name is on it" — the same action writes the operator into
+          the audit trail, and verify-flow proves that row cannot be
+          rewritten or deleted, TRUNCATE included.
+          "they cannot edit afterwards" — the expert console has no field
+          that writes `background`. Grep it.
+          "either way" — the SEBI row renders "Not registered" rather than
+          disappearing when the answer is no.
+          "a share of the session" — the payout is a percentage, not a
+          fee, so nobody earns more by selling you something else.
+
+        It is a band, not a panel, and it links to /principles rather than
+        restating it. That page already carries ten of these with the
+        tests that hold them; this one carries the five that are about
+        getting listed, which is the thing the experts section raises.
+      */}
+      <section className="band alt" id="vetting">
+        <div className="wrap">
+          <div className="band-head idx">
+            <span className="eyebrow">How somebody gets listed</span>
+            <h2>
+              Nobody puts <span className="said">themselves</span> on this page.
+            </h2>
+            <p>
+              Five things happen before a name appears, and each one is enforced in the
+              software rather than promised in a paragraph.
+            </p>
+          </div>
+
+          <dl className="gate">
+            <div>
+              <dt>A person approves it</dt>
+              <dd>
+                An application is read and approved by an operator who is signed in. There is
+                no self-serve listing, and nothing is approved automatically.
+              </dd>
+            </div>
+            <div>
+              <dt>Their name is on it</dt>
+              <dd>
+                Who approved it is written into a log that cannot be edited or emptied —
+                not by them, not by us.
+              </dd>
+            </div>
+            <div>
+              <dt>The background is then locked</dt>
+              <dd>
+                Where they have actually worked is checked before they are listed, and the
+                expert console has no way to change it afterwards.
+              </dd>
+            </div>
+            <div>
+              <dt>The SEBI answer is published either way</dt>
+              <dd>
+                Registered or not registered, it is on their card and on their page. A
+                missing answer is not an option the software offers.
+              </dd>
+            </div>
+            <div>
+              <dt>They are paid a share of the session</dt>
+              <dd>
+                Not a fee for distributing anything. Nobody on this site earns more because
+                you hold one thing rather than another.
+              </dd>
+            </div>
+          </dl>
+
+          <p className="gate-more">
+            <a href="/principles">The rest of what we hold ourselves to</a>
+          </p>
+        </div>
+      </section>
+
+
+      <section className="band" id="how">
         <div className="wrap">
           <div className="band-head">
             <span className="eyebrow">How it works</span>
@@ -393,6 +479,62 @@ export default async function Home() {
         is earned by the three sections above it; leading with it asks people
         to price something they have not been shown.
       */}
+      {/*
+        Who should not buy this, immediately before the price.
+
+        PLACEMENT IS THE WHOLE ARGUMENT. "Terms of the thing" already says
+        what the product is not, and the hero strip says it again in three
+        words — a third block of negations further up the page would just
+        be the site clearing its throat. Here it is doing work: it is the
+        last thing somebody reads before ₹5,499, which is the moment a
+        disqualification is worth something to both sides.
+
+        CUSTOMER-FRAMED, NOT PRODUCT-FRAMED, which is what makes it a
+        different block rather than a louder one. "Terms" says the product
+        is not advice; this says you are not the buyer.
+
+        Three, and the third is the one that matters. Nobody writes "you
+        will not do the work" on a sales page, and it is the single
+        biggest predictor of a wasted session: the intake IS the product's
+        input, and "six steps, one piece of work on your side" two
+        sections up is the same fact said kindly.
+      */}
+      <section className="band alt" id="notfor">
+        <div className="wrap">
+          <div className="band-head idx">
+            <span className="eyebrow">Before you pay</span>
+            <h2>
+              This is the <span className="said">wrong</span> thing to buy if&hellip;
+            </h2>
+          </div>
+          <ul className="notfor">
+            <li>
+              <b>&hellip;you want somebody to manage it for you.</b>
+              <span>
+                Landline never touches your money and there is nothing to hand over. You
+                leave the call holding exactly what you held walking in.
+              </span>
+            </li>
+            <li>
+              <b>&hellip;you want to be told what to buy.</b>
+              <span>
+                No tips, no targets, no model portfolio. If that is what you came for, an
+                expert will spend forty-five minutes not giving it to you.
+              </span>
+            </li>
+            <li>
+              <b>&hellip;you will not write down what you hold.</b>
+              <span>
+                It takes about five minutes and it is the only work asked of you. Without
+                it the expert arrives with nothing to read, and the hour is worth a
+                fraction of what you paid for it.
+              </span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+
       {/*
         One product.
 

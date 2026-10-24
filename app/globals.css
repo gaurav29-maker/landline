@@ -5322,6 +5322,73 @@
   .site .price-one li { font-size: 0.84375rem; line-height: 1.25rem; color: var(--ink-mute); }
   .site .price-one .b { width: 100%; margin-top: 22px; }
 
+  /*
+     The gate. A spec sheet rather than a feature grid: label in a fixed
+     column, the fact beside it, a hairline between rows — the same shape
+     the audit section used for its four actions before it became a card,
+     because these are facts somebody checks rather than benefits
+     somebody skims.
+
+     display: contents on the wrapping div so dt and dd become grid items
+     of the row while the dl keeps its own semantics. Without it the pair
+     is one cell and the column never lines up.
+  */
+  .site .gate { margin: 0; }
+  .site .gate > div {
+    display: grid;
+    grid-template-columns: 290px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .site .gate dt {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.4375rem;
+    color: var(--ink);
+  }
+  .site .gate dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.4375rem;
+    color: var(--ink-mute);
+    max-width: 60ch;
+  }
+  .site .gate-more { margin: 26px 0 0; font-size: 0.875rem; }
+  .site .gate-more a { color: var(--accent-ink); }
+
+  @media (max-width: 760px) {
+    .site .gate > div { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  /*
+     The disqualification list. Plainer than .gate on purpose — .gate is a
+     sheet of facts somebody checks, this is three sentences somebody
+     reads once and either recognises themselves in or does not.
+  */
+  .site .notfor { list-style: none; margin: 0; padding: 0; }
+  .site .notfor li {
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+    max-width: 68ch;
+  }
+  .site .notfor b {
+    display: block;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    line-height: 1.625rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .site .notfor span {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9375rem;
+    line-height: 1.4375rem;
+    color: var(--ink-mute);
+  }
+
   /* ---- audit my portfolio ---- */
 
   /* ======================================================= what people said

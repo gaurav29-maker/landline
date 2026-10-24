@@ -34,23 +34,23 @@ means a thing does not work yet.
 
 ---
 
-## 3. Ready to build — no blockers
+## 3. ~~Ready to build~~ — all four done, 25 October 2026
 
 Ordered by how much each one changes for a real visitor.
 
-### 3.1 Move The Log up the console
+### ~~3.1 Move The Log up the console~~ — done
 `app/member/page.tsx`. Current order: Coming up → Your first session →
 Book a session → bundles → renewal → **The Log** → Past sessions. It is
 the most distinctive thing in the product — nobody else shows a retail
 trader their own holdings first-session against latest — and it sits
 below the fold on every laptop.
 
-### 3.2 A pre-call block in the console
+### ~~3.2 A pre-call block in the console~~ — done
 The new first-session block says what *happens*. Nothing says what to
 have open when you sit down. Reaches every member, every time, and the
 marketing site does this work right up until they become a customer.
 
-### 3.3 The three home-page sections never built
+### ~~3.3 The three home-page sections never built~~ — done
 From the audit of what the page is missing, in the order I would do them:
 
 1. **How an expert gets listed.** The biggest unanswered question on a
