@@ -19,12 +19,16 @@ next-env.d.ts
 
 # Skills installed with `npx skills add`.
 #
-# skills-lock.json is committed — it pins the source and a sha256 of each
-# skill, so `npx skills add` restores exactly what everyone else has.
+# The skill itself is vendored — .agents/skills/**/SKILL.md is committed,
+# so a clone has it without running anything, and so a diff shows when it
+# changes. That file is the source of truth here.
 #
-# The two directories it materialises are not. .agents holds the fetched
-# SKILL.md, which the lockfile can fetch again; .claude/skills holds a
-# symlink into it written with an ABSOLUTE path, so it is broken on every
-# machine but this one.
-.agents/
+# skills-lock.json is committed beside it for provenance only. Its
+# computedHash does NOT verify the vendored file: it matches neither the
+# bytes on disk, the body, the frontmatter, nor any path or source
+# prefix, under sha256, sha1 or sha512 — it is computed over something
+# upstream. Useful for saying where this came from, not for checking it.
+#
+# The symlink is not. .claude/skills holds a link into .agents written
+# with an ABSOLUTE path, so it resolves on this machine and nowhere else.
 .claude/skills/
