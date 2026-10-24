@@ -265,6 +265,33 @@ const FRAMES: Frame[] = [
 /* Long enough to read a twelve-word question without hurrying. */
 const FRAME_MS = 3400;
 
+/*
+   THE FOOTAGE, WHEN THERE IS ANY.
+
+   Null means the card is its own gradient and no <video> is rendered at
+   all — not an empty <video> pointing at a file that is not there, which
+   would 404 on every page load for every visitor forever. Turning the
+   footage on is this one constant.
+
+   WHAT GOES IN IT. The ground, and only the ground. The five frames stay
+   in the DOM over the top, because they are the argument and not the
+   decoration: 51%, 4%, 62%, three questions and the record's own first
+   lines. A video model renders text unreliably, and the one thing this
+   page cannot ship is a wrong number in the worked example.
+
+   AND NO PEOPLE IN IT. A generated human reading a portfolio depicts a
+   Landline expert and a session that never happened, on a page that sells
+   portfolio reviews. That is the line the empty testimonial array and the
+   "an example, and not a client" footnote already hold. Footage that
+   depicts nothing factual — a handset, a desk, light — does not cross it.
+
+   The poster is what paints before the file arrives and what a reduced
+   motion visitor sees instead of movement. Give it one or the card shows
+   its gradient until the video has buffered, which on a slow connection
+   is the whole visit.
+*/
+const FILM: { src: string; poster?: string } | null = null;
+
 export default function AuditExample() {
   const [i, setI] = useState(0);
   /*
@@ -275,6 +302,7 @@ export default function AuditExample() {
   */
   const [playing, setPlaying] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
+  const filmRef = useRef<HTMLVideoElement | null>(null);
   const started = useRef(false);
 
   /*
@@ -311,6 +339,21 @@ export default function AuditExample() {
     return () => clearInterval(t);
   }, [playing]);
 
+  /*
+     The footage runs on the same switch as the frames, so the scroll
+     observer, the pause button and the reduced-motion answer all reach it
+     without any of them knowing it exists. play() rejects rather than
+     throwing when a browser declines to autoplay — it should not here,
+     the element is muted, but an unhandled rejection in the console is
+     not worth the two characters it costs to catch.
+  */
+  useEffect(() => {
+    const v = filmRef.current;
+    if (!v) return;
+    if (playing && !still) void v.play().catch(() => {});
+    else v.pause();
+  }, [playing, still]);
+
   return (
     <div className="reel">
       <div
@@ -319,6 +362,30 @@ export default function AuditExample() {
         role="group"
         aria-label="A worked example of a Landline session, in five frames"
       >
+        {FILM ? (
+          <>
+            {/*
+              First in the DOM, so the frames and the button paint over it
+              without anything needing a z-index. Decorative, so it is
+              hidden from a screen reader and taken out of the tab order:
+              the card's own controls are the controls.
+            */}
+            <video
+              ref={filmRef}
+              className="reel-film"
+              src={FILM.src}
+              poster={FILM.poster}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+            <div className="reel-scrim" aria-hidden="true" />
+          </>
+        ) : null}
+
         {FRAMES.map((f, n) => (
           <div
             key={n}

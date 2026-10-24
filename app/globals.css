@@ -5345,6 +5345,51 @@
   }
 
   /*
+     The footage, when components/AuditExample has been given a file.
+
+     The card keeps its gradient underneath: that is what paints while the
+     video buffers, and what is left if the file ever 404s. object-fit
+     cover with the card's own overflow:hidden does the rounding.
+  */
+  .site .reel-film {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /*
+     The scrim, and it is not a taste decision.
+
+     White type over footage nobody has graded yet is a contrast failure
+     waiting for the first bright frame. The floor here is 0.66 black,
+     which composited over the WORST case — a pure white frame — leaves
+     #575757, and white on that is 7.2:1. Every value below is measured
+     against that same worst case rather than against the footage we hope
+     to get, so a clip nobody has seen yet cannot break the card.
+
+     It is also the knob. When real footage lands and it is as dark as the
+     brief says, these can come down — but check the numbers again rather
+     than eyeballing one frame, because a loop has hundreds of them.
+  */
+  .site .reel-scrim {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.84) 0%, rgba(0, 0, 0, 0.66) 100%),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.34) 100%);
+  }
+
+  /*
+     One lift. At 0.52 the filename is 3.3:1 against the worst-case scrim;
+     at 0.72 it is 4.7:1. Everything else on the card already clears 4.5
+     there — the mono list at 0.82 is 5.5:1 and the figure caption at 0.72
+     is 4.7:1 — so this is the only value the footage changes.
+  */
+  .site .reel-card:has(.reel-film) .reel-name { color: rgba(255, 255, 255, 0.72); }
+
+  /*
      Every frame is stacked in the same place and only one is lit. Opacity
      and not display, so the cross-fade has something to fade; the ones
      that are out carry aria-hidden, so a screen reader is not read five
