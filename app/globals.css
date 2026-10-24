@@ -7072,3 +7072,125 @@
   .site-dark.os .ops-input:not(.signin *):focus,
   .site-dark.os .bp-field input:not(.signin *):focus,
   .site-dark.os .bp-field textarea:not(.signin *):focus { border-color: var(--blue); }
+
+  /* ============================================ the window and the room
+     What using visionOS actually feels like is not a blur filter. It is
+     that your content is a PANEL — bounded, lit along its edges, lifted
+     off a surround that has been dimmed so the panel is the brightest
+     thing in the room. Everything below is that one idea.
+
+     DESKTOP ONLY, from 1120px. visionOS has no phone, and insetting a
+     375px screen to make room for scenery would cost the content the
+     only width it has. Below the breakpoint the site is exactly what it
+     was.
+
+     IT DOES NOT CLIP. The obvious way to round a window is overflow:
+     clip on the wrapper, and it breaks two things at once: clip creates
+     a scroll container, so the sticky nav stops sticking to the viewport
+     and sticks to the panel instead, and it becomes the containing block
+     for position: fixed, so the scroll edge effect detaches from the top
+     of the screen and scrolls away with the page. The corners are done
+     by rounding the panel's own ground and the one band that paints its
+     own at the bottom.
+  */
+  @media (min-width: 1120px) {
+    /*
+       The room. Fixed, behind everything, and dim — visionOS darkens the
+       surroundings so the window carries the light. Three soft pools
+       rather than a flat field, because a flat field reads as a letterbox
+       and a lit one reads as a place.
+    */
+    /*
+       On body itself, not on a ::before. A pseudo-element at z-index -1
+       paints behind the element's own background, and body's is opaque,
+       so the room was drawn and then covered by the page. fixed
+       attachment is what keeps it still while the panel scrolls past —
+       the surround is a place, and places do not scroll.
+    */
+    body {
+      background-attachment: fixed;
+      background:
+        radial-gradient(60% 50% at 18% 12%, rgba(56, 126, 209, 0.16) 0%, transparent 70%),
+        radial-gradient(50% 45% at 88% 78%, rgba(120, 90, 200, 0.12) 0%, transparent 70%),
+        radial-gradient(70% 60% at 50% 110%, rgba(255, 255, 255, 0.05) 0%, transparent 70%),
+        /*
+           Darker than the panel, which is the whole mechanism: visionOS
+           dims the surroundings so the window is the brightest thing in
+           the room. At #07070A against a #08080A panel the two were the
+           same colour and the window had no edge to find.
+        */
+        #020204;
+      background-attachment: fixed;
+    }
+
+    .site {
+      /*
+         A gutter at EVERY width above the breakpoint, which max-width
+         alone never gives: at a 1200px laptop a 1320px cap just lets the
+         panel fill the window and the room is never seen. The calc sets
+         the gutter; the cap stops the panel growing past a readable
+         measure on a wide display.
+      */
+      width: calc(100% - 96px);
+      max-width: 1320px;
+      margin: 26px auto 34px;
+      border-radius: 34px;
+      background: var(--bg);
+      position: relative;
+      /*
+         The lift, in two parts the way a real one works: a wide soft
+         occlusion that says how far off the surround it sits, and a
+         tighter one directly under it that says it is a solid object.
+      */
+      box-shadow:
+        0 48px 120px rgba(0, 0, 0, 0.62),
+        0 12px 36px rgba(0, 0, 0, 0.46);
+    }
+
+    /*
+       The lit edge. Drawn as an overlay rather than an inset shadow on
+       the panel itself, because the bands inside paint their own grounds
+       over anything the parent draws underneath them. pointer-events
+       none so a window frame never eats a click.
+    */
+    .site::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 60;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    /* The two bands that paint their own ground at the panel's ends. */
+    .site > .band:first-of-type,
+    .site > .hero-band { border-radius: 34px 34px 0 0; }
+    .site > .foot { border-radius: 0 0 34px 34px; }
+
+    /*
+       The scroll edge belongs to the window, not to the screen, so it
+       stops where the window does.
+    */
+    .site .scroll-edge {
+      left: 50%;
+      right: auto;
+      width: min(1320px, 100%);
+      transform: translateX(-50%);
+      border-radius: 34px 34px 0 0;
+    }
+  }
+
+  /*
+     Asked for less transparency, the room goes flat and the panel stops
+     pretending to float: the point of the dimming is depth, and depth is
+     the thing that setting turns off.
+  */
+  @media (min-width: 1120px) and (prefers-reduced-transparency: reduce) {
+    body { background: #020204; }
+    .site { box-shadow: none; }
+  }
+
