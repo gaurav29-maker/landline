@@ -87,3 +87,24 @@ export const BRAND_NAME = "Landline";
  * two files because each had it hand-written across two spans.
  */
 export const WORDMARK_PARTS = ["land", "line"] as const;
+
+/**
+ * The brand blue, and the only colour that reads on it.
+ *
+ * These exist for the things Satori and an email client render, which
+ * cannot see app/globals.css and so cannot read --blue. It is the same
+ * value, written once on this side of the fence.
+ *
+ * KNOWN AND NOT FIXED HERE: #387ED1 is still hand-typed in
+ * app/global-error.tsx and eight times in lib/email.ts. Those are a
+ * separate job with its own tests; the icons are the ones that would
+ * silently drift from the site on a rebrand, because nobody opens an
+ * icon file to check a hex.
+ *
+ * White on this blue is 4.14:1 — under AA for normal text, recorded at
+ * the top of app/globals.css as Gaurav's decision. At icon sizes it is
+ * not text, it is a shape on a ground, and 4.14:1 clears the 3:1 that
+ * non-text contrast asks for.
+ */
+export const BRAND_BLUE = "#387ED1";
+export const ON_ACCENT = "#FFFFFF";

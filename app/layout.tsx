@@ -16,6 +16,15 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   applicationName: "Landline",
+  /*
+   * The label under the Home Screen icon.
+   *
+   * Without this iOS uses the page <title>, and ours is "Landline — book
+   * a market expert to read your portfolio" — about eleven characters of
+   * room, so it would have read "Landline —…". The icon is useless if
+   * what sits under it is an ellipsis.
+   */
+  appleWebApp: { title: "Landline" },
   openGraph: {
     type: "website",
     siteName: "Landline",
