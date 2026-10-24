@@ -16,3 +16,15 @@ next-env.d.ts
 .vercel
 .env*
 
+
+# Skills installed with `npx skills add`.
+#
+# skills-lock.json is committed — it pins the source and a sha256 of each
+# skill, so `npx skills add` restores exactly what everyone else has.
+#
+# The two directories it materialises are not. .agents holds the fetched
+# SKILL.md, which the lockfile can fetch again; .claude/skills holds a
+# symlink into it written with an ABSOLUTE path, so it is broken on every
+# machine but this one.
+.agents/
+.claude/skills/
