@@ -6339,6 +6339,162 @@
   }
 
 
+
+  /* ================================================== what iOS would expect
+     Four things an Apple team building this for iOS would not have left
+     out. Three are touches; one is a defect.
+  */
+
+  /*
+     THE DEFECT. color-scheme was never set anywhere — only
+     prefers-color-scheme, which is the query, not the property. Without
+     it the user agent keeps painting its own widgets in the light theme:
+     in dark mode the intake form's native inputs, every select, the date
+     pickers and the scrollbars all render light on a black page. Setting
+     it here hands the whole subtree to the right set of widgets.
+
+     accent-color moves up with it. It was on .check input in two places,
+     which covered the checkboxes somebody remembered and nothing else;
+     it inherits, so one declaration covers every native control the site
+     will ever render.
+  */
+  .site { color-scheme: light; accent-color: var(--accent); }
+  :root:not([data-theme="light"]) .site,
+  :root[data-theme="dark"] .site { color-scheme: dark; }
+
+  /*
+     THE TAP FLASH. With nothing declared, every tap on iOS paints Safari's
+     default grey box over the control — the clearest possible signal that
+     nobody designed the thing for a phone. Taking it off is only half the
+     job: the other half is giving the control something of its own to do,
+     which is what :active is for below.
+  */
+  .site a,
+  .site button,
+  .site summary,
+  .site label,
+  .site [role="radio"] { -webkit-tap-highlight-color: transparent; }
+
+  /*
+     THE PRESS. iOS controls answer the instant a finger lands, before any
+     navigation happens, and that immediacy is most of why the platform
+     feels direct. Down is instant; the release eases back.
+  */
+  .site .b,
+  .site .chip,
+  .site .heard-arrow,
+  .site .reel-play,
+  .site .reel-seg,
+  .site .nav-burger,
+  .site .faq summary { transition: transform .22s cubic-bezier(0.2, 0, 0, 1); }
+
+  .site .b:active,
+  .site .chip:active,
+  .site .heard-arrow:active:not(:disabled),
+  .site .reel-play:active,
+  .site .nav-burger:active {
+    transform: scale(0.96);
+    transition-duration: 0s;
+  }
+  /* A row is pressed by dimming, not by shrinking — it is the width of
+     the screen and scaling it looks like the page is breathing. */
+  .site .faq summary:active { opacity: 0.6; transition-duration: 0s; }
+
+  /*
+     Safari inflates text in landscape unless told not to, which silently
+     breaks a type scale that was just put into rem so people could set
+     their own.
+  */
+  .site { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* ============================================== the inset grouped list
+     The FAQ, as iOS sets a list.
+
+     Not a full-width stack of rules: a rounded group floating on the
+     grouped background, with the separators INSET to start at the text
+     rather than at the container edge. That inset is the whole tell —
+     it is what distinguishes a UITableView from a stack of divs with
+     borders, and it is why a list reads as a list on that platform.
+
+     The marker goes from +/- to a chevron, which is what an iOS row uses
+     to say there is more behind it, and rotates rather than swapping
+     glyph so the two states are one object.
+  */
+  .site .faq {
+    max-width: 760px;
+    margin: 0 auto;
+    border-top: 0;
+    border-radius: 12px;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .site .faq details { border-bottom: 0; position: relative; }
+
+  /* The separator, inset to the text's leading edge. */
+  .site .faq details + details::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px;
+    right: 0;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .site .faq summary {
+    cursor: pointer;
+    padding: 15px 44px 15px 18px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink);
+    position: relative;
+    list-style: none;
+  }
+  .site .faq summary::-webkit-details-marker { display: none; }
+
+  /* A chevron, drawn rather than typed, so it can rotate. */
+  .site .faq summary::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin-top: -4px;
+    border-right: 1.5px solid var(--ink-faint);
+    border-bottom: 1.5px solid var(--ink-faint);
+    transform: rotate(45deg);
+    transform-origin: center;
+    transition: transform .2s cubic-bezier(0.2, 0, 0, 1);
+    font-family: inherit;
+  }
+  .site .faq details[open] summary::after {
+    content: "";
+    transform: rotate(-135deg);
+    margin-top: -1px;
+  }
+  .site .faq details p {
+    margin: 0;
+    padding: 0 44px 18px 18px;
+    font-size: 0.90625rem;
+    line-height: 1.4375rem;
+    color: var(--ink-mute);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site .faq summary::after { transition: none; }
+    .site .b,
+    .site .chip,
+    .site .heard-arrow,
+    .site .reel-play,
+    .site .nav-burger { transition: none; }
+    .site .b:active,
+    .site .chip:active,
+    .site .heard-arrow:active:not(:disabled),
+    .site .reel-play:active,
+    .site .nav-burger:active { transform: none; }
+  }
+
   /* ================================================ the scroll edge effect
      Apple's materials guidance, verbatim: "Scroll edge effects further
      enhance legibility by blurring and reducing the opacity of background
