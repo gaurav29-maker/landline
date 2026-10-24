@@ -3324,7 +3324,7 @@
      * 0.72 rather than the 0.88 the flat bar used. The bar only had to sit
      * still; this one has the page moving under it and has to look like it.
      */
-    --nav-bg: rgba(252, 253, 255, 0.72);
+    --mat-bg: rgba(252, 253, 255, 0.72);
     /*
        TWO CARDS, ONE RULE. Dark draws a filled panel; light draws a rule
        and some air. That is not two moods, it is the same idea expressed
@@ -3387,12 +3387,11 @@
     --card-shadow: none;
     --btn-soft: #EFF0F3;
     --btn-soft-hover: #E5E7EC;
-    --nav-hover: rgba(252, 253, 255, 0.92);
-    --nav-rim:
+    --mat-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.95),
       inset 0 0 0 1px rgba(255, 255, 255, 0.5),
       inset 0 -1px 0 rgba(120, 132, 155, 0.16);
-    --nav-lift: 0 10px 30px rgba(24, 34, 68, 0.10), 0 2px 8px rgba(24, 34, 68, 0.06);
+    --mat-lift: 0 10px 30px rgba(24, 34, 68, 0.10), 0 2px 8px rgba(24, 34, 68, 0.06);
 
     /*
      * The modal sheet, and the scrim it floats on. Same material as the
@@ -3466,7 +3465,7 @@
       --accent-ink: #5CA8FF;
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-      --nav-bg: rgba(30, 30, 30, 0.66);
+      --mat-bg: rgba(30, 30, 30, 0.66);
       --card: #181818;
       --card-radius: 16px;
       --card-edge: 0;
@@ -3479,12 +3478,11 @@
       --card-gap: 20px;
       --btn-soft: #202020;
       --btn-soft-hover: #2A2A2A;
-      --nav-hover: rgba(43, 43, 43, 0.82);
-      --nav-rim:
+      --mat-rim:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
         inset 0 0 0 1px rgba(255, 255, 255, 0.07),
         inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-      --nav-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
+      --mat-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
       --scrim: rgba(0, 0, 0, 0.58);
       --sheet-bg: rgba(32, 32, 32, 0.86);
       --sheet-inset: rgba(255, 255, 255, 0.05);
@@ -3523,7 +3521,7 @@
     --accent-ink: #5CA8FF;
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-    --nav-bg: rgba(30, 30, 30, 0.66);
+    --mat-bg: rgba(30, 30, 30, 0.66);
     --card: #181818;
     --card-radius: 16px;
     --card-edge: 0;
@@ -3536,12 +3534,11 @@
     --card-gap: 20px;
     --btn-soft: #202020;
     --btn-soft-hover: #2A2A2A;
-    --nav-hover: rgba(43, 43, 43, 0.82);
-    --nav-rim:
+    --mat-rim:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
       inset 0 0 0 1px rgba(255, 255, 255, 0.07),
       inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-    --nav-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
+    --mat-lift: 0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
     --scrim: rgba(0, 0, 0, 0.58);
     --sheet-bg: rgba(32, 32, 32, 0.86);
     --sheet-inset: rgba(255, 255, 255, 0.05);
@@ -3641,6 +3638,18 @@
     --rule:       #2A2A2A;
     --hairline:   rgba(255, 255, 255, 0.09);
     --accent-ink: #5CA8FF;
+    /*
+       The material, flipped with everything else. A glass control on this
+       band is dark glass in BOTH themes, because the band is black in
+       both — without these three the pill would be a white lozenge on a
+       black band every time the page is in light mode.
+    */
+    --mat-bg:     rgba(30, 30, 30, 0.66);
+    --mat-rim:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+    --mat-lift:   0 12px 34px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
     --card:       #181818;
     --card-edge:  0;
     --card-shadow: none;
@@ -3717,7 +3726,7 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: var(--nav-bg);
+    background: var(--mat-bg);
     -webkit-backdrop-filter: var(--glass-near);
     backdrop-filter: var(--glass-near);
     border-bottom: 1px solid var(--hairline);
@@ -3911,7 +3920,7 @@
   /*
      The same soft button as sign-in beside it, not glass.
 
-     It carried --nav-bg and --nav-rim, which made it a translucent pane
+     It carried --mat-bg and --mat-rim, which made it a translucent pane
      on a bar that is already a translucent pane — a bump on a window. It
      is on --btn-soft now, so the two controls at the right-hand end of
      the bar are made of one thing.
@@ -4144,10 +4153,10 @@
       white-space: nowrap;
       text-decoration: none;
       color: var(--accent-ink);
-      background: var(--nav-bg);
+      background: var(--mat-bg);
       -webkit-backdrop-filter: var(--glass-near);
       backdrop-filter: var(--glass-near);
-      box-shadow: var(--nav-rim), var(--nav-lift);
+      box-shadow: var(--mat-rim), var(--mat-lift);
     }
     /* The last thing on the page should not end under the capsule. */
     .site .foot { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
@@ -4898,7 +4907,7 @@
       border-bottom: 0;
       /* A rim so the capsule has an edge on a pale page, and a lift so it
          reads as sitting above the words rather than printed on them. */
-      box-shadow: var(--nav-rim), var(--nav-lift);
+      box-shadow: var(--mat-rim), var(--mat-lift);
     }
     /* Inside a shape that fits its contents, nothing may claim the slack. */
     .site .nav-in { flex: 0 0 auto; }
@@ -5745,9 +5754,28 @@
     margin: 0;
     line-height: 1;
     padding: 8px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /*
+       ON THE MATERIAL, not its own recipe.
+
+       This was `1px solid rgba(255,255,255,0.1)` with `blur(10px)` —
+       editlobby's pill, copied literally, which meant a white-alpha
+       border that only happened to be right because this pill only ever
+       sits on the black band. The site already HAD a glass material; it
+       was called --nav-* after one of its three users, so nothing that
+       was not the nav ever reached for it.
+
+       The rim is the border now. visionOS does not draw a line around
+       glass, it lights the edge: a highlight along the top, a shadow
+       along the bottom, and a hairline of its own tint around the whole
+       thing — which is exactly what --mat-rim is, three inset shadows
+       rather than one flat stroke.
+    */
+    border: 0;
     border-radius: 50px;
-    backdrop-filter: blur(10px);
+    background: var(--mat-bg);
+    -webkit-backdrop-filter: var(--glass-near);
+    backdrop-filter: var(--glass-near);
+    box-shadow: var(--mat-rim), var(--mat-lift);
     font-size: 0.875rem;
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -6319,8 +6347,9 @@
 
   /*
      Reduce Transparency. Every blur on this site reads a token, so the
-     token is where it goes out; --nav-bg and --nav-hover go opaque off
-     --bg and --bg-alt, which are already theme-correct.
+     token is where it goes out: --mat-bg goes opaque off --bg, and off
+     --card on the inverted band, where --bg would be the same black the
+     band is already painted in.
   */
   @media (prefers-reduced-transparency: reduce) {
     .site,
@@ -6328,15 +6357,9 @@
     :root[data-theme="dark"] .site {
       --glass-near: none;
       --glass-mid: none;
-      --nav-bg: var(--bg);
-      --nav-hover: var(--bg-alt);
+      --mat-bg: var(--bg);
     }
-    /* The one blur written as a literal rather than a token. */
-    .site .band-pill {
-      background: var(--card);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
+    .site .band.ink { --mat-bg: var(--card); }
   }
 
   /*
