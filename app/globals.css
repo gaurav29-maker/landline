@@ -5672,6 +5672,22 @@
     white-space: pre;
     overflow: hidden;
   }
+  /*
+     The record's filename, as a link. Underlined on hover only — a
+     permanent underline on mono inside a media card reads as a defect,
+     and the trailing label already says it is reachable.
+  */
+  .site .reel-get {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 10px;
+  }
+  .site .reel-get span { color: #FFFFFF; }
+  .site .reel-get:hover span { text-decoration: underline; }
+
   .site .reel-name {
     margin: 0;
     font-family: var(--mono);

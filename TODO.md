@@ -68,11 +68,16 @@ From the audit of what the page is missing, in the order I would do them:
    one route, one link, and it is the only artefact a visitor can hold
    before paying.
 
-### 3.4 One blue, read from one place
-`#387ED1` is hand-typed in **11 places** outside `globals.css`:
-`lib/email.ts` ×8, `app/global-error.tsx` ×2, `components/BookingDialog.tsx` ×1.
-`BRAND_BLUE` now exists in `lib/brand.ts` for exactly this. The email
-ones have tests, so do them deliberately rather than with a regex.
+### ~~3.4 One blue, read from one place~~ — done
+`lib/email.ts` ×8 and `components/BookingDialog.tsx` ×1 now read
+`BRAND_BLUE`.
+
+**`app/global-error.tsx` keeps its two literals, deliberately.** That
+file documents why at the top: it replaces the root layout, so
+`globals.css` is not loaded when it renders, and it is the one file that
+must not import the design system — because the reason it is showing may
+be that the design system failed to load. Listing it here was my error.
+A comment now sits next to the hex so nobody else tries.
 
 ---
 

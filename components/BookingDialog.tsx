@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ExpertCard } from "./ExpertGrid";
+import { BRAND_BLUE } from "@/lib/brand";
 /* BUNDLE_PRICE_PAISE stays: the bundle path still prices correctly if it is
    ever sold again. CREDITS and DAYS went with the option that named them. */
 import { BUNDLE_PRICE_PAISE } from "@/lib/constants";
@@ -221,7 +222,7 @@ export default function BookingDialog({
         name: "Landline",
         description: order.description,
         prefill: order.prefill,
-        theme: { color: "#387ED1" },
+        theme: { color: BRAND_BLUE },
         // The webhook confirms the booking. This only moves the browser on.
         handler: () => {
           window.location.href = `/booking/${hold.bookingId}`;

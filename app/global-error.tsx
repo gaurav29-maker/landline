@@ -96,6 +96,10 @@ export default function GlobalError({
               onClick={reset}
               style={{
                 appearance: "none",
+                /* #387ED1 by hand, and it stays that way: see the note at
+                   the top. BRAND_BLUE exists in lib/brand, and importing it
+                   here would give the last-resort page a dependency — on a
+                   page that may be showing BECAUSE a dependency failed. */
                 border: "1px solid #387ED1",
                 background: "#387ED1",
                 color: "#FFFFFF",
