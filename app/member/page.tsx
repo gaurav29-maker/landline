@@ -356,6 +356,91 @@ export default async function MemberConsole({
         </section>
       ) : null}
 
+      {/*
+        What to have in front of you.
+
+        The block above says what HAPPENS; nothing said what to have open
+        when you sit down, and the marketing site stops doing that work
+        the moment somebody becomes a customer. This runs for every
+        upcoming call rather than only the first, because the practical
+        part does not stop being true on the second one.
+
+        Three items and no more. A checklist that runs to eight is a
+        checklist nobody reads before a call they are already late for.
+      */}
+      {upcoming.length > 0 ? (
+        <section className="member-section">
+          <h2 className="member-h2">Before the call</h2>
+          <ul className="precall">
+            <li>
+              <b>Your positions, open.</b>
+              <span>
+                Not the summary you sent — the actual book, so you can follow when they
+                point at something.
+              </span>
+            </li>
+            <li>
+              <b>The one question you want answered.</b>
+              <span>
+                Forty-five minutes goes quickly. One clear question is worth more than ten
+                vague ones.
+              </span>
+            </li>
+            <li>
+              <b>Somewhere to write.</b>
+              <span>
+                You get their note afterwards and a file of what you shared — but not a
+                transcript. Anything said out loud is yours to catch.
+              </span>
+            </li>
+          </ul>
+        </section>
+      ) : null}
+
+
+      {/*
+        THE LOG SITS HERE, above the booking blocks, and the move is the
+        whole point of it. It was eighth on this page — under two ways to
+        book, a bundle picker per bundle and a renewal notice — which put
+        it below the fold on every laptop. It is the one thing in this
+        product nobody else offers a retail trader: their own holdings,
+        first session against most recent, in their own figures.
+
+        It cannot collide with the first-session block above it. That one
+        needs no finished call; this one needs two intakes with something
+        moved between them. No member is ever both.
+      */}
+      {/*
+        The record. It states what was DECLARED and what was DISCUSSED — never
+        what was recommended, and never that a change followed advice. The terms
+        say Landline does not give personalised advice, and this has to agree.
+      */}
+      {record.movements.length > 0 ? (
+        <section className="member-section">
+          <h2 className="member-h2">The Log</h2>
+          <p className="bp-muted" style={{ marginBottom: 14 }}>
+            A log is what you keep of successive positions. This is yours: what you told us
+            you held, first session against most recent, in your own figures.
+          </p>
+          <ul className="os-moves">
+            {record.movements.map((m) => (
+              <li key={m.label}>
+                <span className="os-move-label">{m.label}</span>
+                <span className="os-move-nums">
+                  <b>{m.first}%</b>
+                  <span className="os-move-arrow">→</span>
+                  <b>{m.latest}%</b>
+                  <span className={`os-move-delta${m.delta === 0 ? " flat" : ""}`}>
+                    {m.delta > 0 ? "+" : ""}
+                    {m.delta}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {membership ? (
         <section className="member-section" id="book">
           <h2 className="member-h2">Book a session</h2>
@@ -445,37 +530,6 @@ export default async function MemberConsole({
               sessions are {rupees(SINGLE_CALL_PAISE)} each, booked one at a time.
             </p>
           </div>
-        </section>
-      ) : null}
-
-      {/*
-        The record. It states what was DECLARED and what was DISCUSSED — never
-        what was recommended, and never that a change followed advice. The terms
-        say Landline does not give personalised advice, and this has to agree.
-      */}
-      {record.movements.length > 0 ? (
-        <section className="member-section">
-          <h2 className="member-h2">The Log</h2>
-          <p className="bp-muted" style={{ marginBottom: 14 }}>
-            A log is what you keep of successive positions. This is yours: what you told us
-            you held, first session against most recent, in your own figures.
-          </p>
-          <ul className="os-moves">
-            {record.movements.map((m) => (
-              <li key={m.label}>
-                <span className="os-move-label">{m.label}</span>
-                <span className="os-move-nums">
-                  <b>{m.first}%</b>
-                  <span className="os-move-arrow">→</span>
-                  <b>{m.latest}%</b>
-                  <span className={`os-move-delta${m.delta === 0 ? " flat" : ""}`}>
-                    {m.delta > 0 ? "+" : ""}
-                    {m.delta}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
         </section>
       ) : null}
 

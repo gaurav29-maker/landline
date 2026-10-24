@@ -2578,6 +2578,27 @@
     max-width: 68ch;
   }
 
+  /*
+     Before the call. A checklist, not a sequence, so no numbers — the
+     three items have no order and numbering them would imply one.
+     Same hairlines and the same silence about font size as .first-run:
+     the console owns that, and declaring it here would be three lines
+     that never reach the screen.
+  */
+  .os .precall { list-style: none; padding: 0; margin: 0; }
+  .os .precall li {
+    padding: 13px 0;
+    border-top: 1px solid var(--os-rule);
+  }
+  .os .precall li:first-child { border-top: 0; padding-top: 0; }
+  .os .precall b { display: block; color: var(--ink-dark); }
+  .os .precall span {
+    display: block;
+    margin-top: 3px;
+    color: var(--ink-mute, var(--ink-soft));
+    max-width: 62ch;
+  }
+
   .os .os-moves { list-style: none; padding: 0; margin: 0; }
   .os .os-moves li {
     display: flex;
