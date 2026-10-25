@@ -431,6 +431,32 @@ export default async function Profile({
           </form>
         </div>
       </section>
+
+      {/*
+        The DPDP right that had no button.
+
+        app/legal/privacy section 6 promises a member can ask us what we
+        hold about them and who we have shared it with, and the only
+        route it gave was "write to [grievance contact]" — a placeholder
+        that has never been filled in. A published right with no
+        mechanism is worse than no promise.
+
+        It sits last because nobody arrives here for it; they arrive to
+        change a number. But it is a right, not a setting, so it gets a
+        heading rather than a line of fine print.
+      */}
+      <section className="member-section">
+        <h2 className="member-h2">Everything we hold about you</h2>
+        <p className="bp-muted" style={{ marginBottom: 14 }}>
+          One file: every booking, everything you told us before each call, what your
+          expert wrote back, where you are signed in, and who we have shared any of it
+          with. We will ask for a code first — it is the most concentrated thing we
+          could hand to somebody who is not you.
+        </p>
+        <a className="ops-btn" href="/member/data">
+          Download it
+        </a>
+      </section>
     </div>
   );
 }

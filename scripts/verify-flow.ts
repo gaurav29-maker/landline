@@ -3096,7 +3096,7 @@ async function main() {
        your bookings and wrong for downloading your holdings.
     */
     const [recordCustomer] = await db
-      .select({ id: customers.id })
+      .select({ id: customers.id, email: customers.email })
       .from(bookings)
       .innerJoin(customers, eq(bookings.customerId, customers.id))
       .limit(1);
@@ -3138,8 +3138,56 @@ async function main() {
       `fresh ${fresh.status}, stale ${stale.status} -> verify, console still ${staleConsole.status}`,
     );
 
+    /*
+       THE DATA EXPORT IS BEHIND THE SAME DOOR, and it is a wider one: the
+       record is one session, this is every holding the member has ever
+       declared plus their IP addresses and every device they have used.
+       It is the single most concentrated thing the platform can hand over,
+       so a month-old cookie is not enough on its own.
+
+       Checked here rather than assumed, because the gate is three lines in
+       a route nobody opens again and a regression would be silent — the
+       file would still download, just for the wrong person.
+    */
+    const dataUrl = `${BASE}/member/data`;
+    const dataStale = await fetch(dataUrl, { headers: jar, redirect: "manual" });
+    check(
+      "the data export asks again when identity is stale",
+      dataStale.status === 303 &&
+        (dataStale.headers.get("location") ?? "").includes("/member/verify"),
+      `status ${dataStale.status} -> ${dataStale.headers.get("location") ?? "(nowhere)"}`,
+    );
+
     /* And typing a code opens it again, without a new sign-in. */
     await markVerified(row.id);
+
+    /*
+       And what it actually contains. An export that answers "what do you
+       hold" and skips "who have you shared it with" answers half the
+       right the privacy policy grants.
+    */
+    const dataFresh = await fetch(dataUrl, { headers: jar, redirect: "manual" });
+    const dataBody = dataFresh.status === 200 ? await dataFresh.text() : "";
+    const sections = [
+      "WHO YOU ARE",
+      "WHAT YOU HAVE BOOKED",
+      "WHAT YOU TOLD US BEFORE EACH CALL",
+      "WHERE YOU ARE SIGNED IN",
+      "WHO WE HAVE SHARED IT WITH",
+      "HOW LONG WE KEEP IT",
+    ];
+    const missing = sections.filter((h) => !dataBody.includes(h));
+    check(
+      "the export carries the member's own data and names who has seen it",
+      dataFresh.status === 200 &&
+        missing.length === 0 &&
+        dataBody.includes(recordCustomer.email) &&
+        !dataBody.includes("no-store-marker"),
+      missing.length
+        ? `missing: ${missing.join(", ")}`
+        : `${sections.length} sections, ${dataBody.length} bytes, addressed to the member`,
+    );
+
     const again = await fetch(url, { headers: jar, redirect: "manual" });
     check(
       "proving identity again reopens it, without signing in again",

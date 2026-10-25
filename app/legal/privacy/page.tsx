@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Landline",
@@ -106,13 +107,27 @@ export default function Privacy() {
       <h2>6. Your rights</h2>
       <p>Under the DPDP Act you can ask us to:</p>
       <ul>
-        <li>tell you what we hold about you and who we have shared it with;</li>
-        <li>correct anything inaccurate or incomplete;</li>
+        <li>
+          tell you what we hold about you and who we have shared it with — you do not have to
+          ask us for this one. Sign in and open{" "}
+          <Link href="/member/profile">Your details</Link>; the whole file downloads from
+          there, including who each piece has been shared with.
+        </li>
+        <li>
+          correct anything inaccurate or incomplete — your name, number and email are editable
+          in the same place.
+        </li>
         <li>erase your data where we no longer need it;</li>
         <li>nominate someone to exercise these rights if you cannot.</li>
       </ul>
+      {/*
+        The first two rights are self-serve now and say so. The last two
+        still route through a person, and that contact is still a blank —
+        which is the point of leaving the placeholder visible rather than
+        writing something reassuring and untrue.
+      */}
       <p>
-        Write to <TODO>[grievance contact]</TODO>. We aim to respond within{" "}
+        For the last two, write to <TODO>[grievance contact]</TODO>. We aim to respond within{" "}
         <TODO>[N]</TODO> days. If we cannot resolve it, you may complain to the Data Protection
         Board of India.
       </p>
