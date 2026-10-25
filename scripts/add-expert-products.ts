@@ -3,6 +3,7 @@ loadEnv();
 
 import { sql } from "drizzle-orm";
 import { db } from "../lib/db";
+import { SLOT_MINUTES } from "../lib/slots";
 
 /**
  * What an expert sells, as explicit DDL, plus the backfill.
@@ -13,8 +14,9 @@ import { db } from "../lib/db";
  *
  * THE BACKFILL IS THE POINT.
  *
- * Every expert had exactly one price and everybody had the same 45-minute
- * slot, so every expert gets exactly one product built from those two values.
+ * Every expert had exactly one price and everybody had the same slot
+ * length, so every expert gets exactly one product built from those two
+ * values.
  * Nothing about the site changes — the same session at the same price — which
  * is deliberate: this migration moves where the number lives without moving
  * the number. A second product is a row somebody adds afterwards.
@@ -66,7 +68,7 @@ async function main() {
     insert into expert_products (expert_id, slug, name, blurb, minutes, price_paise)
     select id, 'audit', 'Portfolio audit',
            'A read of what you hold, and a conversation about it.',
-           45, price_paise
+           ${SLOT_MINUTES}, price_paise
     from experts
     on conflict do nothing
     returning id

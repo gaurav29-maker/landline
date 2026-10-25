@@ -9,6 +9,20 @@
  * and only converted to an absolute instant at the very end.
  */
 
+/**
+ * How long a booking blocks the calendar. NOT how long the call lasts.
+ *
+ * The call has no time limit, and nothing the site says to a visitor names
+ * a duration any more. This number exists because a calendar needs a block
+ * length even when a conversation does not have one: it sets the spacing of
+ * offered slots, the endsAt written on a booking, and the minimum
+ * availability window an expert can save.
+ *
+ * computeSlots steps by exactly this with no gap, so slots are back to back.
+ * That was right when a call was forty-five minutes by definition, and it is
+ * the open question now that it is not — a call that runs over makes the next
+ * caller wait. Changing it is a scheduling decision, not a wording one.
+ */
 export const SLOT_MINUTES = 45;
 export const DEFAULT_HORIZON_DAYS = 21;
 /** Don't offer a slot that starts sooner than this; nobody can prepare in ten minutes. */

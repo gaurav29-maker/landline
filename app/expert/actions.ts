@@ -17,6 +17,7 @@ import {
 } from "@/lib/expert-session";
 import { disconnect as disconnectGoogleAccount } from "@/lib/google";
 import { recordPayout } from "@/lib/payouts";
+import { SLOT_MINUTES } from "@/lib/slots";
 
 /**
  * Server actions are POST endpoints in their own right, so each one re-checks
@@ -195,9 +196,18 @@ export async function addAvailability(formData: FormData) {
 
   if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) throw new Error("Pick a day");
   if (!Number.isFinite(startMinute) || !Number.isFinite(endMinute)) throw new Error("Pick times");
-  // A window shorter than one session can never produce a bookable slot, so
-  // it would silently do nothing.
-  if (endMinute - startMinute < 45) throw new Error("A window must be at least 45 minutes");
+  /*
+     A window shorter than one session can never produce a bookable slot,
+     so it would silently do nothing.
+
+     Reads SLOT_MINUTES rather than the 45 that used to be typed here.
+     The two were independent: change the slot length and this check
+     would have kept enforcing the old one, letting an expert save a
+     window that produces nothing.
+  */
+  if (endMinute - startMinute < SLOT_MINUTES) {
+    throw new Error("A window must be at least as long as one session");
+  }
 
   await db.insert(availabilityRules).values({ expertId, weekday, startMinute, endMinute });
   revalidatePath("/expert/availability");

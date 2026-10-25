@@ -115,8 +115,7 @@ export default async function Availability() {
             Add window
           </button>
           <p className="bp-fineprint">
-            A window shorter than one session produces no bookable times, so 45 minutes is the
-            minimum.
+            A window shorter than one session produces no bookable times.
           </p>
         </form>
       </section>

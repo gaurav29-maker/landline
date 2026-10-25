@@ -819,8 +819,8 @@ export const expertProductStatus = pgEnum("expert_product_status", ["active", "h
  *
  * Price and duration used to be a single column and a global constant:
  * experts.price_paise, and SLOT_MINUTES = 45 for everybody. That is exactly
- * one product, and it is why a fifteen-minute second opinion and a
- * forty-five-minute audit could not both exist — not because the availability
+ * one product, and it is why a short second opinion and a longer audit
+ * could not both exist — not because the availability
  * engine could not do it (computeSlots has always taken slotMinutes as a
  * parameter) but because there was nowhere to put a second price.
  *
