@@ -1,245 +1,131 @@
-"use client";
-
-import { use, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { bookings, intakeSubmissions } from "@/lib/db/schema";
+import { verifyBookingToken } from "@/lib/tokens";
+import { istDateTime } from "@/lib/format";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import IntakeForm, { type IntakeInitial } from "@/components/IntakeForm";
 
-function IntakeForm({ id }: { id: string }) {
-  const token = useSearchParams().get("t") ?? "";
+export const dynamic = "force-dynamic";
 
-  const [rows, setRows] = useState<{ label: string; pct: string }[]>([
-    { label: "", pct: "" },
-    { label: "", pct: "" },
-    { label: "", pct: "" },
-  ]);
-  const [holdingsSummary, setHoldings] = useState("");
-  const [goals, setGoals] = useState("");
-  const [experienceYears, setExperience] = useState("");
-  const [riskComfort, setRisk] = useState("");
-  const [tradesFno, setTradesFno] = useState(false);
-  const [questions, setQuestions] = useState("");
+/**
+ * The intake, with whatever the member already told us in the boxes.
+ *
+ * THE PAGE IS A SERVER COMPONENT NOW, and only because of one rule: the
+ * prefill is somebody's holdings, so it must not be sent to a browser
+ * that has not proved it owns this booking. The signed token in the URL
+ * is that proof and it is checked HERE, before a single number is read
+ * out of the database. A client fetch would have meant a second endpoint
+ * carrying the same check written a second time.
+ *
+ * WHAT IT CARRIES, in order of preference:
+ *
+ *   1. This booking's own intake, if one has been sent. The console links
+ *      "Update it" straight here, and that link used to open an empty
+ *      form over an API that upserts on booking id — so pressing send
+ *      replaced a finished intake with nothing.
+ *   2. Otherwise the most recent intake from any of their other bookings,
+ *      so a second session starts from the first rather than from blank.
+ *
+ * PURGED ONES ARE SKIPPED. An intake past its retention clock has
+ * purgedAt set, and resurrecting it into a form would undo the deletion
+ * the privacy policy promises.
+ */
+export default async function IntakePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ t?: string }>;
+}) {
+  const { id } = await params;
+  const { t } = await searchParams;
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  let initial: IntakeInitial | null = null;
 
-  const totalPct = rows.reduce((n, r) => n + (Number(r.pct) || 0), 0);
+  if (verifyBookingToken(id, t)) {
+    const [booking] = await db
+      .select({ customerId: bookings.customerId })
+      .from(bookings)
+      .where(eq(bookings.id, id))
+      .limit(1);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/bookings/${id}/intake`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          token,
-          holdings: rows
-            .map((r) => ({ label: r.label.trim(), pct: Number(r.pct) }))
-            .filter((r) => r.label !== "" && Number.isFinite(r.pct)),
-          holdingsSummary,
-          goals,
-          experienceYears: experienceYears === "" ? undefined : Number(experienceYears),
-          riskComfort: riskComfort === "" ? undefined : riskComfort,
-          tradesFno,
-          questions,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Could not save that");
-      setDone(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
+    if (booking) {
+      const [own] = await db
+        .select({ payload: intakeSubmissions.payload, at: intakeSubmissions.submittedAt })
+        .from(intakeSubmissions)
+        .where(and(eq(intakeSubmissions.bookingId, id), isNull(intakeSubmissions.purgedAt)))
+        .limit(1);
+
+      const prior = own
+        ? null
+        : (
+            await db
+              .select({ payload: intakeSubmissions.payload, at: intakeSubmissions.submittedAt })
+              .from(intakeSubmissions)
+              .innerJoin(bookings, eq(bookings.id, intakeSubmissions.bookingId))
+              .where(
+                and(
+                  eq(bookings.customerId, booking.customerId),
+                  ne(intakeSubmissions.bookingId, id),
+                  isNull(intakeSubmissions.purgedAt),
+                ),
+              )
+              .orderBy(desc(intakeSubmissions.submittedAt))
+              .limit(1)
+          )[0];
+
+      const found = own ?? prior;
+      if (found) initial = shape(found.payload, own ? "this" : "previous", found.at);
     }
   }
 
-  if (done) {
-    return (
-      <div className="panel">
-        <h1>Thank you — that is everything.</h1>
-        <p>Your expert has this in front of them on the call.</p>
-        <p className="muted">
-          You can change any of it up until the session starts — come back to this page and send it
-          again.
-        </p>
-        <a className="b b-line" href={`/booking/${id}`}>
-          Back to your booking
-        </a>
-      </div>
-    );
-  }
-
-  return (
-    <form className="panel" onSubmit={submit}>
-      <h1>Before your call</h1>
-      <p className="lede">
-        Five minutes here saves fifteen on the call. The more concrete you are, the more useful the
-        session.
-      </p>
-
-      <div className="notice">
-        Never share a demat or broker login — not here, not with your expert, not with anyone. There
-        is no field on this form that asks for one.
-      </div>
-
-      {/*
-        Rows first, prose second. The rows are what make one session
-        comparable to the last; the prose is what a percentage cannot say.
-      */}
-      <div className="f">
-        <span>What are you holding?</span>
-        <p className="hint">
-          Rough percentages are fine — they only need to be close enough to talk about.
-        </p>
-        <div className="intake-rows">
-          {rows.map((r, i) => (
-            <div className="intake-row" key={i}>
-              <input
-                aria-label={`Holding ${i + 1}`}
-                placeholder="e.g. two IT largecaps"
-                value={r.label}
-                onChange={(e) =>
-                  setRows(rows.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
-                }
-              />
-              <div className="intake-pct">
-                <input
-                  aria-label={`Percentage for holding ${i + 1}`}
-                  type="number"
-                  min={0}
-                  max={100}
-                  placeholder="0"
-                  value={r.pct}
-                  onChange={(e) =>
-                    setRows(rows.map((x, j) => (j === i ? { ...x, pct: e.target.value } : x)))
-                  }
-                />
-                <span>%</span>
-              </div>
-              <button
-                type="button"
-                className="drop"
-                aria-label={`Remove holding ${i + 1}`}
-                onClick={() => setRows(rows.filter((_, j) => j !== i))}
-                disabled={rows.length <= 1}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="intake-tools">
-          <button
-            type="button"
-            className="b b-line b-sm"
-            onClick={() => setRows([...rows, { label: "", pct: "" }])}
-            disabled={rows.length >= 20}
-          >
-            Add a line
-          </button>
-          <span className={`intake-total${totalPct > 100 ? " over" : ""}`}>
-            {totalPct}% accounted for
-          </span>
-        </div>
-      </div>
-
-      <label className="f">
-        <span>Anything the percentages do not say</span>
-        <textarea
-          rows={4}
-          required
-          value={holdingsSummary}
-          onChange={(e) => setHoldings(e.target.value)}
-          placeholder="How you got here, what you keep changing your mind about, anything you would tell a friend about this portfolio."
-        />
-      </label>
-
-      <label className="f">
-        <span>What do you want out of the call?</span>
-        <textarea
-          rows={3}
-          value={goals}
-          onChange={(e) => setGoals(e.target.value)}
-          placeholder="For example: am I too concentrated? Should I be worried about my F&O position sizing?"
-        />
-      </label>
-
-      <div className="row2">
-        <label className="f">
-          <span>
-            Years investing <em>optional</em>
-          </span>
-          <input
-            type="number"
-            min={0}
-            max={80}
-            value={experienceYears}
-            onChange={(e) => setExperience(e.target.value)}
-          />
-        </label>
-
-        <label className="f">
-          <span>
-            Comfort with risk <em>optional</em>
-          </span>
-          <select value={riskComfort} onChange={(e) => setRisk(e.target.value)}>
-            <option value="">Prefer not to say</option>
-            <option value="low">Low — I want to sleep at night</option>
-            <option value="medium">Medium</option>
-            <option value="high">High — drawdowns do not bother me</option>
-          </select>
-        </label>
-      </div>
-
-      <label className="check">
-        <input
-          type="checkbox"
-          checked={tradesFno}
-          onChange={(e) => setTradesFno(e.target.checked)}
-        />
-        <span>I trade futures and options</span>
-      </label>
-
-      <label className="f">
-        <span>
-          Anything specific you want to ask? <em>optional</em>
-        </span>
-        <textarea rows={3} value={questions} onChange={(e) => setQuestions(e.target.value)} />
-      </label>
-
-      {error ? <p className="err">{error}</p> : null}
-
-      <button className="b b-fill full" disabled={busy || holdingsSummary.trim() === ""}>
-        {busy ? "Saving…" : "Send to my expert"}
-      </button>
-
-      <p className="fineprint">
-        This goes only to the expert you booked, and is deleted 90 days after the call.
-      </p>
-    </form>
-  );
-}
-
-export default function IntakePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
   return (
     <div className="site">
       <SiteNav />
       <main id="main">
-      <div className="wrap">
-        <div className="doc">
-          <Suspense fallback={<p className="muted">Loading…</p>}>
-            <IntakeForm id={id} />
-          </Suspense>
+        <div className="wrap">
+          <div className="doc">
+            <IntakeForm id={id} initial={initial} />
+          </div>
         </div>
-      </div>
       </main>
       <SiteFooter />
     </div>
   );
+}
+
+/**
+ * The stored payload is jsonb, so it is whatever was written the day it
+ * was written. Every field is read defensively and a bad one becomes an
+ * empty box rather than a crashed page — a form that will not load is
+ * worse than a form that has lost one answer.
+ */
+function shape(payload: unknown, source: "this" | "previous", at: Date): IntakeInitial {
+  const p = (payload ?? {}) as Record<string, unknown>;
+  const str = (k: string) => (typeof p[k] === "string" ? (p[k] as string) : "");
+
+  const holdings = Array.isArray(p.holdings)
+    ? (p.holdings as unknown[])
+        .map((h) => {
+          const row = (h ?? {}) as { label?: unknown; pct?: unknown };
+          return { label: String(row.label ?? "").trim(), pct: Number(row.pct) };
+        })
+        .filter((h) => h.label !== "" && Number.isFinite(h.pct))
+    : [];
+
+  const years = Number(p.experienceYears);
+
+  return {
+    holdings,
+    holdingsSummary: str("holdingsSummary"),
+    goals: str("goals"),
+    experienceYears: Number.isFinite(years) ? years : null,
+    riskComfort: str("riskComfort"),
+    tradesFno: p.tradesFno === true,
+    questions: str("questions"),
+    source,
+    when: istDateTime(at),
+  };
 }

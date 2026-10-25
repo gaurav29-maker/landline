@@ -5389,6 +5389,23 @@
     color: var(--ink-mute);
   }
 
+  /*
+     The line that explains a prefilled form. Tinted rather than plain,
+     because it has to be read BEFORE somebody notices their own numbers
+     already in the boxes — an unexplained prefill on a form about money
+     reads as a breach, not a convenience.
+  */
+  .site .intake-carried {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--rule);
+    background: var(--bg-alt);
+    font-size: 0.875rem;
+    line-height: 1.375rem;
+    color: var(--ink-body);
+  }
+
   /* ---- audit my portfolio ---- */
 
   /* ======================================================= what people said

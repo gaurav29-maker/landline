@@ -37,7 +37,7 @@ const ASKS: Ask[] = [
   {
     tag: "Concentrated",
     ask: "Half of it is in three names. Is that a decision or an accident?",
-    does: "Most of the hour on the three.",
+    does: "Most of the call on the three.",
   },
   {
     tag: "Scattered",
