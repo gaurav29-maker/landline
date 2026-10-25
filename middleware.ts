@@ -13,9 +13,23 @@ export const config = { matcher: ["/ops/:path*", "/member/:path*", "/expert/:pat
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  // The member console: /member itself may carry a one-time sign-in link, and
-  // the login page must stay reachable, so both are handled by the page.
-  if (path === "/member" || path === "/member/login") return NextResponse.next();
+  /*
+     The member console: /member itself may carry a one-time sign-in link, and
+     the login page must stay reachable, so both are handled by the page.
+
+     /member/deleted is the third, and it is the one with teeth. It is where
+     an account lands the instant after it is erased — at which point the
+     session rows are gone and the cookie resolves to nothing, so this guard
+     would bounce it to the sign-in form. Being thrown at "Sign in to
+     Landline" is the worst possible confirmation that a deletion worked:
+     it reads as though the deletion failed and logged you out.
+
+     Caught by measurement, not by reading. The flow redirected correctly to
+     /member/deleted and the sign-in page rendered there.
+  */
+  if (path === "/member" || path === "/member/login" || path === "/member/deleted") {
+    return NextResponse.next();
+  }
 
   if (path.startsWith("/member")) {
     if (await readSessionToken(req.cookies.get(MEMBER_COOKIE)?.value)) {

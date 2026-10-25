@@ -17,9 +17,10 @@ can stop a launch, and almost none of it is code.
 | 1.3 | **SMS provider + TRAI DLT** | `SMS_PROVIDER`, `SMS_API_KEY`, `SMS_SENDER_ID` unset | Phone sign-in is the front door and it cannot send a code. DLT registration is a regulator step with a lead time — start it before you need it. |
 | 1.4 | **The 21 legal blanks** | 9 in `app/legal/privacy`, 7 in `app/legal/terms`, 5 in `app/legal/refunds` | Registered entity name, CIN, address, GSTIN, grievance officer, retention periods, the cancellation percentage. They render as visible `[bracketed]` placeholders today — a visitor can read them. |
 | 1.5 | **Trade mark number** | `lib/brand.ts:66` | `TRADEMARK_REGISTERED` is already `true`, so ® is on every surface. Under s.107 of the Trade Marks Act 1999, claiming registration you do not hold is an offence. Write the number and class into that comment, or set the flag back to `false`. |
+| 1.6 | **The retention period, confirmed against the entity** | `FINANCIAL_RECORD_RETENTION_YEARS` in `lib/constants.ts` | Set to **8 years** and shown to every member on the delete-account page as the law's requirement. Eight is Companies Act 2013 s.128(5), which binds a *company*. A sole proprietorship or an LLP is not one, and for those rule 6F(5) governs at six years — so on the wrong entity this is two years of unlawful retention, and keeping data longer than the law requires is itself a DPDP breach. Blocked on 1.4: the entity type is one of the blanks. |
 
-**1.4 and 1.5 are the two with legal exposure.** Everything else here just
-means a thing does not work yet.
+**1.4, 1.5 and 1.6 are the three with legal exposure.** Everything else here
+just means a thing does not work yet.
 
 ---
 
@@ -99,6 +100,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 140 checks pass against a database
+- **Work the tests already cover.** 152 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.

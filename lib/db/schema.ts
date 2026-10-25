@@ -874,3 +874,60 @@ export const expertProducts = pgTable(
     index("expert_products_expert_idx").on(t.expertId),
   ],
 );
+
+/**
+ * A record that an account was erased, kept after the account is gone.
+ *
+ * WHY THIS TABLE EXISTS AT ALL, given that the point of erasure is to hold
+ * less: because "we deleted it" is a claim, and under section 12 of the DPDP
+ * Act 2023 it is a claim we may have to substantiate to the Data Protection
+ * Board. An erasure with no trace of having happened is indistinguishable
+ * from an erasure that silently failed.
+ *
+ * WHAT IT MUST NOT CONTAIN is the point of its design. There is no name
+ * column, no email column and no phone column, because a deletion log that
+ * records who was deleted has not deleted them — it has moved them to a table
+ * nobody thinks of as holding personal data, which is the worst of both. It
+ * holds the customer id, which every surviving financial row already carries,
+ * counts of what went, and nothing else about the person.
+ *
+ * NOT ops_events, which is where an audit trail would normally go.
+ * `ops_events.actor_id` is NOT NULL and references an operator, and a member
+ * erasing their own account is not an operator. Inventing a synthetic
+ * operator row to satisfy the column would put a fictional person in the one
+ * table whose value is that every row in it names a real one.
+ */
+export const accountDeletions = pgTable(
+  "account_deletions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /*
+       The anonymised customer row, which survives. Cascade would be wrong:
+       if that row ever is hard-deleted, the record that it was erased on
+       request is the one thing that should outlive it.
+    */
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customers.id),
+    /** Who asked. "member" today; "operator" when the console can do it. */
+    requestedBy: text("requested_by").notNull().default("member"),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    /*
+       What went, as counts. Enough to answer "did this actually run" without
+       storing any of what it erased.
+    */
+    intakesErased: smallint("intakes_erased").notNull().default(0),
+    notesErased: smallint("notes_erased").notNull().default(0),
+    paymentsRedacted: smallint("payments_redacted").notNull().default(0),
+    sessionsEnded: smallint("sessions_ended").notNull().default(0),
+    /*
+       How many financial rows were deliberately kept, and the year the last
+       of them may be deleted. Written at erasure rather than computed later,
+       because the retention rule can change and what a member was TOLD at
+       the time should not change with it.
+    */
+    bookingsKept: smallint("bookings_kept").notNull().default(0),
+    keptUntil: timestamp("kept_until", { withTimezone: true }),
+  },
+  (t) => [index("account_deletions_customer_idx").on(t.customerId)],
+);

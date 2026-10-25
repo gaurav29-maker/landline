@@ -263,8 +263,10 @@ export async function GET(req: Request) {
     "  the call. Anything above marked deleted has already gone.",
     "  Booking and payment records are kept as long as tax and accounting",
     "  law requires.",
-    "  To correct anything, use Your details in the console. To ask for",
-    "  erasure, see the privacy policy at /legal/privacy.",
+    "  To correct anything, use Your details in the console.",
+    "  To erase all of it, use Delete your account on the same page. It",
+    "  keeps only what the law above requires, with your name and contact",
+    "  details taken out of those records.",
     "",
   );
 

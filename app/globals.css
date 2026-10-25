@@ -1389,6 +1389,53 @@
   }
   .member-slots { border-top: 1px solid var(--sheet-line, var(--line)); padding-top: 16px; }
 
+  /*
+     ---- deleting an account ----
+
+     The one page on the site whose job is to slow somebody down, so the
+     rules here spend space rather than save it.
+
+     THE LIST IS NOT A BULLETED LIST OF FEATURES. Each item is a sentence
+     with a bolded subject, and the line-height is the body measure rather
+     than the tighter one the console uses for data, because this is prose
+     somebody has to actually read before pressing a button with no undo.
+  */
+  .erase-list { margin: 0; padding: 0 0 0 20px; }
+  .erase-list li {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    color: var(--ink-body, var(--ink));
+  }
+  .erase-list li:last-child { margin-bottom: 0; }
+  .erase-list b { font-weight: 600; }
+
+  /*
+     The refusal and the forfeit warning read as the same KIND of thing —
+     something standing between you and the button — so they share a left
+     edge rather than each inventing a treatment. A rule, not a tinted fill:
+     a coloured panel on a page that is already about loss reads as an
+     error, and being told to cancel a booking first is not an error.
+  */
+  .erase-blocked,
+  .erase-forfeit { border-left: 3px solid var(--warn-rule, #C97676); }
+
+  .erase-blocker { margin-bottom: 18px; }
+  .erase-blocker:last-of-type { margin-bottom: 20px; }
+  .erase-blocker-what {
+    margin: 0 0 6px;
+    font-weight: 600;
+    color: var(--ink-body, var(--ink));
+    line-height: 1.5;
+  }
+
+  /* The field and its button, far enough apart to be two decisions. */
+  .erase-confirm .bp-field { margin-bottom: 20px; }
+  .erase-confirm input {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
   /* ---- pricing grid grows to four ---- */
   .pricing-grid.is-four { grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .pricing-grid.is-four .price-card { padding: 24px 20px; }
@@ -7306,6 +7353,66 @@
   .site-dark.os .member-section { margin-bottom: 40px; }
 
   /*
+     ---- deleting an account, in the console ----
+
+     Restated here rather than written once, and specificity is the reason:
+     `.site-dark.os .bp-panel` sets `border: 0` at (0,3,0) and sits above
+     this, so the left rule declared on `.erase-blocked` at (0,1,0) loses
+     and silently does not render. Measured, not assumed — the first draft
+     of this page had no rule on either panel and looked merely plain.
+
+     The colour is the console's one borrowed warning hue, the same
+     #E77B7B that `.os .ops-btn.danger` already uses, so the rule beside
+     the refusal and the button that performs the deletion are visibly the
+     same system rather than two reds.
+  */
+  .site-dark.os .erase-blocked,
+  .site-dark.os .erase-forfeit {
+    border-left: 3px solid rgba(231, 123, 123, 0.55);
+  }
+
+  /*
+     The console sets one size for everything (see the note on the
+     single-size rule), and that is right for data and wrong for five
+     sentences somebody must read before an irreversible action. Line
+     height only — the size stays on the system.
+  */
+  /*
+     THE DANGER BUTTON RENDERED WHITE, which is the defect worth recording.
+
+     `.os .ops-btn.danger` sets the red at (0,2,0). `.site-dark.os .ops-btn`
+     sets the console's ordinary ink at (0,3,0) and sits below it, so the
+     most consequential control on the site was pixel-identical to Save.
+     Measured, not guessed: computed colour came back rgb(245, 246, 247).
+
+     (0,4,0) here, and solid rather than the 0.55 the rule beside it uses —
+     a rule is a boundary and can be quiet, a button is a decision and
+     cannot. #E77B7B on the panel measures about 7:1.
+  */
+  .site-dark.os .ops-btn.danger {
+    color: #E77B7B;
+    border-color: rgba(231, 123, 123, 0.45);
+  }
+  .site-dark.os .ops-btn.danger:hover {
+    background: rgba(231, 123, 123, 0.12);
+    border-color: #E77B7B;
+  }
+
+  /*
+     And the list leading. The console sets one size and one line-height for
+     everything at (0,4,0) — see the note on that rule — which computes
+     10px/13px and is right for rows of data. These are five multi-line
+     sentences somebody has to read before an irreversible action, and at
+     13px the lines of each one run into each other.
+
+     Shaped like the b/strong exception above it for the same reason: the
+     universal rule has to be beaten on its own terms, and pretending a
+     lower-specificity declaration will apply is how the first draft of this
+     silently did nothing. Leading only. The size stays on the system.
+  */
+  .site-dark.os *:not(.signin):not(.signin *):is(.erase-list li) { line-height: 1.7; }
+
+  /*
      The wordmark keeps its blue syllable on the marketing site and loses
      it here. That letter is the last colour in the console, and a system
      with no accent cannot make an exception for a logo.
@@ -7370,20 +7477,36 @@
      one". Left neutral until that is a decision somebody makes.
   */
 
-  /* 1 — tappable text */
-  .site-dark.os .ops-link:not(.signin *),
-  .site-dark.os .member-list-right a:not(.signin *),
-  .site-dark.os .member-intake a:not(.signin *),
-  .site-dark.os .bp-muted a:not(.signin *),
-  .site-dark.os .member-section a:not(.signin *) {
+  /*
+     1 — tappable text.
+
+     `:not(.danger)` ENFORCES THE PARAGRAPH ABOVE. That note already said a
+     destructive action is red and not the tint, because blue would say
+     "this is the safe one" — but nothing made it true, and the first
+     destructive LINK on the console proved it: the delete-account link in
+     a .member-section rendered #5CA8FF, the same blue as "Your console"
+     beside it. Its own `.ops-btn.danger` rule at (0,4,0) lost to this
+     selector at (0,4,1), and lost silently; the border came through red
+     while the text did not, which is the giveaway I measured.
+
+     Excluded on every selector here rather than only the one that broke,
+     because the principle is "the tint never lands on a destructive
+     control", not "the tint never lands on a destructive control inside a
+     member section".
+  */
+  .site-dark.os .ops-link:not(.signin *):not(.danger),
+  .site-dark.os .member-list-right a:not(.signin *):not(.danger),
+  .site-dark.os .member-intake a:not(.signin *):not(.danger),
+  .site-dark.os .bp-muted a:not(.signin *):not(.danger),
+  .site-dark.os .member-section a:not(.signin *):not(.danger) {
     color: var(--blue-deep);
     text-decoration: none;
   }
-  .site-dark.os .ops-link:not(.signin *):hover,
-  .site-dark.os .member-list-right a:not(.signin *):hover,
-  .site-dark.os .member-intake a:not(.signin *):hover,
-  .site-dark.os .bp-muted a:not(.signin *):hover,
-  .site-dark.os .member-section a:not(.signin *):hover {
+  .site-dark.os .ops-link:not(.signin *):not(.danger):hover,
+  .site-dark.os .member-list-right a:not(.signin *):not(.danger):hover,
+  .site-dark.os .member-intake a:not(.signin *):not(.danger):hover,
+  .site-dark.os .bp-muted a:not(.signin *):not(.danger):hover,
+  .site-dark.os .member-section a:not(.signin *):not(.danger):hover {
     text-decoration: underline;
     text-decoration-thickness: 0.8px;
     text-underline-offset: 3px;

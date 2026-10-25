@@ -457,6 +457,32 @@ export default async function Profile({
           Download it
         </a>
       </section>
+
+      {/*
+        And the right that had no button either.
+
+        Section 6 lists four rights. Two are self-serve above. This is the
+        third, and it was the same dead placeholder the export used to be.
+
+        It is a LINK, not a form. Everything else on this page acts where it
+        stands, which is right for a name or a number and wrong for the one
+        control with no undo: a delete button two panels below a Save button
+        gets pressed by somebody who meant Save. The next page is where it
+        can say what survives, say why, and refuse when a session is still
+        booked — none of which fits under a heading here.
+      */}
+      <section className="member-section">
+        <h2 className="member-h2">Delete your account</h2>
+        <p className="bp-muted" style={{ marginBottom: 14 }}>
+          Erases your name, your number, your email, everything you told us about what you
+          own, and everything your expert wrote back. Payment records stay on our books for
+          as long as tax law requires, with you taken out of them. The next page says exactly
+          what goes and what does not, and nothing happens until you confirm it there.
+        </p>
+        <Link className="ops-btn danger" href="/member/delete">
+          Delete your account
+        </Link>
+      </section>
     </div>
   );
 }

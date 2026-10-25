@@ -33,3 +33,21 @@ export function istDayLabel(d: Date): string {
     month: "short",
   }).format(d);
 }
+
+/**
+ * A date with the year on it, for dates far enough away that the year is the
+ * part that matters.
+ *
+ * istDayLabel above deliberately omits the year, because every date it
+ * formats is a booking within the next few weeks and "Sat, 26 Oct 2026" reads
+ * as officialdom. A retention date is eight years out, where leaving the year
+ * off turns "Sat, 26 Oct" into a date next week.
+ */
+export function istDateYear(d: Date): string {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: IST,
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(d);
+}

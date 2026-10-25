@@ -117,26 +117,39 @@ export default function Privacy() {
           correct anything inaccurate or incomplete — your name, number and email are editable
           in the same place.
         </li>
-        <li>erase your data where we no longer need it;</li>
+        <li>
+          erase your data where we no longer need it — you do not have to ask us for this
+          one either. Sign in, open <Link href="/member/profile">Your details</Link> and
+          delete your account. It erases your name, your number, your email, everything you
+          told us about what you own and everything your expert wrote back, and it signs you
+          out everywhere. Payment and booking records stay on our books for as long as tax
+          and company law requires, with your name and contact details removed from them; the
+          page says which ones and until when before you confirm anything. We will refuse
+          while a session you have booked has not happened yet, because an expert is expecting
+          you — cancel it first and the deletion goes through.
+        </li>
         <li>nominate someone to exercise these rights if you cannot.</li>
       </ul>
       {/*
-        The first two rights are self-serve now and say so. The last two
-        still route through a person, and that contact is still a blank —
-        which is the point of leaving the placeholder visible rather than
-        writing something reassuring and untrue.
+        Three of the four rights are self-serve now and say so. Only the
+        nomination still routes through a person, and that contact is still a
+        blank — which is the point of leaving the placeholder visible rather
+        than writing something reassuring and untrue.
       */}
       <p>
-        For the last two, write to <TODO>[grievance contact]</TODO>. We aim to respond within{" "}
-        <TODO>[N]</TODO> days. If we cannot resolve it, you may complain to the Data Protection
-        Board of India.
+        To nominate someone, write to <TODO>[grievance contact]</TODO>. We aim to respond
+        within <TODO>[N]</TODO> days. If we cannot resolve it, you may complain to the Data
+        Protection Board of India.
       </p>
 
       <h2>7. Withdrawing consent</h2>
       <p>
-        You can withdraw consent at any time by writing to us. We will delete what we are not
-        legally required to keep. Withdrawing consent does not undo anything done while it was
-        given, and we may not be able to deliver a session you have already booked.
+        You can withdraw consent at any time. In practice the way to do it is to{" "}
+        <Link href="/member/delete">delete your account</Link>, which erases what we are not
+        legally required to keep and signs you out everywhere. Withdrawing consent does not
+        undo anything done while it was given, and we cannot deliver a session you have
+        already booked to an account that no longer exists — which is why deletion asks you
+        to cancel an upcoming session first.
       </p>
 
       <h2>8. Cookies and tracking</h2>

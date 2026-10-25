@@ -23,6 +23,7 @@ import {
   memberSessions,
   expertSessions,
   expertProducts,
+  accountDeletions,
 } from "../lib/db/schema";
 import {
   startSession,
@@ -48,6 +49,7 @@ import {
   activeExpertSessions,
 } from "../lib/expert-session";
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
+import { eraseAccount, erasurePreview } from "../lib/erasure";
 import { issueCodeTo } from "../lib/member-code";
 import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
 import { hashPassword, passwordMatches } from "../lib/ops-password";
@@ -3842,6 +3844,501 @@ async function main() {
     );
   }
 
+
+
+  /*
+     ================= ERASING AN ACCOUNT =================
+
+     The other half of the DPDP rights pair. The export hands everything
+     over; this destroys it, and the two failure modes are opposite. An
+     export that leaks is a breach you can see. An erasure that misses a
+     column is a breach nobody ever sees — the member has been told their
+     data is gone, every screen agrees, and the row is still there.
+
+     So these check the misses rather than the happy path. Each one is a
+     field I had to go looking for: the Razorpay blob sitting behind the
+     redacted payer columns, the payment that hangs off a pass instead of a
+     booking, the phone number that has to be RELEASED rather than
+     overwritten, the unique index that collides on the second deletion.
+
+     Every block builds its own customer. An erasure is not a read, and
+     pointing it at the fixtures the rest of the suite shares would delete
+     them out from under the checks that come after.
+  */
+  {
+    const [erasureExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.slug, EXPERT))
+      .limit(1);
+
+    /** A member with the full set: a session, an intake, a note, a payment. */
+    async function erasureMember(
+      tag: string,
+      startsAt: Date,
+      status: "completed" | "confirmed",
+    ) {
+      const stamp = `${tag}-${Date.now()}`;
+      const [c] = await db
+        .insert(customers)
+        .values({
+          name: `Erasure ${tag}`,
+          email: `erase-${stamp}@example.in`,
+          phone: toE164(String(9000000000 + (Date.now() % 99999999))),
+        })
+        .returning();
+
+      const [b] = await db
+        .insert(bookings)
+        .values({
+          expertId: erasureExpert.id,
+          customerId: c.id,
+          startsAt,
+          endsAt: new Date(startsAt.getTime() + 45 * 60_000),
+          status,
+          amountPaise: SINGLE_CALL_PAISE,
+          meetingUrl: "https://meet.example.com/private-room",
+          expertNote: "Discussed the concentration in IT and how it got there.",
+          expertNoteAt: new Date(),
+        })
+        .returning();
+
+      await db.insert(intakeSubmissions).values({
+        bookingId: b.id,
+        payload: { holdingsSummary: "60% in two IT names", goals: "retire at 55" },
+      });
+
+      const [p] = await db
+        .insert(payments)
+        .values({
+          bookingId: b.id,
+          razorpayOrderId: `order_erase_${stamp}`,
+          razorpayPaymentId: `pay_erase_${stamp}`,
+          amountPaise: SINGLE_CALL_PAISE,
+          status: "captured",
+          payerMethod: "upi",
+          payerInstrument: "subject@okhdfcbank",
+          payerContact: "+919876543210",
+          payerEmail: "subject@example.in",
+          /* The blob that carries everything the columns beside it do. */
+          raw: { email: "subject@example.in", contact: "+919876543210", name: "Erasure Subject" },
+        })
+        .returning();
+
+      return { customer: c, booking: b, payment: p };
+    }
+
+    /*
+       1. IT REFUSES while a session is still coming, and destroys nothing.
+
+       The expert holds that slot and is expecting a named person. Erasing
+       underneath it would also be a way around the cancellation policy:
+       delete the account, keep the fee that cancelling inside 24 hours
+       would have forfeited.
+    */
+    const future = await erasureMember(
+      "future",
+      new Date(Date.now() + 3 * 86_400_000),
+      "confirmed",
+    );
+    const refused = await eraseAccount(future.customer.id);
+
+    const [stillThere] = await db
+      .select({ email: customers.email, phone: customers.phone })
+      .from(customers)
+      .where(eq(customers.id, future.customer.id))
+      .limit(1);
+    const [intakeIntact] = await db
+      .select({ purgedAt: intakeSubmissions.purgedAt })
+      .from(intakeSubmissions)
+      .where(eq(intakeSubmissions.bookingId, future.booking.id))
+      .limit(1);
+
+    check(
+      "an account with a session still to come cannot be erased, and nothing is touched",
+      !refused.ok &&
+        refused.blockers.length > 0 &&
+        stillThere.email === future.customer.email &&
+        stillThere.phone === future.customer.phone &&
+        intakeIntact.purgedAt === null,
+      refused.ok ? "it went ahead" : `refused: ${refused.blockers[0].what}`,
+    );
+
+    /* Cancel it and the same account erases, so the refusal is not a trap. */
+    await db
+      .update(bookings)
+      .set({ status: "cancelled" })
+      .where(eq(bookings.id, future.booking.id));
+    const afterCancel = await eraseAccount(future.customer.id);
+    check(
+      "cancelling the session clears the way, so the refusal is not a dead end",
+      afterCancel.ok,
+      afterCancel.ok ? "erased once the booking was cancelled" : "still refused",
+    );
+
+    /*
+       2. THE PORTFOLIO AND THE NOTE GO; THE MONEY ROW STAYS. The two
+       halves of what erasure means here, checked together because getting
+       one right and the other wrong is the likely failure.
+    */
+    const past = await erasureMember(
+      "past",
+      new Date(Date.now() - 10 * 86_400_000),
+      "completed",
+    );
+    const liveCookie = await memberCookie(past.customer.id);
+    const done = await eraseAccount(past.customer.id);
+
+    const [intake] = await db
+      .select({ payload: intakeSubmissions.payload, purgedAt: intakeSubmissions.purgedAt })
+      .from(intakeSubmissions)
+      .where(eq(intakeSubmissions.bookingId, past.booking.id))
+      .limit(1);
+    const [keptBooking] = await db
+      .select({
+        note: bookings.expertNote,
+        url: bookings.meetingUrl,
+        amount: bookings.amountPaise,
+        status: bookings.status,
+      })
+      .from(bookings)
+      .where(eq(bookings.id, past.booking.id))
+      .limit(1);
+
+    check(
+      "erasure empties the portfolio and the expert's note, and keeps the booking",
+      done.ok &&
+        JSON.stringify(intake.payload) === "{}" &&
+        intake.purgedAt !== null &&
+        keptBooking.note === null &&
+        keptBooking.url === null &&
+        keptBooking.amount === SINGLE_CALL_PAISE &&
+        keptBooking.status === "completed",
+      `intake purged, note and room link gone, ${keptBooking.amount} paise still on the books`,
+    );
+
+    /*
+       3. THE RAZORPAY BLOB, which is the most important line in
+       lib/erasure and the one a reasonable implementation misses.
+
+       payer_contact and payer_email are obvious and were redacted in the
+       first draft of this. `raw` is the whole provider payload with the
+       same name, email and contact inside it — so redacting the columns
+       and leaving the blob erases nothing while looking like it worked.
+    */
+    const [redactedPayment] = await db
+      .select({
+        raw: payments.raw,
+        contact: payments.payerContact,
+        email: payments.payerEmail,
+        instrument: payments.payerInstrument,
+        method: payments.payerMethod,
+        amount: payments.amountPaise,
+        orderId: payments.razorpayOrderId,
+      })
+      .from(payments)
+      .where(eq(payments.id, past.payment.id))
+      .limit(1);
+
+    check(
+      "the payment keeps its amount and reference and loses every trace of who paid",
+      redactedPayment.raw === null &&
+        redactedPayment.contact === null &&
+        redactedPayment.email === null &&
+        redactedPayment.instrument === null &&
+        redactedPayment.method === "upi" &&
+        redactedPayment.amount === SINGLE_CALL_PAISE &&
+        redactedPayment.orderId.startsWith("order_erase_"),
+      "raw blob cleared, payer columns null, amount and order id intact, method still upi",
+    );
+
+    /*
+       4. SIGNED OUT, FOR REAL. The rows go rather than being revoked, so
+       the cookie in the member's hand stops resolving the moment this
+       commits. A cookie that still opened the console after deletion would
+       be the whole feature failing quietly.
+    */
+    const afterConsole = await fetch(`${BASE}/member`, {
+      headers: { cookie: liveCookie },
+      redirect: "manual",
+    });
+    const [sessionsLeft] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, past.customer.id));
+
+    check(
+      "the cookie in their hand stops working, because the session rows are gone",
+      sessionsLeft.n === 0 && afterConsole.status !== 200,
+      `0 sessions left, console answers ${afterConsole.status}`,
+    );
+
+    /*
+       5. THE NUMBER IS RELEASED, which is a kindness that is also the
+       difference between erasure and a ban. The unique index on phone
+       treats nulls as distinct, so nulling it frees the number; a
+       placeholder string would have held somebody's own mobile number
+       hostage against ever signing up again.
+    */
+    const [tomb] = await db
+      .select({ name: customers.name, email: customers.email, phone: customers.phone })
+      .from(customers)
+      .where(eq(customers.id, past.customer.id))
+      .limit(1);
+
+    let signedUpAgain = false;
+    try {
+      const [again] = await db
+        .insert(customers)
+        .values({
+          name: "Same person, new account",
+          email: `again-${Date.now()}@example.in`,
+          phone: past.customer.phone,
+        })
+        .returning();
+      signedUpAgain = Boolean(again);
+    } catch {
+      signedUpAgain = false;
+    }
+
+    check(
+      "the tombstone holds no personal data, and the mobile number is released",
+      tomb.phone === null &&
+        tomb.name === "Deleted account" &&
+        tomb.email.endsWith("@landline.invalid") &&
+        !tomb.email.includes(past.customer.email) &&
+        signedUpAgain,
+      `name "${tomb.name}", email at .invalid, number free to sign up with again`,
+    );
+
+    /*
+       6. TWO ERASURES DO NOT COLLIDE. The email cannot be blanked or set
+       to a constant: the unique index on lower(email) would throw on the
+       second account ever deleted, which is a bug that cannot appear while
+       testing with one user and appears on day two in production.
+    */
+    const second = await erasureMember(
+      "second",
+      new Date(Date.now() - 20 * 86_400_000),
+      "completed",
+    );
+    const twice = await eraseAccount(second.customer.id);
+    const [tomb2] = await db
+      .select({ email: customers.email })
+      .from(customers)
+      .where(eq(customers.id, second.customer.id))
+      .limit(1);
+
+    check(
+      "a second account erases without colliding with the first tombstone",
+      twice.ok && tomb2.email !== tomb.email,
+      twice.ok ? "two distinct .invalid addresses" : "the second erasure failed",
+    );
+
+    /*
+       7. THE ERASURE IS RECORDED, without recording the person. Under
+       section 12 "we deleted it" is a claim that may have to be
+       substantiated, and an erasure with no trace is indistinguishable
+       from one that silently failed. The record must not hold what it just
+       erased, so this checks for the absence of the email as hard as for
+       the presence of the counts.
+    */
+    const [logged] = await db
+      .select()
+      .from(accountDeletions)
+      .where(eq(accountDeletions.customerId, past.customer.id))
+      .limit(1);
+
+    check(
+      "the deletion is recorded, with counts and no personal data in the record",
+      Boolean(logged) &&
+        logged.requestedBy === "member" &&
+        logged.intakesErased === 1 &&
+        logged.notesErased === 1 &&
+        logged.paymentsRedacted >= 1 &&
+        logged.bookingsKept === 1 &&
+        logged.keptUntil !== null &&
+        !JSON.stringify(logged).includes(past.customer.email),
+      logged
+        ? `1 intake, 1 note, ${logged.paymentsRedacted} payment(s), kept until ${logged.keptUntil?.getUTCFullYear()}`
+        : "nothing recorded",
+    );
+
+    /*
+       8. A PASS OR BUNDLE PAYMENT IS NOT ATTACHED TO A BOOKING, so a
+       redaction that walks only the member's bookings leaves the most
+       expensive purchase on the platform — an annual pass — with the
+       payer's name and email sitting in `raw`.
+
+       The same block checks that unused days are a WARNING and not a
+       refusal. The DPDP Act does not let a business hold somebody's data
+       hostage to the balance on their account.
+    */
+    const [passHolder] = await db
+      .insert(customers)
+      .values({ name: "Pass holder", email: `pass-erase-${Date.now()}@example.in` })
+      .returning();
+    const [erasurePass] = await db
+      .insert(memberships)
+      .values({
+        customerId: passHolder.id,
+        tier: "annual",
+        startsAt: new Date(Date.now() - 86_400_000),
+        endsAt: new Date(Date.now() + 300 * 86_400_000),
+        amountPaise: MEMBERSHIP_TIERS.annual.pricePaise,
+        status: "active",
+      })
+      .returning();
+    const [passPayment] = await db
+      .insert(payments)
+      .values({
+        membershipId: erasurePass.id,
+        razorpayOrderId: `order_pass_erase_${Date.now()}`,
+        amountPaise: MEMBERSHIP_TIERS.annual.pricePaise,
+        status: "captured",
+        payerEmail: "passholder@example.in",
+        raw: { email: "passholder@example.in", contact: "+919812345678" },
+      })
+      .returning();
+
+    const passPreview = await erasurePreview(passHolder.id);
+    const passErased = await eraseAccount(passHolder.id);
+    const [passPaymentAfter] = await db
+      .select({ raw: payments.raw, email: payments.payerEmail, amount: payments.amountPaise })
+      .from(payments)
+      .where(eq(payments.id, passPayment.id))
+      .limit(1);
+
+    check(
+      "a pass payment is redacted too, and unused days warn rather than refuse",
+      passPreview.blockers.length === 0 &&
+        passPreview.forfeits.length === 1 &&
+        passPreview.forfeits[0].what.includes("days remaining") &&
+        passErased.ok &&
+        passPaymentAfter.raw === null &&
+        passPaymentAfter.email === null &&
+        passPaymentAfter.amount === MEMBERSHIP_TIERS.annual.pricePaise,
+      `warned "${passPreview.forfeits[0]?.what ?? "nothing"}", pass payment redacted, amount kept`,
+    );
+
+    /*
+       9. THE PAGE ITSELF asks for a code, like the export does. The gate is
+       three lines in a route nobody opens twice, and a regression there is
+       silent: the page would still work, just for whoever is holding a
+       month-old cookie on a borrowed laptop.
+    */
+    const [gateMe] = await db
+      .insert(customers)
+      .values({
+        name: "Gate check",
+        email: `gate-erase-${Date.now()}@example.in`,
+      })
+      .returning();
+    const { value: gateValue } = await startSession(gateMe.id);
+    const gateJar = { cookie: `bp_member=${gateValue}` };
+
+    const freshPage = await fetch(`${BASE}/member/delete`, {
+      headers: gateJar,
+      redirect: "manual",
+    });
+
+    const [gateRow] = await db
+      .select()
+      .from(memberSessions)
+      .where(eq(memberSessions.customerId, gateMe.id))
+      .orderBy(desc(memberSessions.createdAt))
+      .limit(1);
+    await db
+      .update(memberSessions)
+      .set({ verifiedAt: new Date(Date.now() - (FRESH_MINUTES + 5) * 60_000) })
+      .where(eq(memberSessions.id, gateRow.id));
+
+    const stalePage = await fetch(`${BASE}/member/delete`, {
+      headers: gateJar,
+      redirect: "manual",
+    });
+    const sentOn = stalePage.headers.get("location") ?? "";
+
+    check(
+      "the delete page asks again when identity is stale",
+      freshPage.status === 200 &&
+        (stalePage.status === 307 || stalePage.status === 303) &&
+        sentOn.includes("/member/verify") &&
+        sentOn.includes("member%2Fdelete"),
+      `fresh ${freshPage.status}, stale ${stalePage.status} -> ${sentOn || "(nowhere)"}`,
+    );
+
+    /*
+       10. AND THE PAGE AT THE END OF IT IS REACHABLE WITH NO SESSION.
+
+       Found by walking the flow rather than by reading it. The erasure
+       committed, the redirect to /member/deleted was correct, and the
+       sign-in form rendered there — because middleware guards /member/:path*
+       and the session it was checking had just been deleted on purpose.
+
+       Being thrown at "Sign in to Landline" is the worst available
+       confirmation that a deletion worked: it reads as though it failed and
+       logged you out. Checked with no cookie at all, which is exactly the
+       state the member is in by the time they arrive.
+    */
+    const deletedPage = await fetch(`${BASE}/member/deleted`, { redirect: "manual" });
+    const deletedBody = deletedPage.status === 200 ? await deletedPage.text() : "";
+    check(
+      "the page an erased account lands on is reachable with no session at all",
+      deletedPage.status === 200 &&
+        deletedBody.includes("Your account is deleted") &&
+        !deletedBody.includes("Sign in to Landline"),
+      `status ${deletedPage.status}${deletedPage.status === 200 ? ", and it is not the sign-in form" : ` -> ${deletedPage.headers.get("location") ?? "(nowhere)"}`}`,
+    );
+
+    /*
+       11. AND THE DESTRUCTIVE CONTROL IS NOT TINTED BLUE.
+
+       globals.css already carried the rule as a paragraph: "Apple's answer
+       for a destructive action is red, not the tint... Blue would say this
+       is the safe one." Nothing enforced it, and the first destructive LINK
+       on the console came out #5CA8FF — the same blue as the console link
+       beside it — because `.member-section a:not(.signin *)` at (0,4,1)
+       beat `.ops-btn.danger` at (0,4,0). The border rendered red and the
+       text did not, which is how a cascade defect hides.
+
+       Checked in the source rather than the browser because the suite
+       cannot compute a cascade, and the selector IS the fix: if somebody
+       drops `:not(.danger)` from that group the blue comes straight back.
+    */
+    /* Plain string matching, so no regex escaping stands between the
+       check and the thing it is checking. */
+    const TINT_MARK = ":not(.signin *)";
+    const tintGroup = css
+      .split(String.fromCharCode(10))
+      .map((l) => l.trim())
+      .filter(
+        (l) =>
+          l.startsWith(".site-dark.os ") &&
+          l.includes(TINT_MARK) &&
+          (l.includes(" a:not(") || l.includes(".ops-link:not(")) &&
+          !l.includes(":hover") &&
+          /*
+             `.site-dark.os a:not(.signin *)` is the NEUTRAL link rule
+             a few hundred lines above, and it sets --ink-dark rather
+             than the blue — so it needs no exclusion and must not be
+             counted as a failure. The tint group is the class-qualified
+             selectors only. My first version of this caught it and
+             reported a defect that was not one.
+          */
+          !l.startsWith(".site-dark.os a:not("),
+      );
+    const untinted = tintGroup.filter((l) => !l.includes(":not(.danger)"));
+
+    check(
+      "a destructive link is never given the console's blue tint",
+      tintGroup.length > 0 && untinted.length === 0,
+      tintGroup.length === 0
+        ? "the tint group was not found at all; was the selector renamed?"
+        : /* Report the count, never assert the conclusion. */
+          `${tintGroup.length} tinted selectors, ${untinted.length} of them still tinting .danger`,
+    );
+  }
 
   console.log(`\n  ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);

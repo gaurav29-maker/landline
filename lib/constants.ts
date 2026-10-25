@@ -102,3 +102,29 @@ export const INTAKE_RETENTION_DAYS = 90;
  * link, follows.
  */
 export const CONTACT_EMAIL = "hello@landline.in";
+
+/**
+ * How long a payment and booking record is kept after an account is erased.
+ *
+ * THIS NUMBER IS A LEGAL POSITION, not a product decision, and it is shown
+ * to the member at the moment they delete their account — so it has to be
+ * defensible in both directions. Keeping a financial record LONGER than the
+ * law requires is itself a DPDP breach, since the lawful basis for holding it
+ * has expired; keeping it for less than the law requires is a different
+ * offence. There is no safe default and "forever" is not one.
+ *
+ * Eight years, because that is the longest of the three that apply to a
+ * company selling services in India:
+ *
+ *   - Companies Act 2013, s.128(5) — books of account, eight financial years
+ *   - Income-tax Rules, rule 6F(5) — six years
+ *   - CGST Act 2017, s.36 — seventy-two months from the annual return
+ *
+ * CONFIRM THIS AGAINST THE ENTITY before launch. s.128(5) binds a company; a
+ * sole proprietorship or an LLP is not one, and for those the six-year figure
+ * governs and eight years would be two years of unlawful retention. The
+ * entity type is still a blank in app/legal/privacy — see TODO.md group 1 —
+ * so this is the conservative reading of the most likely structure and not
+ * yet a checked answer.
+ */
+export const FINANCIAL_RECORD_RETENTION_YEARS = 8;
