@@ -6,7 +6,6 @@ import { BRAND_BLUE } from "@/lib/brand";
 /* BUNDLE_PRICE_PAISE stays: the bundle path still prices correctly if it is
    ever sold again. CREDITS and DAYS went with the option that named them. */
 import { BUNDLE_PRICE_PAISE } from "@/lib/constants";
-import { SLOT_MINUTES } from "@/lib/slots";
 
 type Slot = { startsAt: string; endsAt: string };
 type Step = "picking" | "details" | "paying" | "done";
@@ -332,7 +331,7 @@ export default function BookingDialog({
             <p className="bp-product-one">
               <span className="bp-product-name">One call</span>
               <span className="bp-product-price">{rupees(expert.pricePaise)}</span>
-              <span className="bp-product-note">{SLOT_MINUTES} minutes, video</span>
+              <span className="bp-product-note">One to one, video</span>
             </p>
 
             <p className="bp-chosen">

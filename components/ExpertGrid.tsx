@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import BookingDialog from "./BookingDialog";
-import { SLOT_MINUTES } from "@/lib/slots";
 
 export type ExpertCard = {
   slug: string;
@@ -112,7 +111,7 @@ export default function ExpertGrid({
               </div>
               <div>
                 <dt>Session</dt>
-                <dd>{SLOT_MINUTES} min, video</dd>
+                <dd>One to one, video</dd>
               </div>
               {nextAvailable?.[e.slug] ? (
                 <div>

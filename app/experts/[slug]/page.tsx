@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import { experts as expertsTable } from "@/lib/db/schema";
 import { openSlotsFor } from "@/lib/availability";
 import { rethrowIfNavigation } from "@/lib/nav";
-import { SLOT_MINUTES } from "@/lib/slots";
 import { istDayLabel, istTime, rupees } from "@/lib/format";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
@@ -197,7 +196,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
             </div>
             <div>
               <dt>Session</dt>
-              <dd>{SLOT_MINUTES} minutes, video</dd>
+              <dd>One to one, video</dd>
             </div>
             <div>
               <dt>SEBI</dt>
@@ -271,7 +270,7 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
                 the session, so you are not reciting it from memory.
               </li>
               <li>
-                <b>{SLOT_MINUTES} minutes, one to one.</b> You ask. They read the position back to
+                <b>One to one, on video.</b> You ask. They read the position back to
                 you and say what they see in it.
               </li>
               <li>

@@ -5,7 +5,6 @@ import SiteFooter from "@/components/SiteFooter";
 import { CONTACT_EMAIL, INTAKE_RETENTION_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
 import { EXPERT_SHARE_BPS } from "@/lib/constants";
 import { rupees } from "@/lib/format";
-import { SLOT_MINUTES } from "@/lib/slots";
 
 export const metadata: Metadata = {
   title: "How Landline works, and what it will not do",
@@ -118,7 +117,7 @@ export default function Principles() {
           <section className="doc-sec">
             <h2 className="doc-h2">There is one thing to buy</h2>
             <p>
-              A call. {rupees(SINGLE_CALL_PAISE)}, {SLOT_MINUTES} minutes, video. There were
+              A call. {rupees(SINGLE_CALL_PAISE)}, one to one, video. There were
               packages and passes once; they were withdrawn, and the endpoint that used to sell
               them now refuses. Nothing recurs, nothing auto-renews, and there is nothing to
               cancel.

@@ -3,7 +3,6 @@ import { WORDMARK_PARTS, BRAND_DESCRIPTOR, TRADEMARK_REGISTERED } from "@/lib/br
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { experts } from "@/lib/db/schema";
-import { SLOT_MINUTES } from "@/lib/slots";
 
 export const runtime = "nodejs";
 export const alt = "Landline expert";
@@ -149,7 +148,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 {expert.headline}
               </div>
               <div style={{ display: "flex", fontSize: 28, color: "#0B0C0E", marginTop: 18 }}>
-                {SLOT_MINUTES} minutes, one to one
+                One to one, on video
               </div>
             </div>
           </div>

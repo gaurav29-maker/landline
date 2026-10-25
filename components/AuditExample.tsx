@@ -9,7 +9,7 @@ import { recordFor, SHAPES, type Shape } from "@/lib/sample-record";
  * WHAT WAS WRONG WITH THE VERSION BEFORE THIS. It rendered "what the expert
  * said back" as three headed findings with paragraphs under them — which
  * reads as a written report, and Landline does not produce one. What it
- * produces is a 45-minute call, a note the expert writes afterwards capped
+ * produces is a call, a note the expert writes afterwards capped
  * at 900 characters, and a plain-text record the member can download. A
  * visitor was being shown an analysis document and sold a conversation.
  *
@@ -311,8 +311,8 @@ export default function AuditExample() {
       */}
       <p className="reel-cap" id="audit-note">
         <sup>1</sup> An example, and not a client &mdash; nobody is described and no security is
-        named. No recommendation, no price target, no model portfolio. Forty-five minutes, no
-        mandate and nothing to cancel. The rate and the SEBI answer are on the expert&rsquo;s page
+        named. No recommendation, no price target, no model portfolio. One call, no mandate
+        and nothing to cancel. The rate and the SEBI answer are on the expert&rsquo;s page
         before you pay.
       </p>
     </div>

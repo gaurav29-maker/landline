@@ -29,7 +29,7 @@ type Ask = {
   tag: string;
   /** What they arrive with, in their own words. */
   ask: string;
-  /** What the forty-five minutes does with it. Not what it concludes. */
+  /** What the call does with it. Not what it concludes. */
   does: string;
 };
 

@@ -331,7 +331,7 @@ export default async function MemberConsole({
             <li>
               <span className="first-run-n">2</span>
               <div>
-                <b>Forty-five minutes, one to one.</b>
+                <b>One to one, on video.</b>
                 <span>
                   Video, at the time above. Your holdings are in front of them for the call.
                 </span>
@@ -382,8 +382,8 @@ export default async function MemberConsole({
             <li>
               <b>The one question you want answered.</b>
               <span>
-                Forty-five minutes goes quickly. One clear question is worth more than ten
-                vague ones.
+                One clear question is worth more than ten vague ones, and it is what the
+                rest of the call gets built around.
               </span>
             </li>
             <li>

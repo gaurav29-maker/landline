@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { experts as expertsTable } from "@/lib/db/schema";
 import { openSlotsFor } from "@/lib/availability";
 import { istDayLabel, istTime, rupees } from "@/lib/format";
-import { SLOT_MINUTES } from "@/lib/slots";
 import { CONTACT_EMAIL, INTAKE_RETENTION_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
 import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
@@ -449,7 +448,7 @@ export default async function Home() {
             </div>
             <div className="flow-step">
               <p className="n">05</p>
-              <h3>{SLOT_MINUTES} minutes</h3>
+              <h3>The call</h3>
               <p>One to one, with somebody who has read it.</p>
             </div>
             <div className="flow-step">
@@ -519,7 +518,7 @@ export default async function Home() {
               <b>&hellip;you want to be told what to buy.</b>
               <span>
                 No tips, no targets, no model portfolio. If that is what you came for, an
-                expert will spend forty-five minutes not giving it to you.
+                expert will spend the whole call not giving it to you.
               </span>
             </li>
             <li>
@@ -574,7 +573,7 @@ export default async function Home() {
           <div className="price-one">
             <p className="price-one-fig">{rupees(SINGLE_CALL_PAISE)}</p>
             <p className="price-one-per">
-              one call &middot; {SLOT_MINUTES} minutes &middot; video
+              one call &middot; one to one &middot; video
             </p>
             <ul>
               <li>An expert with your holdings in front of them for the call</li>
@@ -703,8 +702,7 @@ export default async function Home() {
               <p>
                 Because a landline is the opposite of how market advice usually reaches you: no
                 forwarded screenshot, no broadcast channel, no algorithm choosing who you hear
-                from. One person on the other end who has read what you hold, for {SLOT_MINUTES}
-                minutes. Then it hangs up &mdash; nothing renews and nobody follows up.
+                from. One person on the other end who has read what you hold. Then it hangs up &mdash; nothing renews and nobody follows up.
               </p>
             </details>
           </div>

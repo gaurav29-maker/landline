@@ -4,7 +4,6 @@ import SiteFooter from "@/components/SiteFooter";
 import ApplyForm from "@/components/ApplyForm";
 import { rupees } from "@/lib/format";
 import { SINGLE_CALL_PAISE } from "@/lib/constants";
-import { SLOT_MINUTES } from "@/lib/slots";
 
 export const metadata: Metadata = {
   title: "Take calls on Landline",
@@ -23,8 +22,8 @@ export default function Apply() {
           <h1 className="doc-name">Be useful, and paid, without taking on a client.</h1>
           <p className="doc-lede">
             People arrive having already written down what they hold and what they are worried
-            about. It is on your screen when the call opens, you spend {SLOT_MINUTES} minutes going
-            through it with them, and that is the whole job. No mandate, no onboarding, no ongoing
+            about. It is on your screen when the call opens, you go through it with them, and that
+            is the whole job. No mandate, no onboarding, no ongoing
             obligation to anybody.
           </p>
 
