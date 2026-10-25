@@ -8,7 +8,7 @@ import { customers } from "@/lib/db/schema";
 import { MEMBER_COOKIE } from "@/lib/member-auth";
 import { readSession } from "@/lib/member-session";
 import { alreadyErased, eraseAccount, erasurePreview } from "@/lib/erasure";
-import { FINANCIAL_RECORD_RETENTION_YEARS } from "@/lib/constants";
+import { financialRecordRetentionYears } from "@/lib/constants";
 import { istDateYear } from "@/lib/format";
 import { rethrowIfNavigation } from "@/lib/nav";
 import MemberBar from "@/components/MemberBar";
@@ -78,7 +78,7 @@ export default async function DeleteAccount({
   } catch (err) {
     rethrowIfNavigation(err);
     return (
-      <div className="wrap bp-page member">
+      <div className="wrap bp-page member erase-page">
         <div className="bp-panel">
           <h1>Not available right now</h1>
           <p className="bp-muted">
@@ -135,9 +135,10 @@ export default async function DeleteAccount({
   }
 
   const blocked = preview.blockers.length > 0;
+  const retentionYears = financialRecordRetentionYears();
 
   return (
-    <div className="wrap bp-page member">
+    <div className="wrap bp-page member erase-page">
       <MemberBar name={customer.name} current="profile" />
 
       <p className="ops-crumb">
@@ -253,13 +254,38 @@ export default async function DeleteAccount({
               </>
             )}
           </p>
+          {/*
+            The period is quoted only when it is known.
+
+            How long books must be kept follows from what the business is
+            registered as — eight years for a company or an LLP, six for a
+            proprietorship — and that registration is still one of the blanks
+            in app/legal/privacy. This page used to print a flat "8 years" and
+            a date computed from it, which on the wrong entity is two years of
+            unlawful retention stated to the member as the law.
+
+            So when the entity is unset the member gets the part that is true
+            either way, and the blank shows as a blank. That is the same
+            treatment the legal pages give their placeholders, for the same
+            reason: visible is recoverable, reassuring and untrue is not.
+          */}
           {preview.bookingsKept > 0 ? (
-            <p className="bp-muted">
-              Indian tax and company law requires a business to keep its books for{" "}
-              {FINANCIAL_RECORD_RETENTION_YEARS} years. These may be deleted after{" "}
-              <b>{istDateYear(preview.keptUntil)}</b>. We are not allowed to delete them sooner and
-              we are not allowed to keep them longer.
-            </p>
+            retentionYears !== null && preview.keptUntil !== null ? (
+              <p className="bp-muted">
+                Indian tax and company law requires a business to keep its books for{" "}
+                {retentionYears} years. These may be deleted after{" "}
+                <b>{istDateYear(preview.keptUntil)}</b>. We are not allowed to delete them sooner
+                and we are not allowed to keep them longer.
+              </p>
+            ) : (
+              <p className="bp-muted">
+                We keep them only for as long as Indian tax and company law requires, and no
+                longer — we are not permitted to delete them sooner either. The exact period
+                depends on how Landline is registered, which is{" "}
+                <span className="todo">[not stated yet]</span>. Ask us before you
+                delete if that matters to you.
+              </p>
+            )
           ) : null}
         </div>
       </section>

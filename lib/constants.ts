@@ -104,27 +104,49 @@ export const INTAKE_RETENTION_DAYS = 90;
 export const CONTACT_EMAIL = "hello@landline.in";
 
 /**
+ * What Landline is registered as. This decides the retention period below.
+ *
+ * UNSET ON PURPOSE, and nothing may invent a value for it. It is the same
+ * blank as the registered entity name, the CIN and the GSTIN in
+ * app/legal/privacy — see TODO.md group 1 — and it is the one of them that
+ * silently changes what the software tells a member is lawful.
+ */
+export type BusinessEntity = "company" | "llp" | "proprietorship" | "partnership";
+
+export const BUSINESS_ENTITY: BusinessEntity | null = null;
+
+/**
  * How long a payment and booking record is kept after an account is erased.
  *
- * THIS NUMBER IS A LEGAL POSITION, not a product decision, and it is shown
- * to the member at the moment they delete their account — so it has to be
+ * THIS IS A LEGAL POSITION, not a product decision, and it is quoted to the
+ * member at the moment they delete their account — so it has to be
  * defensible in both directions. Keeping a financial record LONGER than the
- * law requires is itself a DPDP breach, since the lawful basis for holding it
- * has expired; keeping it for less than the law requires is a different
- * offence. There is no safe default and "forever" is not one.
+ * law requires is itself a DPDP breach, because the lawful basis for holding
+ * it has expired; keeping it for less is a different offence. There is no
+ * safe default, and "forever" is not one.
  *
- * Eight years, because that is the longest of the three that apply to a
- * company selling services in India:
+ * Which statute binds depends on what the business IS:
  *
- *   - Companies Act 2013, s.128(5) — books of account, eight financial years
- *   - Income-tax Rules, rule 6F(5) — six years
- *   - CGST Act 2017, s.36 — seventy-two months from the annual return
+ *   - a company      — Companies Act 2013, s.128(5): eight financial years
+ *   - an LLP         — LLP Act 2008, s.34(3) with rule 24: eight years
+ *   - anything else  — no books-of-account statute applies, so the binding
+ *                      floors are the Income-tax Rules, rule 6F(5) at six
+ *                      years and CGST s.36 at seventy-two months
  *
- * CONFIRM THIS AGAINST THE ENTITY before launch. s.128(5) binds a company; a
- * sole proprietorship or an LLP is not one, and for those the six-year figure
- * governs and eight years would be two years of unlawful retention. The
- * entity type is still a blank in app/legal/privacy — see TODO.md group 1 —
- * so this is the conservative reading of the most likely structure and not
- * yet a checked answer.
+ * So it is six or eight, and the difference is not cosmetic: on a
+ * proprietorship, eight years is two years of unlawful retention.
+ *
+ * RETURNS NULL WHILE THE ENTITY IS UNKNOWN, and that is the whole point of
+ * this shape. The previous version of this file was the number 8 with a
+ * comment saying "confirm this against the entity before launch" — which
+ * reads as diligence and behaves as a guess, because the page quoting it had
+ * no way to know the guess had not been confirmed. A null cannot be rendered
+ * by accident. The surfaces that quote a period check for it and say they do
+ * not have one yet.
  */
-export const FINANCIAL_RECORD_RETENTION_YEARS = 8;
+export function financialRecordRetentionYears(
+  entity: BusinessEntity | null = BUSINESS_ENTITY,
+): number | null {
+  if (!entity) return null;
+  return entity === "company" || entity === "llp" ? 8 : 6;
+}

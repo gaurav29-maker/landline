@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FINANCIAL_RECORD_RETENTION_YEARS, CONTACT_EMAIL } from "@/lib/constants";
+import { financialRecordRetentionYears, CONTACT_EMAIL } from "@/lib/constants";
 import Wordmark from "@/components/Wordmark";
 
 export const metadata: Metadata = {
@@ -32,8 +32,10 @@ export const dynamic = "force-static";
  * lie, and there is nothing to undo from in any case.
  */
 export default function AccountDeleted() {
+  const years = financialRecordRetentionYears();
+
   return (
-    <div className="wrap bp-page member">
+    <div className="wrap bp-page member erase-page">
       <Wordmark className="logo bp-page-logo" as="div" />
 
       <div className="bp-panel">
@@ -43,12 +45,23 @@ export default function AccountDeleted() {
           everything your expert wrote back are gone. You have been signed out everywhere.
         </p>
 
-        <p className="bp-muted">
-          If you had any bookings, the date and amount of each payment stay on our books as an
-          accounting record for {FINANCIAL_RECORD_RETENTION_YEARS} years, with your name and
-          contact details removed from them. Indian tax and company law requires that, and we
-          are not permitted to keep them any longer than it says.
-        </p>
+        {/* Same rule as the page before it: the period is quoted only when
+            the entity that decides it has been stated. */}
+        {years !== null ? (
+          <p className="bp-muted">
+            If you had any bookings, the date and amount of each payment stay on our books as an
+            accounting record for {years} years, with your name and contact details removed from
+            them. Indian tax and company law requires that, and we are not permitted to keep them
+            any longer than it says.
+          </p>
+        ) : (
+          <p className="bp-muted">
+            If you had any bookings, the date and amount of each payment stay on our books as an
+            accounting record, with your name and contact details removed from them. Indian tax
+            and company law requires that, and we are not permitted to keep them any longer than
+            it says.
+          </p>
+        )}
 
         <p className="bp-muted">
           Your mobile number has been released. If you ever want to come back, you can sign up

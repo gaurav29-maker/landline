@@ -7413,6 +7413,49 @@
   .site-dark.os *:not(.signin):not(.signin *):is(.erase-list li) { line-height: 1.7; }
 
   /*
+     The legal pages' placeholder, in the console.
+
+     `.todo` was scoped to `.site`, so the first one used outside the
+     marketing site — the unknown retention period on the delete page —
+     rendered as ordinary prose. A blank that does not look like a blank is
+     the failure this treatment exists to prevent.
+
+     NO MONO HERE, unlike the marketing version. The console sets one face
+     for everything at (0,4,0), so `font-family: var(--mono)` at (0,3,0)
+     computed back to Helvetica and did nothing — measured. Beating that
+     rule is possible and not worth it: one typeface is the console's whole
+     visual argument, and the brackets and the box already say "unfilled"
+     without borrowing a second face to say it again.
+  */
+  /*
+     THE PROSE ON THESE TWO PAGES IS NOT A MICRO-LABEL.
+
+     `.site-dark.os .bp-muted` maps every muted paragraph in the console to
+     --os-label, which is 30% of the ink. The note on `.os .first-run-note`
+     a few thousand lines up already established what that costs: the token
+     is "drawn for uppercase micro-labels a few characters long; on this
+     ground a whole sentence in it measured 1.1:1", and the fix there was
+     --ink-mute. Measured here before changing anything: 2.47:1 at 10px,
+     against the 4.5:1 that 1.4.3 asks for.
+
+     These two pages are the worst place on the site to carry that. Every
+     sentence in them is something a person has to read and weigh before an
+     irreversible action with legal consequences — what is erased, what
+     survives, how long it survives, what they forfeit. Same remedy as the
+     footnote, same reason, scoped to the pages rather than applied to the
+     whole console, because changing every muted paragraph in the member and
+     ops consoles is a design decision and not a bug fix.
+  */
+  .site-dark.os .erase-page .bp-muted { color: var(--ink-mute, var(--ink-soft)); }
+
+  .site-dark.os .todo {
+    background: var(--os-rule);
+    border: 1px solid color-mix(in srgb, var(--ink-dark) 18%, transparent);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+
+  /*
      The wordmark keeps its blue syllable on the marketing site and loses
      it here. That letter is the last colour in the console, and a system
      with no accent cannot make an exception for a logo.

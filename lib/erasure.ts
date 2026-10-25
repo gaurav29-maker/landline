@@ -12,7 +12,7 @@ import {
   payments,
   signInCodes,
 } from "@/lib/db/schema";
-import { FINANCIAL_RECORD_RETENTION_YEARS } from "@/lib/constants";
+import { financialRecordRetentionYears } from "@/lib/constants";
 
 /**
  * Erasing an account, which is not the same as deleting a row.
@@ -59,13 +59,25 @@ export type ErasurePreview = {
   forfeits: Forfeit[];
   /** Financial rows that will survive, and the date they may go. */
   bookingsKept: number;
-  keptUntil: Date;
+  /** Null while the entity is unset: see keptUntil. */
+  keptUntil: Date | null;
 };
 
-/** The date the last surviving financial row may be deleted. */
-export function keptUntil(from: Date = new Date()): Date {
+/**
+ * The date the last surviving financial row may be deleted, or null.
+ *
+ * Null when the business entity is not set, because the retention period
+ * follows from what the business is registered as and nothing here is
+ * entitled to guess. See financialRecordRetentionYears. Every caller has to
+ * handle the null, which is the point: a date that cannot be computed must
+ * not be quoted to a member as law, and it must not be written into the
+ * deletion record as though it had been.
+ */
+export function keptUntil(from: Date = new Date()): Date | null {
+  const years = financialRecordRetentionYears();
+  if (years === null) return null;
   const d = new Date(from);
-  d.setUTCFullYear(d.getUTCFullYear() + FINANCIAL_RECORD_RETENTION_YEARS);
+  d.setUTCFullYear(d.getUTCFullYear() + years);
   return d;
 }
 
@@ -191,7 +203,7 @@ export type ErasureReceipt = {
   paymentsRedacted: number;
   sessionsEnded: number;
   bookingsKept: number;
-  keptUntil: Date;
+  keptUntil: Date | null;
 };
 
 export type ErasureResult =

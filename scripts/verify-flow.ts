@@ -49,7 +49,7 @@ import {
   activeExpertSessions,
 } from "../lib/expert-session";
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
-import { eraseAccount, erasurePreview } from "../lib/erasure";
+import { eraseAccount, erasurePreview, keptUntil } from "../lib/erasure";
 import { issueCodeTo } from "../lib/member-code";
 import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
 import { hashPassword, passwordMatches } from "../lib/ops-password";
@@ -57,7 +57,13 @@ import { audited } from "../lib/ops-audit";
 import { CODE_MAX_ATTEMPTS, hashCode } from "../lib/member-auth";
 import { toE164 } from "../lib/phone";
 import { submitApplication } from "../app/apply/actions";
-import { EXPERT_SHARE_BPS, MEMBERSHIP_TIERS, SINGLE_CALL_PAISE } from "../lib/constants";
+import {
+  BUSINESS_ENTITY,
+  EXPERT_SHARE_BPS,
+  financialRecordRetentionYears,
+  MEMBERSHIP_TIERS,
+  SINGLE_CALL_PAISE,
+} from "../lib/constants";
 import { openSlotsFor, openSlotsForMany } from "../lib/availability";
 import { runtimeConnection } from "../lib/db/connection";
 import { verifyBookingToken } from "../lib/tokens";
@@ -281,6 +287,15 @@ async function main() {
   await db.delete(bookings);
   await db.delete(bundles);
   await db.delete(memberships);
+  /*
+     account_deletions references customers and is NOT cascaded — on
+     purpose, since the record that somebody was erased should outlive the
+     tombstone it points at. That makes it one more table this reset has to
+     clear by hand, and leaving it out broke rerunnability: the first run
+     passed, and the second died on
+     account_deletions_customer_id_customers_id_fk before a single check.
+  */
+  await db.delete(accountDeletions);
   await db.delete(customers);
 
   const open = await slots();
@@ -4157,10 +4172,12 @@ async function main() {
         logged.notesErased === 1 &&
         logged.paymentsRedacted >= 1 &&
         logged.bookingsKept === 1 &&
-        logged.keptUntil !== null &&
+        /* Null exactly while the entity is unset — the record must not
+           carry a retention date the law has not fixed yet. */
+        (BUSINESS_ENTITY === null ? logged.keptUntil === null : logged.keptUntil !== null) &&
         !JSON.stringify(logged).includes(past.customer.email),
       logged
-        ? `1 intake, 1 note, ${logged.paymentsRedacted} payment(s), kept until ${logged.keptUntil?.getUTCFullYear()}`
+        ? `1 intake, 1 note, ${logged.paymentsRedacted} payment(s), kept until ${logged.keptUntil?.getUTCFullYear() ?? "no date yet, entity unset"}`
         : "nothing recorded",
     );
 
@@ -4329,6 +4346,77 @@ async function main() {
           !l.startsWith(".site-dark.os a:not("),
       );
     const untinted = tintGroup.filter((l) => !l.includes(":not(.danger)"));
+
+    /*
+       12. AND THE RETENTION PERIOD IS NEVER QUOTED AS LAW UNTIL IT IS KNOWN.
+
+       How long books must be kept follows from what the business is
+       registered as: eight years for a company or an LLP under Companies Act
+       s.128(5) and LLP Act s.34(3), six for a proprietorship under rule
+       6F(5) and CGST s.36. The registration is still one of the blanks in
+       app/legal/privacy.
+
+       The first version of this feature printed a flat "8 years" and a date
+       computed from it, quoted to the member as what the law requires —
+       which on a proprietorship is two years of unlawful retention, and
+       over-retention is itself a DPDP breach. The comment next to it said
+       "confirm before launch", which reads as diligence and behaves as a
+       guess, because nothing downstream could tell a guess from a decision.
+
+       So the entity decides, and while it is unset both the computed date
+       and the quoted period are null. This checks the two things that must
+       hold together: nothing invents a date, and the page says so out loud
+       rather than quietly dropping the sentence.
+    */
+    const years = financialRecordRetentionYears();
+    const entitySet = BUSINESS_ENTITY !== null;
+
+    /*
+       A member WITH a booking, because the retention paragraph only renders
+       when there is a financial record to keep. The first version of this
+       read the page fetched for the gate check above, whose member has no
+       bookings, so it was asserting against a paragraph that was never on
+       the page — and failed for a reason that had nothing to do with the
+       rule it was testing.
+    */
+    const withBooking = await erasureMember(
+      "retention",
+      new Date(Date.now() - 30 * 86_400_000),
+      "completed",
+    );
+    const { value: retentionCookie } = await startSession(withBooking.customer.id);
+    const retentionPage = await fetch(`${BASE}/member/delete`, {
+      headers: { cookie: `bp_member=${retentionCookie}` },
+      redirect: "manual",
+    });
+    /*
+       React's server render separates adjacent text nodes with an empty HTML
+       comment, so the page ships "keep its books for <!-- -->8<!-- --> years"
+       and a plain substring match for the sentence fails on a page that is
+       rendering it correctly. Stripping the separator compares what a reader
+       sees rather than what the renderer emitted.
+    */
+    const deletePageBody = (retentionPage.status === 200 ? await retentionPage.text() : "")
+      .split("<!-- -->")
+      .join("");
+
+    check(
+      "the retention period is only stated as law once the entity that decides it is",
+      retentionPage.status === 200 &&
+        (entitySet
+          ? years !== null &&
+            keptUntil() !== null &&
+            deletePageBody.includes(`keep its books for ${years} years`)
+          : years === null &&
+            keptUntil() === null &&
+            deletePageBody.includes("depends on how Landline is registered") &&
+            !deletePageBody.includes("keep its books for")),
+      retentionPage.status !== 200
+        ? `the delete page answered ${retentionPage.status}`
+        : entitySet
+          ? `entity ${BUSINESS_ENTITY}, page quotes ${years} years`
+          : "entity unset, no period claimed, and the page shows the blank",
+    );
 
     check(
       "a destructive link is never given the console's blue tint",

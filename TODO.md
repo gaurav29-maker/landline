@@ -17,7 +17,7 @@ can stop a launch, and almost none of it is code.
 | 1.3 | **SMS provider + TRAI DLT** | `SMS_PROVIDER`, `SMS_API_KEY`, `SMS_SENDER_ID` unset | Phone sign-in is the front door and it cannot send a code. DLT registration is a regulator step with a lead time — start it before you need it. |
 | 1.4 | **The 21 legal blanks** | 9 in `app/legal/privacy`, 7 in `app/legal/terms`, 5 in `app/legal/refunds` | Registered entity name, CIN, address, GSTIN, grievance officer, retention periods, the cancellation percentage. They render as visible `[bracketed]` placeholders today — a visitor can read them. |
 | 1.5 | **Trade mark number** | `lib/brand.ts:66` | `TRADEMARK_REGISTERED` is already `true`, so ® is on every surface. Under s.107 of the Trade Marks Act 1999, claiming registration you do not hold is an offence. Write the number and class into that comment, or set the flag back to `false`. |
-| 1.6 | **The retention period, confirmed against the entity** | `FINANCIAL_RECORD_RETENTION_YEARS` in `lib/constants.ts` | Set to **8 years** and shown to every member on the delete-account page as the law's requirement. Eight is Companies Act 2013 s.128(5), which binds a *company*. A sole proprietorship or an LLP is not one, and for those rule 6F(5) governs at six years — so on the wrong entity this is two years of unlawful retention, and keeping data longer than the law requires is itself a DPDP breach. Blocked on 1.4: the entity type is one of the blanks. |
+| 1.6 | **What Landline is registered as** | `BUSINESS_ENTITY` in `lib/constants.ts` | Unset, and it decides the retention period the delete-account page quotes: eight years for a company (Companies Act 2013 s.128(5)) or an LLP (LLP Act 2008 s.34(3)), six for a proprietorship or partnership (rule 6F(5), CGST s.36). On the wrong one that is two years of unlawful retention, and over-retention is itself a DPDP breach — so while this is null nothing quotes a period: the page shows the blank and says the period depends on the registration. Set this one value and the exact wording and the date turn on. Same blank as the entity name in 1.4. |
 
 **1.4, 1.5 and 1.6 are the three with legal exposure.** Everything else here
 just means a thing does not work yet.
@@ -82,6 +82,25 @@ A comment now sits next to the hex so nobody else tries.
 
 ---
 
+## 3b. Found while building, not yet decided
+
+**Muted prose in the console measures 2.47:1.**
+`.site-dark.os .bp-muted` maps every muted paragraph in the member and ops
+consoles to `--os-label`, which is 30% of the ink. globals.css already says
+what that token is for — the note on `.os .first-run-note` records that it is
+"drawn for uppercase micro-labels a few characters long" and that a whole
+sentence in it measured 1.1:1 — but `.bp-muted` applies it to sentences
+anyway. Measured at 10px on the console ground: **2.47:1**, against the 4.5:1
+WCAG 1.4.3 asks for.
+
+The delete-account pages are fixed (`.erase-page .bp-muted` uses `--ink-mute`,
+7.57:1) because every sentence on them is read before an irreversible action.
+The rest of the console is not, because recolouring every muted paragraph in
+two consoles is a design decision rather than a bug fix. One line changes it
+if you want it: the `--os-label` mapping on line ~7327.
+
+---
+
 ## 4. Waiting on an asset
 
 These are real work, already designed, that cannot start without a file.
@@ -100,6 +119,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 152 checks pass against a database
+- **Work the tests already cover.** 153 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.
