@@ -49,29 +49,43 @@ npm run db:local
 And in another, build the schema and fill it:
 
 ```bash
-npm run db:push                          # every table
-npx tsx scripts/add-ops-identity.ts      # NOT optional — see below
-npm run db:seed                          # three demo experts, weekdays 10-1 and 3-7 IST
+npm run db:reset                         # schema, triggers, experts, products
 npx tsx scripts/add-operator.ts "Your Name" you@landline.in
 npm run dev
 ```
 
-### Why two of those steps are not optional
+### What `db:reset` does, and why it is not `db:push && db:seed`
 
-**`add-ops-identity.ts` after `db:push`.** Push creates all the tables,
-including `ops_events`, and cannot create the trigger that makes it
-append-only — Drizzle's schema has no way to express one. So a database built
-with push alone has an audit trail that anybody can edit or delete, which is
-the one property it exists to have. The script is idempotent; run it after
-every push. Verified: straight after `db:push` the trigger is absent, and
-after the script it is there.
+Push and seed alone do not produce a database the suite can pass against.
+Measured on an empty database, push creates every table and every column —
+the session tables and the payer columns included — and leaves exactly two
+things out:
 
-**`add-operator.ts`.** The ops console has no signup page and no password in
-the environment, so with no operator rows it refuses everyone — the same
-locked door a missing password used to give. The script prints a generated
-password once and stores only a scrypt hash, so it cannot be read back; rerun
-with `--reset` if it is lost, and `--disable you@landline.in` to switch an
-account off.
+**The append-only triggers on `ops_events`.** Drizzle's schema cannot express
+a trigger, so push builds the audit table without the two functions that stop
+anybody rewriting or truncating it. The table exists and the one property it
+exists to have does not. `add-ops-identity.ts` writes them; verified straight
+after `db:push` the triggers are absent, and after the script they are there.
+
+**The product rows.** `expert_products` is created by push and left empty, so
+a product lookup returns undefined and the suite dies on *invalid input syntax
+for type uuid* about sixty checks before anything readable. The table is not
+missing — the rows are, and `add-expert-products.ts` backfills one per expert,
+which is why it runs after the seed.
+
+`db:reset` is those four steps in order, behind a check that refuses any host
+that is not localhost, because it begins by dropping the schema. It drops
+because `drizzle-kit push` works on an empty database and crashes on a built
+one — *Cannot read properties of undefined (reading 'value')* — while
+diffing a schema that holds trigger functions Drizzle does not model.
+
+**`add-operator.ts` stays separate**, because making a named person an
+operator is a decision rather than a baseline. The ops console has no signup
+page and no password in the environment, so with no operator rows it refuses
+everyone — the same locked door a missing password used to give. The script
+prints a generated password once and stores only a scrypt hash, so it cannot
+be read back; rerun with `--reset` if it is lost, and `--disable
+you@landline.in` to switch an account off.
 
 ### Migrating a database that already has data
 
@@ -86,8 +100,9 @@ npx tsx scripts/add-member-sessions.ts   # revocable member sessions, payer colu
 npx tsx scripts/add-expert-sessions.ts   # revocable expert sessions
 ```
 
-On a fresh database `db:push` covers all three; they exist for the one that
-is already live.
+On a fresh database `db:push` covers all three — measured, not assumed — so
+`db:reset` does not run them. They exist for the database that is already
+live and cannot be dropped, which is the opposite case.
 
 ### About `db:local`
 
@@ -101,6 +116,15 @@ the repo cannot take it with them.
 Equally: a temp directory is not a promise. There is no backup and no
 durability guarantee, and clearing temp files starts you at `db:push` again.
 Development only; production still needs a real Postgres.
+
+A second one, measured the same way: PGlite's backend aborts after several
+`db:reset` runs in one `db:local` lifetime — three times while that script
+was being written, never on the first run, and not attributable to any single
+step. Six drop-and-create cycles, six drop-and-push cycles and two full
+resets back to back all came through clean, so the cause is not known. The
+symptom is `read ECONNRESET` from every connection afterwards, `select 1`
+included; the database is gone, not slow. Stop `db:local`, delete the data
+directory it prints, start it again, and carry on.
 
 One known defect, measured rather than suspected: the socket server loses the
 statement issued immediately after an error on the same connection. Provoke a
@@ -402,11 +426,12 @@ again?", which does not require knowing who they are.
 
 ```bash
 npm run db:local     # in one terminal
-npm run dev          # in another
+npm run db:reset     # in another, if the database is new or stale
+npm run dev
 npm run verify
 ```
 
-123 checks against a real database and a running server. They cover the parts
+140 checks against a real database and a running server. They cover the parts
 that need neither Razorpay nor Resend, and several of them exist because the
 thing they check is a claim rather than an observation:
 

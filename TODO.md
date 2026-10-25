@@ -99,5 +99,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 138 checks pass; if something here
-  broke one of them it would not be a todo, it would be a bug.
+- **Work the tests already cover.** 140 checks pass against a database
+  built by `npm run db:reset`; if something here broke one of them it
+  would not be a todo, it would be a bug.

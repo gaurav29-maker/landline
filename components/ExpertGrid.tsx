@@ -53,8 +53,7 @@ export default function ExpertGrid({
         ) : (
           <>
             <strong>No database connected.</strong> Set <code>DATABASE_URL</code> in{" "}
-            <code>.env.local</code>, then run <code>npm run db:push</code> and{" "}
-            <code>npm run db:seed</code>.
+            <code>.env.local</code>, then run <code>npm run db:reset</code>.
           </>
         )}
       </p>

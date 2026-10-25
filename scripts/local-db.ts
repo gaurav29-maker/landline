@@ -45,8 +45,11 @@ import path from "node:path";
  * where it provokes one, and explains the measurements in full.
  *
  *   npm run db:local     (leave running)
- *   npm run db:push      (in another terminal)
- *   npm run db:seed
+ *   npm run db:reset     (in another terminal)
+ *
+ * db:reset, not push-then-seed. Those two leave the audit triggers off
+ * and expert_products empty, which fails five checks in a way that reads
+ * as a code regression. scripts/db-reset.ts measures and explains both.
  */
 
 const PORT = Number(process.env.LOCAL_DB_PORT ?? 5432);
@@ -79,7 +82,7 @@ const server = new PGLiteSocketServer({
   console.log(`  Data in ${DIR}\n`);
   console.log("  Put this in .env.local:\n");
   console.log(`    DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:${PORT}/postgres"\n`);
-  console.log("  Then, in another terminal: npm run db:push && npm run db:seed\n");
+  console.log("  Then, in another terminal: npm run db:reset\n");
   console.log("  Ctrl-C to stop. Development only — production needs a real Postgres.\n");
 
   const close = async () => {
