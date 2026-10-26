@@ -129,6 +129,13 @@ async function load(): Promise<{
 export default async function Home() {
   const { experts, dbReady, preview, panel } = await load();
 
+  /*
+     Whether the quotes band renders, which every stripe below it depends
+     on. See the note above that section: it occupies a position whether or
+     not it is tinted, so the bands after it have to flip with it.
+  */
+  const QUOTED = TESTIMONIALS.length > 0;
+
   return (
     <div className="site">
       <SiteNav onLanding />
@@ -329,93 +336,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/*
-        How somebody gets onto this page at all.
-
-        The biggest unanswered question on a marketplace carrying one
-        expert is who let that person on here, and the experts section
-        above asserts the answer in a single clause nobody slows down for.
-        This is the clause, opened out.
-
-        EVERY LINE IS ENFORCED SOMEWHERE, which is the only reason it is
-        worth printing:
-
-          "a person" — approveApplication calls requireOperator(). There
-          is no self-serve listing and no automatic approval.
-          "whose name is on it" — the same action writes the operator into
-          the audit trail, and verify-flow proves that row cannot be
-          rewritten or deleted, TRUNCATE included.
-          "they cannot edit afterwards" — the expert console has no field
-          that writes `background`. Grep it.
-          "either way" — the SEBI row renders "Not registered" rather than
-          disappearing when the answer is no.
-          "a share of the session" — the payout is a percentage, not a
-          fee, so nobody earns more by selling you something else.
-
-        It is a band, not a panel, and it links to /principles rather than
-        restating it. That page already carries ten of these with the
-        tests that hold them; this one carries the five that are about
-        getting listed, which is the thing the experts section raises.
-      */}
-      <section className="band alt" id="vetting">
-        <div className="wrap">
-          <div className="band-head idx">
-            <span className="eyebrow">How somebody gets listed</span>
-            <h2>
-              Nobody puts <span className="said">themselves</span> on this page.
-            </h2>
-            <p>
-              Five things happen before a name appears, and each one is enforced in the
-              software rather than promised in a paragraph.
-            </p>
-          </div>
-
-          <dl className="gate">
-            <div>
-              <dt>A person approves it</dt>
-              <dd>
-                An application is read and approved by an operator who is signed in. There is
-                no self-serve listing, and nothing is approved automatically.
-              </dd>
-            </div>
-            <div>
-              <dt>Their name is on it</dt>
-              <dd>
-                Who approved it is written into a log that cannot be edited or emptied —
-                not by them, not by us.
-              </dd>
-            </div>
-            <div>
-              <dt>The background is then locked</dt>
-              <dd>
-                Where they have actually worked is checked before they are listed, and the
-                expert console has no way to change it afterwards.
-              </dd>
-            </div>
-            <div>
-              <dt>The SEBI answer is published either way</dt>
-              <dd>
-                Registered or not registered, it is on their card and on their page. A
-                missing answer is not an option the software offers.
-              </dd>
-            </div>
-            <div>
-              <dt>They are paid a share of the session</dt>
-              <dd>
-                Not a fee for distributing anything. Nobody on this site earns more because
-                you hold one thing rather than another.
-              </dd>
-            </div>
-          </dl>
-
-          <p className="gate-more">
-            <a href="/principles">The rest of what we hold ourselves to</a>
-          </p>
-        </div>
-      </section>
-
-
-      <section className="band" id="how">
+      <section className="band alt" id="how">
         <div className="wrap">
           <div className="band-head">
             <span className="eyebrow">How it works</span>
@@ -503,7 +424,7 @@ export default async function Home() {
         input, and "six steps, one piece of work on your side" two
         sections up is the same fact said kindly.
       */}
-      <section className="band alt" id="notfor">
+      <section className="band" id="notfor">
         <div className="wrap">
           <div className="band-head idx">
             <span className="eyebrow">Before you pay</span>
@@ -564,7 +485,7 @@ export default async function Home() {
         or a bundle somebody holds, and the suite still proves it. Selling
         them again is putting the markup back, not rebuilding the product.
       */}
-      <section className="band" id="ways">
+      <section className="band alt" id="ways">
         <div className="wrap">
           <div className="band-head idx">
             <span className="eyebrow">What it costs</span>
@@ -614,10 +535,17 @@ export default async function Home() {
 
         `band` rather than `band alt`, and that is not a coin toss. The
         bands alternate their stripe, so a section that appears only when
-        data exists would shift every stripe after it the day the first
-        quote lands. Transparent, it costs nothing in either state: empty
-        it renders no element at all, and full it sits in the page colour
-        with its own heading and the band padding either side.
+        data exists shifts every stripe after it the day the first quote
+        lands.
+
+        That used to be waved away as costing nothing in either state. It
+        does not: a transparent band still occupies a position, so with a
+        quote in place this one and the band below it were both untinted
+        and read as a single slab. Nobody saw it because the array has
+        always been empty.
+
+        So the four bands after it derive their stripe from whether this
+        one renders, instead of being hand-maintained against a condition.
       */}
       {TESTIMONIALS.length > 0 ? (
         <section className="band">
@@ -627,7 +555,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <section className="band alt">
+      <section className={QUOTED ? "band alt" : "band"}>
         <div className="wrap">
           <div className="band-head">
             <span className="eyebrow">Terms of the thing</span>
@@ -658,7 +586,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="band" id="faq">
+      <section className={QUOTED ? "band" : "band alt"} id="faq">
         <div className="wrap">
           <div className="band-head">
             <span className="eyebrow">Frequently asked</span>
@@ -725,7 +653,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="band alt closer">
+      <section className={QUOTED ? "band alt closer" : "band closer"}>
         <div className="wrap">
           <h2>One call. One honest read.</h2>
           {/*
@@ -762,9 +690,14 @@ export default async function Home() {
             sells you anything." at 375 — measured, not guessed: the two line
             boxes came back 196px and 147px, and the first sentence is the
             shorter of the two, so the break could not have been at the stop.
+
+            "First" became "with you" when the intake form was switched off.
+            The intake was the thing that made reading it beforehand true,
+            and this is the most prominent sentence on the page to leave
+            saying otherwise. Re-measured at 375 after the change.
           */}
           <p className="closer-line">
-            <span>They read it first.</span> <span>Nobody sells you anything.</span>
+            <span>They read it with you.</span> <span>Nobody sells you anything.</span>
           </p>
           <div className="b-pair">
             <Link className="b b-fill" href="/experts">
@@ -783,10 +716,19 @@ export default async function Home() {
         inside it: somebody reading this page is usually a customer, and the
         few who are not should not have to hunt.
       */}
-      <section className="band recruit">
+      <section className={QUOTED ? "band recruit" : "band alt recruit"}>
         <div className="wrap">
           <span className="eyebrow">For market professionals</span>
-          <h2>Do you take these calls?</h2>
+          {/*
+            Was "Do you take these calls?", which asks a question the reader
+            has no way to answer — "these calls" is a thing they have not
+            read about yet, since this band sits at the very bottom of the
+            page. A statement they recognise does the work instead: the
+            people this is aimed at are already asked, for nothing, by
+            everybody who knows what they do. The line below then lands on
+            the part that is new, which is being paid for it.
+          */}
+          <h2>You already take these calls.</h2>
           <p>
             Be useful and paid, without taking on a client. Your own rate, your own hours, and
             nothing to sell.

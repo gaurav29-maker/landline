@@ -54,7 +54,10 @@ marketing site does this work right up until they become a customer.
 ### ~~3.3 The three home-page sections never built~~ — done
 From the audit of what the page is missing, in the order I would do them:
 
-1. **How an expert gets listed.** The biggest unanswered question on a
+1. ~~**How an expert gets listed.**~~ Built, then removed from the home page
+   on 26 October at your request. `/principles` still carries the same
+   commitments with the tests behind them. The original reasoning:
+   The biggest unanswered question on a
    marketplace with one expert is *who let this person on here*. Every
    clause is already enforced in code — a person checks the background
    before approval, it is locked afterwards, the SEBI row renders "Not
