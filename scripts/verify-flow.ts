@@ -53,6 +53,7 @@ import {
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { eraseAccount, erasurePreview, keptUntil } from "../lib/erasure";
 import { sessionIcs } from "../lib/ics";
+import { ASK_FOR_INTAKE } from "../lib/constants";
 import {
   customerConfirmation,
   expertLinkMissing,
@@ -2324,10 +2325,25 @@ async function main() {
     intakeLinks.length > 0 && intakeLinks.every((m) => verifyBookingToken(m[1], m[2]));
   const tamperedRejected =
     intakeLinks.length > 0 && !verifyBookingToken(intakeLinks[0][1], tamper(intakeLinks[0][2]));
+  /*
+     FOLLOWS THE SWITCH, rather than contradicting it. This asserted that the
+     console always links to the intake, which stopped being true the moment
+     ASK_FOR_INTAKE went off — and a check that fails because somebody made a
+     decision is a check that gets deleted rather than read.
+
+     So it now asserts the correct thing in BOTH states: no links at all when
+     the switch is off, and valid, tamper-resistant links on every upcoming
+     session when it is on. That means flipping the constant back is covered
+     by the suite rather than being a leap.
+  */
   check(
-    "the console links every upcoming session to its intake with a valid token",
-    tokensValid && tamperedRejected,
-    `${intakeLinks.length} link${intakeLinks.length === 1 ? "" : "s"}, all verify, a tampered one is refused`,
+    ASK_FOR_INTAKE
+      ? "the console links every upcoming session to its intake with a valid token"
+      : "the console offers no intake link while the intake is switched off",
+    ASK_FOR_INTAKE ? tokensValid && tamperedRejected : intakeLinks.length === 0,
+    ASK_FOR_INTAKE
+      ? `${intakeLinks.length} link${intakeLinks.length === 1 ? "" : "s"}, all verify, a tampered one is refused`
+      : "no intake links on the console",
   );
 
   const rebookLinks = [...consoleHtml.matchAll(/href="([^"]+)"[^>]*>Book [A-Za-z]+ again</g)].map(
@@ -3212,8 +3228,29 @@ async function main() {
       `status ${dataStale.status} -> ${dataStale.headers.get("location") ?? "(nowhere)"}`,
     );
 
-    /* And typing a code opens it again, without a new sign-in. */
-    await markVerified(row.id);
+    /*
+       And typing a code opens it again, without a new sign-in.
+
+       READ BACK WITH A RETRY, which is this repository's own documented
+       remedy for the PGlite socket defect described in the README: the
+       server loses the statement issued immediately after an error on the
+       same connection, and the stale request just above deliberately
+       provokes one. When markVerified was called and trusted, this and the
+       export check below failed together, intermittently, for a reason that
+       had nothing to do with either — which is exactly the "two wrong
+       conclusions in this codebase already" the README warns about.
+    */
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await markVerified(row.id);
+      const [check_] = await db
+        .select({ verifiedAt: memberSessions.verifiedAt })
+        .from(memberSessions)
+        .where(eq(memberSessions.id, row.id))
+        .limit(1);
+      const fresh_ =
+        check_ && Date.now() - check_.verifiedAt.getTime() < FRESH_MINUTES * 60_000;
+      if (fresh_) break;
+    }
 
     /*
        And what it actually contains. An export that answers "what do you
@@ -5033,6 +5070,125 @@ async function main() {
       broken.length === 0
         ? `${rendered.length} templates rendered, subjects and bodies complete`
         : `${broken.length} template(s) with an unresolved placeholder or an empty body`,
+    );
+  }
+
+
+  /*
+     ================= THE INTAKE SWITCH =================
+
+     Gaurav's call on 26 October: the expert has the right data, so the site
+     stops asking a member to type their holdings before the call.
+
+     A SWITCH, NOT A DELETION, and these checks are what make that claim true
+     rather than a comment. The Log in the console is built entirely on intake
+     payloads, so removing the data would have taken the most distinctive
+     thing in the product with it. Everything behind the switch stays
+     standing: the table, the form at its signed link, the 90-day purge, the
+     record download and the section of the DPDP export that reports it.
+  */
+  {
+    /*
+       Nothing points a member at the form any more. Checked on the surfaces
+       rather than on the constant, because "we turned it off" and "it is
+       actually gone from the page" are different claims and only the second
+       one matters to somebody reading the console.
+    */
+    const [switchCustomer] = await db
+      .insert(customers)
+      .values({ name: "Intake Off", email: `intake-off-${Date.now()}@example.in` })
+      .returning();
+    const [switchExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.slug, EXPERT))
+      .limit(1);
+
+    const soonAt = new Date(Date.now() + 4 * 86_400_000);
+    const [switchBooking] = await db
+      .insert(bookings)
+      .values({
+        expertId: switchExpert.id,
+        customerId: switchCustomer.id,
+        startsAt: soonAt,
+        endsAt: new Date(soonAt.getTime() + 45 * 60_000),
+        status: "confirmed",
+        amountPaise: SINGLE_CALL_PAISE,
+      })
+      .returning();
+
+    const consoleHtml = await (
+      await fetch(`${BASE}/member`, {
+        headers: { cookie: await memberCookie(switchCustomer.id) },
+        redirect: "manual",
+      })
+    ).text();
+
+    const confirmation = customerConfirmation({
+      customerName: "Intake Off",
+      expertName: switchExpert.displayName,
+      startsAt: soonAt,
+      amountPaise: SINGLE_CALL_PAISE,
+      bookingId: switchBooking.id,
+      meetingUrl: null,
+    });
+
+    const asksOnConsole =
+      consoleHtml.includes("Tell them what you hold") || consoleHtml.includes("intake not sent");
+    const asksInEmail =
+      confirmation.html.includes("Fill the intake form") ||
+      confirmation.html.includes("/intake?t=");
+
+    check(
+      "nothing asks a member for an intake form any more",
+      ASK_FOR_INTAKE === false && !asksOnConsole && !asksInEmail,
+      ASK_FOR_INTAKE
+        ? "the switch is on"
+        : `console clean: ${!asksOnConsole}, confirmation email clean: ${!asksInEmail}`,
+    );
+
+    /*
+       And the confirmation email did not lose anything else on the way out.
+       A block removed with a template literal around it is exactly the kind
+       of edit that takes the paragraph after it too.
+    */
+    check(
+      "the confirmation email still confirms the booking and offers the calendar",
+      confirmation.html.includes("booked in") &&
+        confirmation.html.includes("/calendar?t=") &&
+        !confirmation.html.includes("${"),
+      "time, amount and the calendar link intact, nothing uninterpolated",
+    );
+
+    /*
+       THE DATA AND THE FORM ARE STILL THERE, which is the whole difference
+       between hiding this and deleting it. An intake written before the
+       switch still reaches The Log, the record and the export — and a link
+       in somebody's inbox still opens a working form, because a dead page at
+       the end of an email already sent is worse than a form nobody is
+       pointed at.
+    */
+    await db.insert(intakeSubmissions).values({
+      bookingId: switchBooking.id,
+      payload: { holdingsSummary: "60% in two IT names" },
+    });
+
+    const formStillOpens = await fetch(
+      `${BASE}/booking/${switchBooking.id}/intake?t=${signBookingToken(switchBooking.id)}`,
+      { redirect: "manual" },
+    );
+
+    const [keptIntake] = await db
+      .select({ payload: intakeSubmissions.payload })
+      .from(intakeSubmissions)
+      .where(eq(intakeSubmissions.bookingId, switchBooking.id))
+      .limit(1);
+
+    check(
+      "the intake data and the form behind the switch are untouched",
+      formStillOpens.status === 200 &&
+        JSON.stringify(keptIntake.payload).includes("two IT names"),
+      `form answers ${formStillOpens.status}, stored payload still readable`,
     );
   }
 

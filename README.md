@@ -473,7 +473,7 @@ npm run dev
 npm run verify
 ```
 
-168 checks against a real database and a running server. They cover the parts
+171 checks against a real database and a running server. They cover the parts
 that need neither Razorpay nor Resend, and several of them exist because the
 thing they check is a claim rather than an observation:
 

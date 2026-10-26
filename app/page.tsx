@@ -4,7 +4,12 @@ import { db } from "@/lib/db";
 import { experts as expertsTable } from "@/lib/db/schema";
 import { openSlotsFor } from "@/lib/availability";
 import { istDayLabel, istTime, rupees } from "@/lib/format";
-import { CONTACT_EMAIL, INTAKE_RETENTION_DAYS, SINGLE_CALL_PAISE } from "@/lib/constants";
+import {
+  ASK_FOR_INTAKE,
+  CONTACT_EMAIL,
+  INTAKE_RETENTION_DAYS,
+  SINGLE_CALL_PAISE,
+} from "@/lib/constants";
 import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
@@ -576,7 +581,18 @@ export default async function Home() {
               one call &middot; one to one &middot; video
             </p>
             <ul>
-              <li>An expert with your holdings in front of them for the call</li>
+              {/*
+                Was "an expert with your holdings in front of them for the
+                call", which the intake form was what made true. With
+                ASK_FOR_INTAKE off nothing collects them, so the claim went
+                with it — the same correction this page's own note describes
+                being made in nine places once already.
+              */}
+              <li>
+                {ASK_FOR_INTAKE
+                  ? "An expert with your holdings in front of them for the call"
+                  : "An expert who reads your portfolio with you, on the call"}
+              </li>
               <li>A specific question, a sector, or a second opinion</li>
               <li>What they saw, written up afterwards and yours to keep</li>
             </ul>

@@ -3,6 +3,7 @@ import { and, between, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { bookings, customers, experts, intakeSubmissions } from "@/lib/db/schema";
 import { cronAuthorised, linkNudgeDue } from "@/lib/cron";
+import { ASK_FOR_INTAKE } from "@/lib/constants";
 import { expertLinkMissing, intakeNudge, reminder, sendOnce } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,9 @@ export async function GET(req: NextRequest) {
       });
       if ((await sendOnce(booking.id, "reminder_24h", { to: customer.email, ...msg })) === "sent") sent++;
 
-      if (intakeId === null) {
+      /* Off by default now — see ASK_FOR_INTAKE. Nudging somebody to fill a
+         form nothing else points at would be the worst of both. */
+      if (ASK_FOR_INTAKE && intakeId === null) {
         const nudge = intakeNudge({
           customerName: customer.name,
           startsAt: booking.startsAt,

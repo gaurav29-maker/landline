@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import { ASK_FOR_INTAKE } from "@/lib/constants";
 
 type Status = {
   id: string;
@@ -107,21 +108,25 @@ export default function BookingPage({ params }: { params: Promise<{ id: string }
             {istDateTime(data.startsAt)} IST
           </p>
 
-          {data.intakeDone ? (
-            <p className="muted">
-              Your intake form is in. Your expert has it in front of them on the call.
-            </p>
-          ) : (
-            <>
-              <p>
-                One thing left — the short intake form. It is what puts your holdings in front of
-                your expert for the call, instead of you describing them from memory.
+          {/* Behind ASK_FOR_INTAKE — off, and switched rather than deleted so
+              flipping the constant brings all of it back. */}
+          {ASK_FOR_INTAKE ? (
+            data.intakeDone ? (
+              <p className="muted">
+                Your intake form is in. Your expert has it in front of them on the call.
               </p>
-              <a className="b b-fill" href={data.intakePath}>
-                Fill the intake form
-              </a>
-            </>
-          )}
+            ) : (
+              <>
+                <p>
+                  One thing left — the short intake form. It is what puts your holdings in front
+                  of your expert for the call, instead of you describing them from memory.
+                </p>
+                <a className="b b-fill" href={data.intakePath}>
+                  Fill the intake form
+                </a>
+              </>
+            )
+          ) : null}
 
           {data.meetingUrl ? (
             <p className="muted spaced">

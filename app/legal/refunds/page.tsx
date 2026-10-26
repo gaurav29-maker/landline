@@ -40,7 +40,7 @@ export default function Refunds() {
         </li>
         <li>
           <strong>Less than 2 hours before, or you do not turn up</strong> — no refund. The
-          expert has kept the slot and prepared from your intake form.
+          expert has kept the slot and turned down other work for it.
         </li>
       </ul>
 

@@ -130,6 +130,34 @@ project), the follow-up email, and the second and third expert.
 
 ---
 
+## 3e. The intake form is switched off — 26 October 2026
+
+`ASK_FOR_INTAKE = false` in `lib/constants.ts`. Your call: the expert has
+the right data, so asking a member to type their holdings ahead of the call
+is work put on them for nothing.
+
+**Hidden, not deleted.** The `intake_submissions` table, the form at its
+signed link, the 90-day purge, The Log, the record download and the DPDP
+export section all stay standing — The Log is built entirely on intake
+payloads, so deleting the data would have taken the most distinctive thing
+in the product with it. Flip the constant and every surface returns; a check
+asserts the correct behaviour in both states, so flipping back is covered.
+
+**Four public claims rested on it and have been corrected**, because the
+switch made them untrue: the pricing bullet on the home page ("an expert
+with your holdings in front of them"), the refunds policy's reason for
+keeping money ("prepared from your intake form"), the principles page
+listing an intake nudge among the messages we send, and step two of the
+first-session walkthrough in the console.
+
+**Left standing, and worth your attention:** with nothing collected before
+the call, an expert's only source for what somebody holds is what they are
+told on the call. There is no broker or demat integration and the FAQ
+promises there is nowhere to put a login. If the plan is that the data
+arrives another way, that route does not exist in the software yet.
+
+---
+
 ## 3b. Found while building, not yet decided
 
 **Muted prose in the console measures 2.47:1.**
@@ -167,6 +195,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 168 checks pass against a database
+- **Work the tests already cover.** 171 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.

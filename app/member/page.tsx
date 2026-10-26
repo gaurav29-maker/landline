@@ -17,6 +17,7 @@ import { liveBundlesForCustomer, recordForCustomer } from "@/lib/record";
 import { rethrowIfNavigation } from "@/lib/nav";
 import ManageBooking from "@/components/member/ManageBooking";
 import { signBookingToken } from "@/lib/tokens";
+import { ASK_FOR_INTAKE } from "@/lib/constants";
 import MemberBar from "@/components/MemberBar";
 import Wordmark from "@/components/Wordmark";
 
@@ -262,43 +263,44 @@ export default async function MemberConsole({
                   </span>
                 </div>
                 {/*
-                  The intake was reachable only from the confirmation email.
-                  Lose the email and there was no way to tell your expert what
-                  you hold, and it is what puts the book on their screen for
-                  the call. The console knows this is the member's own
-                  booking, so it can mint the same signed link the email did.
+                  The intake pill and link used to live here, and are behind
+                  ASK_FOR_INTAKE now — off, because the expert has the right
+                  data and asking the member to type their holdings ahead of
+                  the call is work for nothing.
 
-                  The state is a pill and a link, and nothing else. A line of
-                  prose between them was explaining what "intake not sent"
-                  next to "Tell them what you hold" already says, nine times
-                  down one page.
+                  Switched rather than deleted: The Log further down this page
+                  is built entirely on intake payloads, so the data and the
+                  form both stay standing. Flip the constant and this returns
+                  exactly as it was.
                 */}
-                <p className="member-intake">
-                  {b.intakeId ? (
-                    <>
-                      <span className="pill ok">intake sent</span>
-                      <span className="bp-muted">
-                        {b.expertName.split(" ")[0]} has what you shared.
-                      </span>
-                      <a
-                        className="ops-link"
-                        href={`/booking/${b.id}/intake?t=${signBookingToken(b.id)}`}
-                      >
-                        Update it
-                      </a>
-                    </>
-                  ) : (
-                    <>
-                      <span className="pill warn">intake not sent</span>
-                      <a
-                        className="ops-link"
-                        href={`/booking/${b.id}/intake?t=${signBookingToken(b.id)}`}
-                      >
-                        Tell them what you hold
-                      </a>
-                    </>
-                  )}
-                </p>
+                {ASK_FOR_INTAKE ? (
+                  <p className="member-intake">
+                    {b.intakeId ? (
+                      <>
+                        <span className="pill ok">intake sent</span>
+                        <span className="bp-muted">
+                          {b.expertName.split(" ")[0]} has what you shared.
+                        </span>
+                        <a
+                          className="ops-link"
+                          href={`/booking/${b.id}/intake?t=${signBookingToken(b.id)}`}
+                        >
+                          Update it
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <span className="pill warn">intake not sent</span>
+                        <a
+                          className="ops-link"
+                          href={`/booking/${b.id}/intake?t=${signBookingToken(b.id)}`}
+                        >
+                          Tell them what you hold
+                        </a>
+                      </>
+                    )}
+                  </p>
+                ) : null}
                 <ManageBooking
                   bookingId={b.id}
                   startsAt={b.startsAt.toISOString()}
@@ -344,11 +346,30 @@ export default async function MemberConsole({
             <li>
               <span className="first-run-n">1</span>
               <div>
-                <b>Tell them what you hold.</b>
-                <span>
-                  Five minutes, from the link above. It is what puts your book on their
-                  screen.
-                </span>
+                {/*
+                  Step one used to be "tell them what you hold", pointing at
+                  the intake link above — which is gone with ASK_FOR_INTAKE.
+                  Leaving it would have sent somebody looking for a link that
+                  is not there, which is a worse first session than no step
+                  one at all.
+                */}
+                {ASK_FOR_INTAKE ? (
+                  <>
+                    <b>Tell them what you hold.</b>
+                    <span>
+                      Five minutes, from the link above. It is what puts your book on their
+                      screen.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <b>Have your portfolio open.</b>
+                    <span>
+                      Your broker or demat app, on the screen in front of you. Nothing to fill
+                      in beforehand.
+                    </span>
+                  </>
+                )}
               </div>
             </li>
             <li>
@@ -356,7 +377,9 @@ export default async function MemberConsole({
               <div>
                 <b>One to one, on video.</b>
                 <span>
-                  Video, at the time above. Your holdings are in front of them for the call.
+                  {ASK_FOR_INTAKE
+                    ? "Video, at the time above. Your holdings are in front of them for the call."
+                    : "Video, at the time above. You walk them through what you hold, together."}
                 </span>
               </div>
             </li>
@@ -372,9 +395,19 @@ export default async function MemberConsole({
             </li>
           </ol>
           <p className="first-run-note">
-            Nobody will tell you what to buy. We keep what you share for{" "}
-            {INTAKE_RETENTION_DAYS} days after the call and then delete it &mdash; the file
-            you download is yours, and we cannot reach that one.
+            Nobody will tell you what to buy.{" "}
+            {ASK_FOR_INTAKE ? (
+              <>
+                We keep what you share for {INTAKE_RETENTION_DAYS} days after the call and then
+                delete it &mdash; the file you download is yours, and we cannot reach that one.
+              </>
+            ) : (
+              <>
+                We keep what is written about the session for {INTAKE_RETENTION_DAYS} days and
+                then delete it &mdash; the file you download is yours, and we cannot reach that
+                one.
+              </>
+            )}
           </p>
         </section>
       ) : null}

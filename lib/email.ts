@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { istDateTime, rupees } from "@/lib/format";
 import { calendarUrl, intakeUrl, siteUrl } from "@/lib/tokens";
 import { BRAND_BLUE, BRAND_TAGLINE } from "@/lib/brand";
+import { ASK_FOR_INTAKE } from "@/lib/constants";
 
 type Kind = (typeof notifications.kind.enumValues)[number];
 
@@ -225,14 +226,22 @@ export function customerConfirmation(args: {
         ${args.amountPaise > 0 ? `Paid ${rupees(args.amountPaise)}` : "Included in your plan"}
         ${args.meetingUrl ? `<br><a href="${args.meetingUrl}">Join link</a>` : ""}
       </p>
-      <p><strong>One thing before the call.</strong> Fill in the short intake form so your
-         holdings are in front of your expert while you talk, instead of being described from
-         memory:</p>
-      <p><a href="${intakeUrl(args.bookingId)}"
-            style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;padding:11px 20px;
-                   border-radius:8px;text-decoration:none">Fill the intake form</a></p>
-      <p style="font-size:13px;color:#6B6B6B">It asks for a summary of your holdings —
-         never a login.</p>
+      ${
+        /* Behind ASK_FOR_INTAKE, which is off: the expert has the right data,
+           so asking the member to type their holdings ahead of the call is
+           work for nothing. The template keeps both halves so flipping the
+           constant restores the email exactly. */
+        ASK_FOR_INTAKE
+          ? `<p><strong>One thing before the call.</strong> Fill in the short intake form so your
+                holdings are in front of your expert while you talk, instead of being described from
+                memory:</p>
+             <p><a href="${intakeUrl(args.bookingId)}"
+                   style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;padding:11px 20px;
+                          border-radius:8px;text-decoration:none">Fill the intake form</a></p>
+             <p style="font-size:13px;color:#6B6B6B">It asks for a summary of your holdings —
+                never a login.</p>`
+          : ""
+      }
       <!--
         And the appointment itself. Underneath the intake because the intake
         is the thing we need from them and this is the thing they need from
@@ -261,7 +270,7 @@ export function expertNotification(args: {
       <p style="background:#E8F5FE;padding:14px 16px;border-radius:8px;margin:20px 0">
         <strong>${istDateTime(args.startsAt)} IST</strong>
       </p>
-      <p>Their intake form will follow once they've filled it in.</p>`),
+      ${ASK_FOR_INTAKE ? "<p>Their intake form will follow once they've filled it in.</p>" : ""}`),
   };
 }
 

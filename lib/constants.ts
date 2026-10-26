@@ -150,3 +150,28 @@ export function financialRecordRetentionYears(
   if (!entity) return null;
   return entity === "company" || entity === "llp" ? 8 : 6;
 }
+
+/**
+ * Whether the site asks a customer to fill in an intake form before a call.
+ *
+ * OFF, by Gaurav's decision on 26 October 2026: the expert will have the
+ * right data, so asking the customer to type their holdings ahead of the call
+ * is work we are putting on them for nothing.
+ *
+ * A SWITCH AND NOT A DELETION, deliberately. Everything behind it is left
+ * standing — the intake_submissions table, the form at /booking/[id]/intake,
+ * the 90-day purge, The Log in the console, the holdings half of the session
+ * record, and the section of the DPDP export that reports it. The Log is
+ * built entirely on intake payloads, so removing the data would have taken
+ * the most distinctive thing in the product with it. Flip this back to true
+ * and every surface returns.
+ *
+ * WHAT IT TURNS OFF is only the asking: the pill and link on the console, the
+ * block in the booking confirmation email, the nudge the cron sends when a
+ * call is a day away, and the prompt on the booking page.
+ *
+ * THE FORM ITSELF STAYS REACHABLE at its signed link. Confirmation emails
+ * already sent carry one, and a link in somebody's inbox that opens a dead
+ * page is worse than a form nobody is pointed at any more.
+ */
+export const ASK_FOR_INTAKE = false;

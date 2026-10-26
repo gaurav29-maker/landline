@@ -105,8 +105,8 @@ export default function Principles() {
             <h2 className="doc-h2">We only write to you about your own booking</h2>
             <p>
               Every message Landline can send is operational: your booking is confirmed, your
-              session is tomorrow, your session is in an hour, your intake form is still blank,
-              your sign-in code, a refund went wrong and here is what we are doing about it.
+              session is tomorrow, your session is in an hour, your sign-in code, a refund went
+              wrong and here is what we are doing about it.
             </p>
             <p>
               There is no newsletter. There is no subscribe box anywhere on this site. There is no
