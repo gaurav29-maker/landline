@@ -106,9 +106,27 @@ form that only emailed would lose messages written in exactly the period when
 things go wrong. `/ops/support` is where they are read until that key lands,
 and shows which ones never made it to an inbox.
 
+## 3d. Room between sessions — done 26 October 2026
+
+`SESSION_GAP_MINUTES = 15` in `lib/slots.ts`. Forty-five plus fifteen is
+sixty, so the grid now lands on the hour — 10:00, 11:00, 12:00 — instead of
+10:00, 10:45, 11:30. **It costs capacity:** the seeded weekday (10–13 and
+15–19) went from 9 offered slots to 7. That is the trade for a call with no
+time limit not running into the next caller, and it is one constant if you
+want a different number.
+
+**And it fixed a live double-booking hole found underneath it.** Slot
+exclusion compared START TIMES for equality, which is only correct while
+every booking sits on the same grid as the slots being generated — and it
+does not, because an expert can sell a 15-minute product beside the
+45-minute one and the grid is built at the requested product's length.
+Measured: a 45-minute session at 10:00 left 10:15 and 10:30 on offer inside
+it. Neither start matched, so neither was excluded, and the unique index on
+(expert, startsAt) does not catch it either because the starts genuinely
+differ. `computeSlots` now takes intervals and excludes by overlap.
+
 **Still open from the map:** a real automatic meeting link (needs the Cloud
-project), a gap between back-to-back sessions, the follow-up email, and the
-second and third expert.
+project), the follow-up email, and the second and third expert.
 
 ---
 
@@ -149,6 +167,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 161 checks pass against a database
+- **Work the tests already cover.** 165 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.

@@ -22,7 +22,7 @@ export async function openSlotsFor(
     db.select().from(availabilityRules).where(eq(availabilityRules.expertId, expert.id)),
     db.select().from(availabilityExceptions).where(eq(availabilityExceptions.expertId, expert.id)),
     db
-      .select({ startsAt: bookings.startsAt })
+      .select({ startsAt: bookings.startsAt, endsAt: bookings.endsAt })
       .from(bookings)
       .where(
         and(
@@ -47,7 +47,7 @@ export async function openSlotsFor(
       startMinute: e.startMinute,
       endMinute: e.endMinute,
     })),
-    takenStarts: taken.map((b) => b.startsAt),
+    busy: taken,
     from,
     to,
   });
@@ -81,7 +81,7 @@ export async function openSlotsForMany(
     db.select().from(availabilityRules).where(inArray(availabilityRules.expertId, ids)),
     db.select().from(availabilityExceptions).where(inArray(availabilityExceptions.expertId, ids)),
     db
-      .select({ expertId: bookings.expertId, startsAt: bookings.startsAt })
+      .select({ expertId: bookings.expertId, startsAt: bookings.startsAt, endsAt: bookings.endsAt })
       .from(bookings)
       .where(
         and(
@@ -123,7 +123,7 @@ export async function openSlotsForMany(
           startMinute: e.startMinute,
           endMinute: e.endMinute,
         })),
-        takenStarts: (takenBy.get(expert.id) ?? []).map((b) => b.startsAt),
+        busy: takenBy.get(expert.id) ?? [],
         from,
         to,
       }),

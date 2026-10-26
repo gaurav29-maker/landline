@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     db.select().from(availabilityRules).where(eq(availabilityRules.expertId, expert.id)),
     db.select().from(availabilityExceptions).where(eq(availabilityExceptions.expertId, expert.id)),
     db
-      .select({ startsAt: bookings.startsAt })
+      .select({ startsAt: bookings.startsAt, endsAt: bookings.endsAt })
       .from(bookings)
       .where(
         and(
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       startMinute: e.startMinute,
       endMinute: e.endMinute,
     })),
-    takenStarts: taken.map((b) => b.startsAt),
+    busy: taken,
     from: new Date(),
     to: horizonEnd,
   });

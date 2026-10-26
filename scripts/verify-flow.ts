@@ -53,6 +53,8 @@ import {
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { eraseAccount, erasurePreview, keptUntil } from "../lib/erasure";
 import { sessionIcs } from "../lib/ics";
+import { computeSlots, SESSION_GAP_MINUTES } from "../lib/slots";
+import { istTime } from "../lib/format";
 import { linkNudgeDue } from "../lib/cron";
 import { signBookingToken } from "../lib/tokens";
 import { issueCodeTo } from "../lib/member-code";
@@ -4716,6 +4718,143 @@ async function main() {
       "the help page is not open to a stranger",
       helpNoSession.status !== 200,
       `status ${helpNoSession.status} with no session`,
+    );
+  }
+
+
+  /*
+     ================= ROOM BETWEEN SESSIONS =================
+
+     The call has no time limit, which is the right promise and was quietly
+     incompatible with how slots were generated: back to back, so a session
+     that ran ten minutes over made the next caller wait.
+
+     Underneath that was something worse, found while fixing it. Exclusion was
+     by exact START TIME, which is only correct while every booking sits on
+     the same grid as the slots being generated — and it does not, because an
+     expert can sell a 15-minute product alongside a 45-minute one and the
+     grid is generated at the requested product's length. These check the
+     collision first and the comfort second, in that order of importance.
+
+     All of it against computeSlots directly: it is pure, the arithmetic is
+     the part that can be wrong, and a booking flow test would prove one case
+     where this proves the rule.
+  */
+  {
+    const IST = "Asia/Kolkata";
+    /* A Monday, 10:00 to 13:00. Far enough out to clear the lead time. */
+    const MON = "2026-11-02";
+    const at = (hhmm: string) => new Date(`${MON}T${hhmm}:00+05:30`);
+    const day = {
+      timezone: IST,
+      rules: [{ weekday: 1, startMinute: 600, endMinute: 780 }],
+      exceptions: [],
+      from: new Date(`${MON}T00:00:00+05:30`),
+      to: new Date(`${MON}T23:59:00+05:30`),
+      now: new Date("2026-10-26T00:00:00+05:30"),
+      leadMinutes: 0,
+    };
+
+    /*
+       1. THE DOUBLE-BOOKING HOLE. Measured before it was fixed: a 45-minute
+       session at 10:00 runs to 10:45, and the 15-minute grid offered 10:15
+       and 10:30 inside it. Neither start matched the booked start, so neither
+       was excluded — and the unique index on (expert, startsAt) does not
+       catch it either, because the starts genuinely differ.
+
+       This is the check that matters most on this page. Everything else here
+       is about comfort; this one is about two people being sold the same
+       forty-five minutes.
+    */
+    const fifteens = computeSlots({
+      ...day,
+      busy: [{ startsAt: at("10:00"), endsAt: at("10:45") }],
+      slotMinutes: 15,
+    });
+    const insideBooked = fifteens.filter(
+      (s) => s.startsAt > at("10:00") && s.startsAt < at("10:45"),
+    );
+
+    check(
+      "a short product cannot be booked inside a longer session already on the calendar",
+      insideBooked.length === 0,
+      insideBooked.length === 0
+        ? `${fifteens.length} slots offered, none of them inside 10:00-10:45`
+        : `offered ${insideBooked.map((s) => istTime(s.startsAt)).join(", ")} inside a booked session`,
+    );
+
+    /*
+       2. AND THE GAP IS HONOURED AROUND AN EXISTING BOOKING, on both sides.
+       The breathing room belongs to the session that overran as much as to
+       the one about to start, so a slot ending exactly when a booking begins
+       is still too close.
+    */
+    const around = computeSlots({
+      ...day,
+      busy: [{ startsAt: at("11:00"), endsAt: at("11:45") }],
+      slotMinutes: 15,
+    });
+    const tooClose = around.filter((s) => {
+      const gapMs = SESSION_GAP_MINUTES * 60_000;
+      return (
+        s.startsAt.getTime() < at("11:45").getTime() + gapMs &&
+        at("11:00").getTime() < s.endsAt.getTime() + gapMs
+      );
+    });
+
+    check(
+      "no slot is offered inside the gap on either side of a booked session",
+      tooClose.length === 0,
+      `${around.length} slots, ${SESSION_GAP_MINUTES}-minute clearance kept on both sides`,
+    );
+
+    /*
+       3. THE GRID LANDS ON THE HOUR. Forty-five plus fifteen is sixty, which
+       is the reason fifteen was chosen over ten or twenty: an expert's day
+       reads 10:00, 11:00, 12:00 rather than 10:00, 10:45, 11:30. Not
+       decoration — it is the difference between a calendar and an arithmetic
+       sequence, and it is what somebody picking a time actually sees.
+    */
+    const standard = computeSlots({ ...day, busy: [] });
+    const starts = standard.map((s) => istTime(s.startsAt));
+    /*
+       On the hour IN IST, which is the clock the member reads. Epoch
+       milliseconds are UTC, and IST is UTC+5:30, so a slot at 10:00 IST sits
+       at :30 past the hour in UTC and a naive modulo on the raw timestamp
+       calls every correct slot wrong — which is what the first version of
+       this check did, while its own detail line printed 10:00, 11:00, 12:00.
+    */
+    const IST_OFFSET_MS = 5.5 * 60 * 60_000;
+    const offTheHour = standard.filter(
+      (s) => (s.startsAt.getTime() + IST_OFFSET_MS) % (60 * 60_000) !== 0,
+    );
+
+    check(
+      "a standard day is offered on the hour, with room between each session",
+      standard.length === 3 && offTheHour.length === 0,
+      `${standard.length} slots: ${starts.join(", ")}`,
+    );
+
+    /*
+       4. AND THE LAST SLOT OF A WINDOW SURVIVES. The window-end test measures
+       the session alone, deliberately: requiring room for the trailing gap
+       too would drop the final slot of every day, which costs an expert a
+       session a day to buy clearance after everybody has gone home.
+    */
+    const tight = computeSlots({
+      ...day,
+      /* 10:00-11:45: room for two 45-minute sessions plus one gap, and
+         fifteen minutes short of room for a second trailing gap. */
+      rules: [{ weekday: 1, startMinute: 600, endMinute: 705 }],
+      busy: [],
+    });
+
+    check(
+      "a gap that would run past the end of the day does not cost the last slot",
+      tight.length === 2 &&
+        istTime(tight[0].startsAt) === istTime(at("10:00")) &&
+        istTime(tight[1].startsAt) === istTime(at("11:00")),
+      `${tight.length} slots in a 105-minute window: ${tight.map((s) => istTime(s.startsAt)).join(", ")}`,
     );
   }
 

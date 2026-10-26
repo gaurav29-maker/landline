@@ -18,12 +18,32 @@
  * offered slots, the endsAt written on a booking, and the minimum
  * availability window an expert can save.
  *
- * computeSlots steps by exactly this with no gap, so slots are back to back.
- * That was right when a call was forty-five minutes by definition, and it is
- * the open question now that it is not — a call that runs over makes the next
- * caller wait. Changing it is a scheduling decision, not a wording one.
+ * It is no longer the whole story: see SESSION_GAP_MINUTES below, which is
+ * what computeSlots actually steps by.
  */
 export const SLOT_MINUTES = 45;
+
+/**
+ * Breathing room after every session, before the next one can start.
+ *
+ * WHY IT HAS TO EXIST. The call has no time limit — that is the promise the
+ * site makes and it is the right one. Slots used to be generated back to
+ * back, which was fine while a call was forty-five minutes by definition and
+ * became a collision the moment it was not: a session that runs ten minutes
+ * over makes the next caller wait, and both of them can see the clock.
+ *
+ * WHY FIFTEEN, and not ten or twenty. Forty-five plus fifteen is sixty, so
+ * the grid lands on the hour — 10:00, 11:00, 12:00 — instead of the 10:00,
+ * 10:45, 11:30 it produced before. That is a real difference to somebody
+ * choosing a time, and it means an expert's day reads like a calendar rather
+ * than an arithmetic sequence. Fifteen minutes is also about as long as a
+ * conversation sensibly overruns before it is a different conversation.
+ *
+ * It is one number and changing it is a scheduling decision, not a code
+ * change: the grid, the spacing and the clearance around existing bookings
+ * all come from here.
+ */
+export const SESSION_GAP_MINUTES = 15;
 export const DEFAULT_HORIZON_DAYS = 21;
 /** Don't offer a slot that starts sooner than this; nobody can prepare in ten minutes. */
 export const DEFAULT_LEAD_MINUTES = 120;
@@ -162,28 +182,52 @@ export function computeSlots(opts: {
   timezone: string;
   rules: AvailabilityRule[];
   exceptions: AvailabilityException[];
-  /** Start times already taken by held/confirmed/completed bookings. */
-  takenStarts: Date[];
+  /**
+     Sessions already on the calendar, as INTERVALS rather than start times.
+
+     It used to be a list of starts, compared for equality. That is only
+     correct while every booking sits on the same grid as the slots being
+     generated, and it has not been: an expert can sell a 15-minute product
+     alongside a 45-minute one, so the grid is generated at the requested
+     product's length. A 45-minute session booked at 10:00 runs to 10:45, and
+     the 15-minute grid offered 10:15 and 10:30 inside it — measured, not
+     suspected. Neither start matched, so neither was excluded, and the unique
+     index on (expert, startsAt) does not catch it either because the starts
+     genuinely differ.
+  */
+  busy: { startsAt: Date; endsAt: Date }[];
   from: Date;
   to: Date;
   now?: Date;
   slotMinutes?: number;
   leadMinutes?: number;
+  gapMinutes?: number;
 }): Slot[] {
   const {
     timezone,
     rules,
     exceptions,
-    takenStarts,
+    busy,
     from,
     to,
     now = new Date(),
     slotMinutes = SLOT_MINUTES,
     leadMinutes = DEFAULT_LEAD_MINUTES,
+    gapMinutes = SESSION_GAP_MINUTES,
   } = opts;
 
-  const taken = new Set(takenStarts.map((d) => d.getTime()));
+  const gapMs = gapMinutes * 60_000;
+  const occupied = busy.map((b) => [b.startsAt.getTime(), b.endsAt.getTime()] as const);
   const earliest = now.getTime() + leadMinutes * 60_000;
+
+  /*
+     Does this candidate touch a session that already exists, allowing for the
+     gap on BOTH sides of it? The gap belongs to the session that ran over as
+     much as to the one about to start, so it is added to each end rather than
+     to one.
+  */
+  const clashes = (startMs: number, endMs: number) =>
+    occupied.some(([bs, be]) => startMs < be + gapMs && bs < endMs + gapMs);
 
   const slots: Slot[] = [];
   let cursor = zonedDateString(from, timezone);
@@ -192,12 +236,20 @@ export function computeSlots(opts: {
   // Bounded by the horizon so a bad range can't spin.
   for (let guard = 0; cursor <= lastDate && guard < 400; guard++, cursor = addDays(cursor, 1)) {
     for (const window of windowsForDate(cursor, rules, exceptions)) {
-      for (let m = window.start; m + slotMinutes <= window.end; m += slotMinutes) {
+      /*
+         Stepped by the session PLUS the gap, so the next slot starts after
+         the breathing room rather than on top of it. The window-end test
+         still measures the session alone: a gap that runs past the end of
+         an expert's day costs nobody anything, and requiring room for it
+         would silently drop the last slot of every window.
+      */
+      for (let m = window.start; m + slotMinutes <= window.end; m += slotMinutes + gapMinutes) {
         const startsAt = zonedToInstant(cursor, m, timezone);
+        const endsAt = new Date(startsAt.getTime() + slotMinutes * 60_000);
         if (startsAt.getTime() < earliest) continue;
         if (startsAt < from || startsAt > to) continue;
-        if (taken.has(startsAt.getTime())) continue;
-        slots.push({ startsAt, endsAt: new Date(startsAt.getTime() + slotMinutes * 60_000) });
+        if (clashes(startsAt.getTime(), endsAt.getTime())) continue;
+        slots.push({ startsAt, endsAt });
       }
     }
   }
