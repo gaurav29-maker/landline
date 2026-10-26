@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { Resend } from "resend";
 import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
@@ -9,12 +11,124 @@ import { BRAND_BLUE, BRAND_TAGLINE } from "@/lib/brand";
 type Kind = (typeof notifications.kind.enumValues)[number];
 
 let cached: Resend | null = null;
-function resend(): Resend {
-  if (cached) return cached;
-  const key = process.env.RESEND_API_KEY;
-  if (!key) throw new Error("RESEND_API_KEY is not set");
-  cached = new Resend(key);
+function resend(key: string): Resend {
+  if (!cached) cached = new Resend(key);
   return cached;
+}
+
+/** Where the message says it is from. Resend will only send as a domain you
+    have verified with them; the default is their sandbox sender, which
+    delivers only to the address that owns the Resend account. */
+function sender(): string {
+  return process.env.EMAIL_FROM ?? "Landline <onboarding@resend.dev>";
+}
+
+
+/**
+ * Which of the three things happens to a message, as a pure decision.
+ *
+ * Separated out so the safety property can be asserted directly rather than
+ * reasoned about: that a production server with no key REFUSES, instead of
+ * printing a booking confirmation to a log nobody reads. Testing that by
+ * setting NODE_ENV inside the suite would change it for every check that
+ * follows; asking the function is free.
+ */
+export type EmailTransport = "resend" | "console" | "refuse";
+
+export function transportFor(
+  key: string | undefined,
+  nodeEnv: string | undefined,
+): EmailTransport {
+  if (key && key.trim() !== "") return "resend";
+  return nodeEnv === "production" ? "refuse" : "console";
+}
+
+/**
+ * Hand one message to the provider, or to the console.
+ *
+ * THE SHAPE IS LIFTED FROM lib/sms DELIBERATELY. That module already decided
+ * how this project behaves with no provider configured: a development server
+ * prints the message and the flow completes end to end, production with
+ * nothing configured throws rather than silently dropping it. Email had no
+ * such path — every send threw the moment RESEND_API_KEY was missing, which
+ * is the state this site has been in for its whole life.
+ *
+ * WHAT THAT COST, concretely, and why this is not a convenience. sendOnce
+ * claims a notification row, sends, and DELETES the row when the send throws.
+ * With no key every send throws, so no notification row ever survived, so
+ * nothing about reminders, nudges or follow-ups could be exercised at all —
+ * a test could only ever prove that no email went out, which it already knew.
+ * One feature this session had to grow a pure function to be testable around
+ * that. This removes the reason.
+ *
+ * GUARDED BY NODE_ENV, not by a flag. A flag can be left on, and an email
+ * that quietly goes to a console in production is a booking confirmation
+ * nobody receives.
+ */
+async function deliver(message: { to: string; subject: string; html: string }): Promise<void> {
+  const key = process.env.RESEND_API_KEY?.trim();
+  const transport = transportFor(key, process.env.NODE_ENV);
+
+  if (transport === "refuse") {
+    throw new Error(
+      "RESEND_API_KEY is not set, so no email can be delivered — no booking " +
+        "confirmation, no sign-in link, no receipt. Set it, or take the site down.",
+    );
+  }
+
+  if (transport === "console") {
+
+    /*
+       Development only. The links are what is printed, because they are what
+       a person needs to carry a flow forward on a laptop: the sign-in link,
+       the intake form, the calendar file. The whole rendered message goes to
+       a file so a template can be opened and looked at, under the OS temp
+       directory rather than the repository — this project lives inside
+       OneDrive, and a stream of files appearing in the working tree is the
+       kind of thing that syncs badly and shows up in `git status`.
+    */
+    const links = [...new Set([...message.html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]))]
+      .filter((u) => u.startsWith("http"))
+      .slice(0, 4);
+
+    /*
+       The rendered message, but only when somebody asks for it.
+
+       It used to write one file per send unconditionally, which meant the
+       verification suite produced a few dozen of them and did a synchronous
+       disk write inside every email path. Writing files as a side effect of
+       sending is the wrong default: it is a thing you want when you are
+       looking at a template and noise every other time. Set
+       EMAIL_PREVIEW_DIR to a folder and they come back.
+    */
+    let saved = "";
+    const previewDir = process.env.EMAIL_PREVIEW_DIR?.trim();
+    if (previewDir) {
+      try {
+        fs.mkdirSync(previewDir, { recursive: true });
+        const stem = message.subject.slice(0, 40).replace(/[^a-zA-Z0-9]+/g, "-");
+        saved = path.join(previewDir, `${Date.now()}-${stem}.html`);
+        fs.writeFileSync(saved, message.html, "utf8");
+      } catch {
+        /* Never let writing a convenience file break a send. */
+        saved = "";
+      }
+    }
+
+    const lines = [`[email] to ${message.to} — ${message.subject}`];
+    for (const u of links) lines.push(`[email] ${u}`);
+    if (saved) lines.push(`[email] ${saved}`);
+    console.info(lines.join("\n"));
+    return;
+  }
+
+  await resend(key as string).emails.send({
+    from: sender(),
+    replyTo: process.env.EMAIL_REPLY_TO,
+    to: message.to,
+    subject: message.subject,
+    html: message.html,
+  });
 }
 
 /**
@@ -38,13 +152,7 @@ export async function sendOnce(
   if (claimed.length === 0) return "already-sent";
 
   try {
-    await resend().emails.send({
-      from: process.env.EMAIL_FROM ?? "Landline <onboarding@resend.dev>",
-      replyTo: process.env.EMAIL_REPLY_TO,
-      to: message.to,
-      subject: message.subject,
-      html: message.html,
-    });
+    await deliver(message);
     return "sent";
   } catch (err) {
     await db
@@ -63,13 +171,7 @@ export async function sendOnce(
  * redelivered capture never reaches this twice.
  */
 export async function sendRaw(message: { to: string; subject: string; html: string }) {
-  await resend().emails.send({
-    from: process.env.EMAIL_FROM ?? "Landline <onboarding@resend.dev>",
-    replyTo: process.env.EMAIL_REPLY_TO,
-    to: message.to,
-    subject: message.subject,
-    html: message.html,
-  });
+  await deliver(message);
 }
 
 const DISCLAIMER = `

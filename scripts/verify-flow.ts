@@ -53,6 +53,12 @@ import {
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { eraseAccount, erasurePreview, keptUntil } from "../lib/erasure";
 import { sessionIcs } from "../lib/ics";
+import {
+  customerConfirmation,
+  expertLinkMissing,
+  reminder,
+  transportFor,
+} from "../lib/email";
 import { computeSlots, SESSION_GAP_MINUTES } from "../lib/slots";
 import { istTime } from "../lib/format";
 import { linkNudgeDue } from "../lib/cron";
@@ -1905,9 +1911,26 @@ async function main() {
      worth catching, not the sending itself.
   */
   {
-    const senders = [...fs.readFileSync("lib/email.ts", "utf8").matchAll(/export function (\w+)/g)].map(
-      (m) => m[1],
-    );
+    /*
+       A SENDER, not merely an export. This matched every `export function` in
+       the file, which was true while every export was a template and stopped
+       being true the moment lib/email grew transportFor — a pure decision
+       about where a message goes, which the check then reported as an
+       unapproved marketing sender.
+
+       Narrowed to what a template actually IS: a function that RETURNS a
+       message with a subject on it. Slicing between exports was the first
+       attempt and it does not work — the non-exported deliver() sits between
+       transportFor and the next export and passes `subject:` to the
+       provider, so the slice matched anyway. The returned shape is the thing
+       that distinguishes a template from a helper.
+    */
+    const emailSrc = fs.readFileSync("lib/email.ts", "utf8");
+    const senders = [
+      ...emailSrc.matchAll(
+        /export function (\w+)[\s\S]{0,2000}?return \{\s*\n?\s*subject:/g,
+      ),
+    ].map((m) => m[1]);
     const TRANSACTIONAL = new Set([
       "customerConfirmation",
       "expertNotification",
@@ -4855,6 +4878,161 @@ async function main() {
         istTime(tight[0].startsAt) === istTime(at("10:00")) &&
         istTime(tight[1].startsAt) === istTime(at("11:00")),
       `${tight.length} slots in a 105-minute window: ${tight.map((s) => istTime(s.startsAt)).join(", ")}`,
+    );
+  }
+
+
+  /*
+     ================= EMAIL, WITH AND WITHOUT A KEY =================
+
+     RESEND_API_KEY has never been set, and until now every send threw the
+     moment it was missing. That was not only inconvenient: sendOnce claims a
+     notification row, sends, and DELETES the row when the send throws, so no
+     notification row ever survived in development and nothing about
+     reminders, nudges or receipts could be exercised at all.
+
+     lib/sms had already decided how this project behaves with no provider —
+     print on a laptop, refuse in production — and email now does the same.
+     These check the decision, the safety property, and the thing that was
+     previously untestable.
+  */
+  {
+    /*
+       1. THE SAFETY PROPERTY. The whole value of a console fallback rests on
+       it never happening in production: an email that quietly goes to a log
+       on a live server is a booking confirmation nobody receives, and it
+       fails silently, which is the worst way for this to fail.
+
+       Asked of the pure function rather than by setting NODE_ENV, which
+       would change it for every check that runs after this one.
+    */
+    const transports: [string | undefined, string | undefined, string][] = [
+      ["re_live_abc123", "production", "resend"],
+      ["re_test_abc123", "development", "resend"],
+      /* No key: print on a laptop, refuse on a live server. */
+      [undefined, "development", "console"],
+      [undefined, "test", "console"],
+      [undefined, undefined, "console"],
+      [undefined, "production", "refuse"],
+      /* An empty or whitespace key is not a key. A blank line in .env.local
+         is the likeliest way this is got wrong, and it must not read as
+         configured. */
+      ["", "production", "refuse"],
+      ["   ", "production", "refuse"],
+      ["", "development", "console"],
+    ];
+    const wrongTransport = transports.filter(([k, e, want]) => transportFor(k, e) !== want);
+
+    check(
+      "with no mail key a laptop prints and a production server refuses",
+      wrongTransport.length === 0,
+      wrongTransport.length === 0
+        ? `${transports.length} combinations, including blank and whitespace keys`
+        : wrongTransport
+            .map(([k, e, want]) => `key=${JSON.stringify(k)} env=${e} wanted ${want}`)
+            .join(", "),
+    );
+
+    /*
+       2. AND NOW A NOTIFICATION ROW SURVIVES, which is the thing that could
+       not be tested before. sendOnce claims the row, delivers, and keeps the
+       claim — so the unique index on (booking_id, kind) is what stops a
+       second cron pass sending the same message twice.
+
+       This is the check I wanted while building the expert link nudge and
+       could not write: with every send throwing, the claim was always rolled
+       back and there was never a row to count.
+    */
+    const [mailExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.slug, EXPERT))
+      .limit(1);
+    const [mailCustomer] = await db
+      .insert(customers)
+      .values({ name: "Vikram Iyer", email: `mail-${Date.now()}@example.in` })
+      .returning();
+
+    const [linkless] = await db
+      .insert(bookings)
+      .values({
+        expertId: mailExpert.id,
+        customerId: mailCustomer.id,
+        /* Inside the 23-25h window the day-before nudge fires in. */
+        startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000 + 45 * 60_000),
+        status: "confirmed",
+        amountPaise: SINGLE_CALL_PAISE,
+        meetingUrl: null,
+      })
+      .returning();
+
+    for (let pass = 0; pass < 2; pass++) {
+      await fetch(`${BASE}/api/cron/reminders`, {
+        headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+      });
+    }
+
+    const kinds = await db
+      .select({ kind: notifications.kind })
+      .from(notifications)
+      .where(eq(notifications.bookingId, linkless.id));
+
+    const nudges = kinds.filter((k) => k.kind === "expert_link_missing").length;
+    const reminders = kinds.filter((k) => k.kind === "reminder_24h").length;
+
+    check(
+      "a delivered message leaves its claim behind, so two cron passes send one of each",
+      nudges === 1 && reminders === 1,
+      `after two passes: ${nudges} expert nudge, ${reminders} reminder, ${kinds.length} rows total`,
+    );
+
+    /*
+       3. AND EVERY TEMPLATE RENDERS. Eleven senders, each a tagged template
+       with interpolation in it, and nothing had ever rendered one: an
+       unresolved ${...} would have shipped as literal text in a customer's
+       inbox. Checked for the two failures that are invisible until somebody
+       receives one — an escaped interpolation, and an empty body.
+    */
+    const rendered = [
+      customerConfirmation({
+        customerName: "Anita",
+        expertName: "Gaurav Khona",
+        startsAt: new Date(),
+        amountPaise: SINGLE_CALL_PAISE,
+        bookingId: linkless.id,
+        meetingUrl: null,
+      }),
+      reminder({
+        customerName: "Anita",
+        expertName: "Gaurav Khona",
+        startsAt: new Date(),
+        meetingUrl: null,
+        soon: false,
+        bookingId: linkless.id,
+      }),
+      expertLinkMissing({
+        expertName: "Gaurav Khona",
+        customerName: "Anita",
+        startsAt: new Date(),
+        urgent: true,
+      }),
+    ];
+
+    const broken = rendered.filter(
+      (m) =>
+        m.html.includes("${") ||
+        m.subject.includes("${") ||
+        m.html.trim().length < 200 ||
+        m.subject.trim() === "",
+    );
+
+    check(
+      "every email renders with nothing left uninterpolated",
+      broken.length === 0,
+      broken.length === 0
+        ? `${rendered.length} templates rendered, subjects and bodies complete`
+        : `${broken.length} template(s) with an unresolved placeholder or an empty body`,
     );
   }
 

@@ -141,13 +141,55 @@ exception, and read back with a retry.
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay dashboard → Settings → API Keys. Must start `rzp_test_`. |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Same value as `RAZORPAY_KEY_ID`. |
 | `RAZORPAY_WEBHOOK_SECRET` | Razorpay dashboard → Settings → Webhooks. **Not** the key secret. |
-| `RESEND_API_KEY` | Resend dashboard. Point `EMAIL_FROM` at your own inbox in phase 1. |
+| `RESEND_API_KEY` | Resend dashboard — see **Email** below. Unset in development: every message prints to the server console instead, and the flow completes. |
+| `EMAIL_PREVIEW_DIR` | Optional. A folder to drop each rendered email into as `.html`, for looking at a template. Off unless set. |
 | `TOKEN_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `SMS_PROVIDER` / `SMS_API_KEY` / `SMS_SENDER_ID` / `SMS_TEMPLATE_SIGNIN` | Your SMS provider, **after** DLT registration (see below). Leave unset in development: the code is printed to the server console. |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare dashboard → Turnstile → Add site. Optional; set both or neither. |
 | `CRON_SECRET` | Any long random string. Guards the Cron endpoints. |
 | _(no variable)_ | The ops console uses operator accounts, not a password in the environment. See **Who did it** below. |
 | `EXPERT_PAYOUT_PAISE` | What an expert is paid per session. Only used to estimate margin in `/ops/members`; defaults to ₹2,200, which is a **placeholder**. |
+
+### Email
+
+Eleven transactional messages: booking confirmations to both sides, the
+intake nudge, reminders at 24 hours and one, the expert link chase, sign-in
+links, the email-change confirmation, a membership welcome and a refund
+apology. There is no marketing sender and a test refuses one — every export
+in `lib/email.ts` that returns a message has to be on a named list.
+
+**With no key, a development server prints instead of sending**, the same way
+`lib/sms` already did, so every flow completes on a laptop:
+
+```
+[email] to anita@example.in — Your Landline call with Gaurav Khona is confirmed
+[email] http://localhost:3000/booking/…/intake?t=…
+[email] http://localhost:3000/booking/…/calendar?t=…
+```
+
+The links are printed because they are the part you need to carry a flow
+forward. Set `EMAIL_PREVIEW_DIR` to a folder if you also want each rendered
+message written out as `.html` to look at.
+
+**A production server with no key refuses to start a send** rather than
+printing a booking confirmation into a log nobody reads. That is guarded on
+`NODE_ENV`, not on a flag somebody can leave switched on.
+
+**What you have to do before anything is actually delivered**, none of which
+is code:
+
+1. Create a Resend account and add the domain you will send from.
+2. Add the DNS records Resend gives you — an MX and TXT pair for the sending
+   subdomain, a DKIM TXT record, and a DMARC record. Delivery to Gmail and
+   Outlook is poor to nonexistent without DKIM and DMARC.
+3. Wait for Resend to show the domain as verified.
+4. Set `RESEND_API_KEY`, and set `EMAIL_FROM` to an address on that verified
+   domain — for example `Landline <hello@landline.in>`.
+5. Optionally set `EMAIL_REPLY_TO` to an inbox a person actually reads.
+
+Until step 4, `EMAIL_FROM` falls back to Resend's sandbox sender, which only
+delivers to the address that owns the Resend account. That is fine for a
+first test and is not a launch state.
 
 ### Phone sign-in, and the paperwork in front of it
 
@@ -431,7 +473,7 @@ npm run dev
 npm run verify
 ```
 
-165 checks against a real database and a running server. They cover the parts
+168 checks against a real database and a running server. They cover the parts
 that need neither Razorpay nor Resend, and several of them exist because the
 thing they check is a claim rather than an observation:
 

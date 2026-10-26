@@ -13,7 +13,7 @@ can stop a launch, and almost none of it is code.
 | | What | Where | Why it blocks |
 |---|---|---|---|
 | 1.1 | **Razorpay keys** | `RAZORPAY_KEY_ID` unset | No money can be taken. 2 references in the code, both live. |
-| 1.2 | **Email sending key** | `RESEND_API_KEY` unset | No booking confirmation, no sign-in link, no receipt. |
+| 1.2 | **Email sending key** | `RESEND_API_KEY` unset | Still nothing is delivered, but development no longer needs it: messages print to the console and every flow completes. What is left is yours — a Resend account, the domain added, and its DKIM and DMARC records in DNS, then the key and an `EMAIL_FROM` on that domain. README has the steps. Without DKIM and DMARC, Gmail and Outlook will not take the mail. |
 | 1.3 | **SMS provider + TRAI DLT** | `SMS_PROVIDER`, `SMS_API_KEY`, `SMS_SENDER_ID` unset | Phone sign-in is the front door and it cannot send a code. DLT registration is a regulator step with a lead time — start it before you need it. |
 | 1.4 | **The 21 legal blanks** | 9 in `app/legal/privacy`, 7 in `app/legal/terms`, 5 in `app/legal/refunds` | Registered entity name, CIN, address, GSTIN, grievance officer, retention periods, the cancellation percentage. They render as visible `[bracketed]` placeholders today — a visitor can read them. |
 | 1.5 | **Trade mark number** | `lib/brand.ts:66` | `TRADEMARK_REGISTERED` is already `true`, so ® is on every surface. Under s.107 of the Trade Marks Act 1999, claiming registration you do not hold is an offence. Write the number and class into that comment, or set the flag back to `false`. |
@@ -167,6 +167,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 165 checks pass against a database
+- **Work the tests already cover.** 168 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.
