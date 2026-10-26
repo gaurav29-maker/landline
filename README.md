@@ -209,6 +209,47 @@ confirmation. Pass an address to send a real one:
 npm run check:email you@example.in
 ```
 
+### Setting up SMS
+
+Phone is the front door, so this is the one that locks everybody out if it is
+wrong. Four separate things have to agree and only the provider can tell you
+which one does not, so there is a preflight:
+
+```bash
+npm run check:sms                what is configured, and the exact template to register
+npm run check:sms 9876543210     the same, then send a real code to that handset
+```
+
+**With no provider, a development server prints the code to its own console**
+and sign-in completes end to end. Production with none throws rather than
+leaving somebody at a form that never answers.
+
+**The order, and the first step takes weeks** — start it before you need it:
+
+1. **Register as a Principal Entity** on a telecom DLT portal. This needs the
+   registered business — PAN, GST, incorporation documents — so it cannot
+   begin before the entity exists. That makes it blocked on the same decision
+   as the legal blanks.
+2. **Register a Header** (sender id) against that entity. Six alphanumeric
+   characters for a transactional header.
+3. **Get the content template approved** against that header. `npm run
+   check:sms` prints the exact text to register, generated from the function
+   that sends it rather than copied here, so the two cannot drift.
+4. **On MSG91**: map your DLT entity id to the header, then create a flow from
+   the approved template. That gives you the flow id.
+5. Set `SMS_PROVIDER=msg91`, `SMS_API_KEY`, `SMS_SENDER_ID` and
+   `SMS_TEMPLATE_SIGNIN`, then run the preflight with your own number.
+
+**Name the flow variables `VAR1` and `VAR2`.** The code fills `VAR1` with the
+digits and `VAR2` with the minutes; any other names send a message with empty
+slots, which MSG91 accepts and nobody can read.
+
+**MSG91 answers a refusal with HTTP 200 and an error body.** Measured, not
+assumed: a deliberately wrong flow id came back `200` with "The provided flow
+ID or template ID is invalid". `lib/sms` treats anything whose body is not
+`type: success` as a failure for exactly this reason, and surfaces the
+provider's own message because it names the cause.
+
 ### Phone sign-in, and the paperwork in front of it
 
 Members sign in with their mobile number and a six-digit code. The whole

@@ -16,7 +16,8 @@
     "db:local": "tsx scripts/local-db.ts",
     "db:reset": "tsx scripts/db-reset.ts",
     "verify": "tsx scripts/verify-flow.ts",
-    "check:email": "tsx scripts/check-email.ts"
+    "check:email": "tsx scripts/check-email.ts",
+    "check:sms": "tsx scripts/check-sms.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.36.4",

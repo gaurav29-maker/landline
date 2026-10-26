@@ -995,3 +995,48 @@ export const supportMessages = pgTable(
     index("support_messages_customer_idx").on(t.customerId),
   ],
 );
+
+/**
+ * What a member says they hold, as a series.
+ *
+ * REPLACES THE INTAKE FORM, and is a different thing in the one way that
+ * matters. The intake was a gate: a form per booking, nudged by email, filled
+ * before a call and purged ninety days after it. This is a portfolio that
+ * lives on the account. The member keeps it, an expert they have booked can
+ * see it, and nobody is chased to fill anything in.
+ *
+ * SNAPSHOTS, NOT ONE EDITABLE ROW, and that is the whole reason The Log works
+ * again. The Log plots first declared position against latest; successive
+ * versions of a portfolio ARE that series. One mutable row would have shown
+ * the current state and thrown away the trajectory, which is the part nobody
+ * else shows a retail trader.
+ *
+ * NOT CASCADED FROM customers, deliberately. Erasure anonymises the customer
+ * row rather than deleting it — four financial tables reference it — so a
+ * cascade would never fire and this would quietly survive a deletion. It is
+ * deleted explicitly in lib/erasure, and the suite checks that it is.
+ *
+ * NO AUTOMATIC PURGE, which is a change of posture from the intake's ninety
+ * days and is deliberate rather than an oversight. That clock existed because
+ * an intake belonged to one past call. A portfolio belongs to the member: it
+ * is theirs, they maintain it, they can clear it in one click, and it is
+ * destroyed when they delete their account. Expiring it on a timer would
+ * delete something somebody is actively keeping.
+ */
+export const portfolioSnapshots = pgTable(
+  "portfolio_snapshots",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customers.id),
+    /** [{ label, pct }] — the member's own labels and their own estimates. */
+    holdings: jsonb("holdings").notNull(),
+    /** Their own words beside the numbers: goals, worries, what to look at. */
+    note: text("note"),
+    capturedAt: timestamp("captured_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Set when the member clears it, so the series keeps its shape. */
+    clearedAt: timestamp("cleared_at", { withTimezone: true }),
+  },
+  (t) => [index("portfolio_customer_idx").on(t.customerId, t.capturedAt)],
+);
