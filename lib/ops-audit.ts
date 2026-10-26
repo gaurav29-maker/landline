@@ -47,7 +47,7 @@ export async function requireOperator(): Promise<Operator> {
 }
 
 /** What kind of thing an event is about. */
-export type OpsEntity = "booking" | "expert" | "application" | "payout";
+export type OpsEntity = "booking" | "expert" | "application" | "payout" | "support";
 
 type Entry = {
   /** Dotted and stable, e.g. "booking.refund". Read by people, so read well. */

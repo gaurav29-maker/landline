@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { defaultProduct, ensureDefaultProduct, syncExpertFromProducts } from "@/lib/products";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { bookings, bundles, expertApplications, experts, expertProducts, payments, expertPayouts } from "@/lib/db/schema";
+import { bookings, bundles, expertApplications, experts, expertProducts, payments, expertPayouts, supportMessages } from "@/lib/db/schema";
 import { OPS_COOKIE } from "@/lib/ops-auth";
 import { audited, requireOperator } from "@/lib/ops-audit";
 import { refundPayment } from "@/lib/razorpay";
@@ -501,4 +501,31 @@ export async function markPayoutsPaid(formData: FormData) {
   );
 
   revalidatePath("/ops/payouts");
+}
+
+/**
+ * Somebody has dealt with a member's message.
+ *
+ * Audited like every other ops mutation — "answered" is a claim about a
+ * person having done something, and the one table that records who did what
+ * should carry it. Stamping a time rather than deleting the row: a message
+ * that has been answered is still the record of what was asked.
+ */
+export async function markSupportHandled(formData: FormData) {
+  const operator = await requireOperator();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("A message id is required");
+
+  await audited(
+    operator,
+    { action: "support.handled", entity: "support", entityId: id },
+    async (tx) => {
+      await tx
+        .update(supportMessages)
+        .set({ handledAt: new Date() })
+        .where(and(eq(supportMessages.id, id), isNull(supportMessages.handledAt)));
+    },
+  );
+
+  revalidatePath("/ops/support");
 }

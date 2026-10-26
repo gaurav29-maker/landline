@@ -19,7 +19,7 @@ export default function MemberBar({
   current,
 }: {
   name?: string;
-  current?: "console" | "receipts" | "profile";
+  current?: "console" | "receipts" | "profile" | "help";
 }) {
   return (
     <div className="os-bar">
@@ -30,6 +30,14 @@ export default function MemberBar({
         {current !== "console" ? <Link href="/member">Your console</Link> : null}
         {current !== "receipts" ? <Link href="/member/receipts">Receipts</Link> : null}
         {current !== "profile" ? <Link href="/member/profile">Your details</Link> : null}
+        {/*
+          Last before the way out, and on every page, because the moment
+          somebody needs it is the moment they are already somewhere else and
+          something has gone wrong. There was no contact surface anywhere in
+          the console before this: the address in the site footer was the
+          whole of it.
+        */}
+        {current !== "help" ? <Link href="/member/help">Help</Link> : null}
         <form action={signOutMember}>
           <button className="ops-signout" type="submit">
             Sign out

@@ -26,6 +26,26 @@ export function verifyBookingToken(bookingId: string, token: string | null | und
 }
 
 export function intakeUrl(bookingId: string): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return `${base}/booking/${bookingId}/intake?t=${signBookingToken(bookingId)}`;
+  return `${siteUrl()}/booking/${bookingId}/intake?t=${signBookingToken(bookingId)}`;
+}
+
+/**
+ * The calendar file, as a link that works from an inbox.
+ *
+ * Signed like the intake link and for the same reason: a mail client sends no
+ * cookies, so the route has no session to read and the token is the only
+ * proof the clicker owns this booking.
+ */
+export function calendarUrl(bookingId: string): string {
+  return `${siteUrl()}/booking/${bookingId}/calendar?t=${signBookingToken(bookingId)}`;
+}
+
+/**
+ * Where this site lives, for links that have to work from an inbox.
+ *
+ * Exported because emails need it too, and one fallback is better than each
+ * template carrying its own guess about the port.
+ */
+export function siteUrl(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }

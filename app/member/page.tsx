@@ -233,8 +233,31 @@ export default async function MemberConsole({
                         Join
                       </a>
                     ) : null}
+                    {/*
+                      The most reflexive thing anybody does with an
+                      appointment, and until now the one thing the site did
+                      not offer: the time was written in an email and the
+                      member was left to copy it across by hand.
+
+                      Not behind the signed token here, because the console
+                      already knows whose booking this is — the token exists
+                      for the copy of this link that goes in an email, where
+                      there is no session to read.
+                    */}
+                    <a className="ops-link" href={`/booking/${b.id}/calendar`}>
+                      Add to calendar
+                    </a>
                     <a className="ops-link" href={`/booking/${b.id}`}>
                       Details
+                    </a>
+                    {/*
+                      Carried per session rather than left to a Help page the
+                      member has to find and then describe their way back
+                      from: the booking is preselected on the form, so a
+                      message about a session arrives attached to it.
+                    */}
+                    <a className="ops-link" href={`/member/help?booking=${b.id}`}>
+                      Something wrong?
                     </a>
                   </span>
                 </div>

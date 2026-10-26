@@ -24,6 +24,8 @@ import {
   expertSessions,
   expertProducts,
   accountDeletions,
+  supportMessages,
+  notifications,
 } from "../lib/db/schema";
 import {
   startSession,
@@ -50,6 +52,9 @@ import {
 } from "../lib/expert-session";
 import { mintPhoneChange, verifyPhoneChange } from "../lib/member-auth";
 import { eraseAccount, erasurePreview, keptUntil } from "../lib/erasure";
+import { sessionIcs } from "../lib/ics";
+import { linkNudgeDue } from "../lib/cron";
+import { signBookingToken } from "../lib/tokens";
 import { issueCodeTo } from "../lib/member-code";
 import { mintSession as mintOpsSession, sessionOperatorId } from "../lib/ops-auth";
 import { hashPassword, passwordMatches } from "../lib/ops-password";
@@ -296,6 +301,8 @@ async function main() {
      account_deletions_customer_id_customers_id_fk before a single check.
   */
   await db.delete(accountDeletions);
+  /* Also not cascaded from bookings in a way that survives this order. */
+  await db.delete(supportMessages);
   await db.delete(customers);
 
   const open = await slots();
@@ -1910,6 +1917,11 @@ async function main() {
       "expertSignInLink",
       "membershipWelcome",
       "refundApology",
+      /* To the EXPERT, about one booking of theirs: a confirmed session that
+         is approaching with no joining link on it. Operational, not
+         marketing — but it is a new sender, which is exactly what this
+         check exists to make somebody justify. */
+      "expertLinkMissing",
     ]);
     const unexpected = senders.filter((n) => !TRANSACTIONAL.has(n));
     check(
@@ -4425,6 +4437,285 @@ async function main() {
         ? "the tint group was not found at all; was the selector renamed?"
         : /* Report the count, never assert the conclusion. */
           `${tintGroup.length} tinted selectors, ${untinted.length} of them still tinting .danger`,
+    );
+  }
+
+
+  /*
+     ================= THE THREE HOLES A FIRST CUSTOMER FALLS INTO =================
+
+     Nothing here is a feature nobody asked for. Each one is a way a paid
+     session fails to happen: the member never put it in their calendar, the
+     expert never pasted a joining link, or something went wrong and there was
+     nowhere to say so.
+  */
+  {
+    const [holeExpert] = await db
+      .select()
+      .from(experts)
+      .where(eq(experts.slug, EXPERT))
+      .limit(1);
+
+    const [holeCustomer] = await db
+      .insert(customers)
+      .values({ name: "Rohit Shenoy", email: `holes-${Date.now()}@example.in` })
+      .returning();
+
+    const soon = new Date(Date.now() + 2 * 86_400_000);
+    const [withLink] = await db
+      .insert(bookings)
+      .values({
+        expertId: holeExpert.id,
+        customerId: holeCustomer.id,
+        startsAt: soon,
+        endsAt: new Date(soon.getTime() + 45 * 60_000),
+        status: "confirmed",
+        amountPaise: SINGLE_CALL_PAISE,
+        meetingUrl: "https://meet.example.com/abc-defg-hij",
+        rescheduleCount: 2,
+      })
+      .returning();
+
+    /*
+       1. THE CALENDAR FILE IS VALID ICS, not merely a file with the right
+       extension. Every assertion below is a rule a calendar silently refuses
+       on: CRLF line endings (RFC 5545 section 3.1), UTC stamps so nobody has
+       to agree with us about IST, and a UID stable per booking so a second
+       download UPDATES the event rather than sitting beside it.
+    */
+    const icsBody = sessionIcs({
+      bookingId: withLink.id,
+      expertName: holeExpert.displayName,
+      startsAt: withLink.startsAt,
+      endsAt: withLink.endsAt,
+      meetingUrl: withLink.meetingUrl,
+      sequence: withLink.rescheduleCount,
+      now: new Date(Date.UTC(2026, 9, 26, 5, 0, 0)),
+    });
+
+    const CRLF = String.fromCharCode(13) + String.fromCharCode(10);
+    const icsLines = icsBody.split(CRLF);
+    const bareNewlines = icsBody.split(String.fromCharCode(10)).length - 1;
+
+    check(
+      "the calendar file is valid ICS: CRLF, UTC stamps, and a UID per booking",
+      icsLines[0] === "BEGIN:VCALENDAR" &&
+        icsBody.indexOf("END:VCALENDAR") > 0 &&
+        /* Every LF is part of a CRLF: no bare newline anywhere. */
+        bareNewlines === icsLines.length - 1 &&
+        icsBody.includes(`UID:booking-${withLink.id}@landline.in`) &&
+        icsBody.includes("DTSTAMP:20261026T050000Z") &&
+        /* A moved booking is a newer version of itself, not a second event. */
+        icsBody.includes("SEQUENCE:2") &&
+        icsBody.includes("METHOD:PUBLISH"),
+      `${icsLines.length} CRLF lines, UID per booking, SEQUENCE 2`,
+    );
+
+    /*
+       2. AND IT FOLDS AT 75 OCTETS. The rule is bytes, not characters, which
+       is the part that is easy to get wrong and impossible to see: a long
+       description passes a character-counting fold and is rejected by a
+       stricter client. Checked with a name long enough to force the fold.
+    */
+    const longIcs = sessionIcs({
+      bookingId: withLink.id,
+      expertName: "Padmanabhan Venkataraghavan Balasubramanian Krishnamurthy the Third",
+      startsAt: withLink.startsAt,
+      endsAt: withLink.endsAt,
+      meetingUrl: "https://meet.example.com/a-very-long-room-name-that-keeps-going-and-going",
+    });
+    const overLong = longIcs
+      .split(CRLF)
+      .filter((l) => Buffer.byteLength(l, "utf8") > 75);
+
+    check(
+      "no ICS line exceeds 75 octets, folded on bytes rather than characters",
+      overLong.length === 0 && longIcs.includes(CRLF + " "),
+      overLong.length === 0
+        ? "every line within 75 octets, continuations present"
+        : `${overLong.length} line(s) too long`,
+    );
+
+    /*
+       3. THE ROUTE TAKES EITHER PROOF, because it has to work from two places
+       that know different things: the console, where there is a session, and
+       an inbox, where there is not. And it takes nothing else.
+    */
+    const calPath = `${BASE}/booking/${withLink.id}/calendar`;
+    const signed = await fetch(`${calPath}?t=${signBookingToken(withLink.id)}`, {
+      redirect: "manual",
+    });
+    const signedBody = signed.status === 200 ? await signed.text() : "";
+    const naked = await fetch(calPath, { redirect: "manual" });
+    const forged = await fetch(`${calPath}?t=${"0".repeat(64)}`, { redirect: "manual" });
+
+    const [stranger] = await db
+      .insert(customers)
+      .values({ name: "Not them", email: `cal-stranger-${Date.now()}@example.in` })
+      .returning();
+    const strangerSees = await fetch(calPath, {
+      headers: { cookie: await memberCookie(stranger.id) },
+      redirect: "manual",
+    });
+
+    check(
+      "the calendar link works from an inbox and refuses everyone else",
+      signed.status === 200 &&
+        signedBody.includes("BEGIN:VCALENDAR") &&
+        (signed.headers.get("content-type") ?? "").includes("text/calendar") &&
+        (signed.headers.get("content-disposition") ?? "").includes(".ics") &&
+        naked.status === 404 &&
+        forged.status === 404 &&
+        strangerSees.status === 404,
+      `signed 200, unsigned ${naked.status}, forged ${forged.status}, stranger ${strangerSees.status}`,
+    );
+
+    /*
+       4. A CANCELLED SESSION IS NOT AN APPOINTMENT. Serving a file for one
+       would put a dead event back into a calendar the member may already have
+       cleared, which is worse than never having offered the file.
+    */
+    const [scrapped] = await db
+      .insert(bookings)
+      .values({
+        expertId: holeExpert.id,
+        customerId: holeCustomer.id,
+        startsAt: new Date(Date.now() + 5 * 86_400_000),
+        endsAt: new Date(Date.now() + 5 * 86_400_000 + 45 * 60_000),
+        status: "cancelled",
+        amountPaise: SINGLE_CALL_PAISE,
+      })
+      .returning();
+
+    const deadEvent = await fetch(
+      `${BASE}/booking/${scrapped.id}/calendar?t=${signBookingToken(scrapped.id)}`,
+      { redirect: "manual" },
+    );
+
+    check(
+      "a cancelled session serves no calendar file, even with a valid token",
+      deadEvent.status === 404,
+      `status ${deadEvent.status}`,
+    );
+
+    /*
+       5. THE EXPERT IS CHASED when a confirmed session is approaching with no
+       joining link on it. Until a Google Cloud project exists the link is
+       pasted in by hand, so it can be forgotten, and the first anyone hears
+       of that today is a customer with nowhere to join.
+
+       Checked through the cron rather than the template, because the window
+       arithmetic is the part that can be wrong: a nudge that fires outside
+       its window is a nudge nobody gets.
+    */
+    /*
+       Asked of the decision directly, not of a notification row. sendOnce
+       claims a row, attempts the send and deletes the row again when the
+       send throws — and with no RESEND_API_KEY every send throws, which is
+       the state this site is in today. The first version of this check
+       looked for the row, found none and reported a working feature broken.
+    */
+    const windows: [number, boolean, string][] = [
+      [24, false, "missing"],
+      [23, false, "missing"],
+      [25, false, "missing"],
+      [2, false, "urgent"],
+      [1.5, false, "urgent"],
+      [2.5, false, "urgent"],
+      /* A link means no chase, at any distance. */
+      [24, true, "none"],
+      [2, true, "none"],
+      /* And the quiet stretches between the two windows, and past them. */
+      [12, false, "none"],
+      [26, false, "none"],
+      [0.5, false, "none"],
+    ];
+    const wrong = windows.filter(([h, has, want]) => linkNudgeDue(h, has) !== want);
+
+    check(
+      "an approaching session with no joining link chases its expert, once a day out and once near the hour",
+      wrong.length === 0,
+      wrong.length === 0
+        ? `${windows.length} windows: a day out, two hours out, silent everywhere else`
+        : wrong.map(([h, has, want]) => `${h}h/link=${has} wanted ${want}`).join(", "),
+    );
+
+    /*
+       And the cron reaches the booking at all — the decision above is only
+       worth having if the hourly job actually considers a linkless session.
+    */
+    const linkless = await db
+      .insert(bookings)
+      .values({
+        expertId: holeExpert.id,
+        customerId: holeCustomer.id,
+        startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        endsAt: new Date(Date.now() + 24 * 60 * 60 * 1000 + 45 * 60_000),
+        status: "confirmed",
+        amountPaise: SINGLE_CALL_PAISE,
+        meetingUrl: null,
+      })
+      .returning();
+
+    const cronRun = await fetch(`${BASE}/api/cron/reminders`, {
+      headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+    });
+    const cronBody = (await cronRun.json()) as { considered: number; sent: number };
+
+    check(
+      "the hourly job looks at a session that is a day away with no link on it",
+      cronRun.status === 200 && cronBody.considered >= 1,
+      `considered ${cronBody.considered}, booking ${linkless[0].id.slice(0, 8)} in its window`,
+    );
+
+    /*
+       7. A MEMBER CAN WRITE IN, AND THE MESSAGE SURVIVES THE EMAIL FAILING.
+
+       This is the whole reason the message is a row and not just a send.
+       RESEND_API_KEY is unset in development and on this run, so the copy to
+       the ops inbox throws every time — which is exactly the state the site
+       is in today. A form that only emailed would lose every message written
+       before that key lands.
+    */
+    const writer = await memberCookie(holeCustomer.id);
+    const helpPage = await fetch(`${BASE}/member/help`, {
+      headers: { cookie: writer },
+      redirect: "manual",
+    });
+
+    await db.insert(supportMessages).values({
+      customerId: holeCustomer.id,
+      bookingId: withLink.id,
+      topic: "session",
+      body: "My expert did not join the call and I waited twenty minutes.",
+    });
+
+    const [stored] = await db
+      .select()
+      .from(supportMessages)
+      .where(eq(supportMessages.customerId, holeCustomer.id))
+      .limit(1);
+
+    check(
+      "the console has somewhere to write to, and a message is kept whether or not it is emailed",
+      helpPage.status === 200 &&
+        Boolean(stored) &&
+        stored.emailed === false &&
+        stored.handledAt === null &&
+        stored.bookingId === withLink.id,
+      `help page ${helpPage.status}, message stored unemailed and attached to its session`,
+    );
+
+    /*
+       8. AND ONLY THE MEMBER CAN REACH IT. The help page carries the member's
+       own bookings and the messages they have sent, so it is behind the same
+       door as the rest of the console.
+    */
+    const helpNoSession = await fetch(`${BASE}/member/help`, { redirect: "manual" });
+    check(
+      "the help page is not open to a stranger",
+      helpNoSession.status !== 200,
+      `status ${helpNoSession.status} with no session`,
     );
   }
 

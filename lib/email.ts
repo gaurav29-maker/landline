@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { notifications } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { istDateTime, rupees } from "@/lib/format";
-import { intakeUrl } from "@/lib/tokens";
+import { calendarUrl, intakeUrl, siteUrl } from "@/lib/tokens";
 import { BRAND_BLUE, BRAND_TAGLINE } from "@/lib/brand";
 
 type Kind = (typeof notifications.kind.enumValues)[number];
@@ -130,7 +130,17 @@ export function customerConfirmation(args: {
             style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;padding:11px 20px;
                    border-radius:8px;text-decoration:none">Fill the intake form</a></p>
       <p style="font-size:13px;color:#6B6B6B">It asks for a summary of your holdings —
-         never a login.</p>`),
+         never a login.</p>
+      <!--
+        And the appointment itself. Underneath the intake because the intake
+        is the thing we need from them and this is the thing they need from
+        us — but on every confirmation, because a time written in an email is
+        a time somebody has to copy across by hand, and the ones who forget
+        are the ones who do not turn up.
+      -->
+      <p style="font-size:13px;color:#6B6B6B;margin-top:22px">
+        <a href="${calendarUrl(args.bookingId)}" style="color:${BRAND_BLUE}">Add it to your
+        calendar</a> — works with Google Calendar, Apple Calendar and Outlook.</p>`),
   };
 }
 
@@ -150,6 +160,52 @@ export function expertNotification(args: {
         <strong>${istDateTime(args.startsAt)} IST</strong>
       </p>
       <p>Their intake form will follow once they've filled it in.</p>`),
+  };
+}
+
+/**
+ * Your session has no joining link, and it is tomorrow.
+ *
+ * THE HOLE THIS SITS UNDER. A Meet link cannot be created from a URL, and
+ * creating one on an expert's behalf needs Google OAuth, a Cloud project and
+ * a consent screen that do not exist yet — see lib/meet. So the link is
+ * pasted in by hand, which works right up until somebody forgets, and the
+ * first anyone hears of it is a customer sitting in front of a booking with
+ * nowhere to join.
+ *
+ * Two messages rather than one. A day out this is a reminder and reads like
+ * one. Two hours out the same fact is a different message, and saying "just a
+ * reminder" then would be underselling what is about to happen.
+ */
+export function expertLinkMissing(args: {
+  expertName: string;
+  customerName: string;
+  startsAt: Date;
+  urgent: boolean;
+}) {
+  const when = istDateTime(args.startsAt);
+  return {
+    subject: args.urgent
+      ? `No joining link yet — ${args.customerName} in under two hours`
+      : `Add a joining link for ${args.customerName} tomorrow`,
+    html: shell(`
+      <h2 style="font-size:20px;margin:0 0 16px">${
+        args.urgent ? "Your session has no link" : "One thing to add"
+      }</h2>
+      <p>Hi ${args.expertName}, your session with <strong>${args.customerName}</strong> is at
+         <strong>${when} IST</strong> and there is still no joining link on it.</p>
+      <p style="background:#E8F5FE;padding:14px 16px;border-radius:8px;margin:20px 0">
+        ${
+          args.urgent
+            ? "They will open their console at the hour and find nothing to click."
+            : "They can already see the session in their console; the link is the part that is missing."
+        }
+      </p>
+      <p>Open your console, use <strong>Add to Google Calendar</strong> on the booking to
+         create a Meet room, then paste the link into the field beside it.</p>
+      <p><a href="${siteUrl()}/expert"
+            style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;padding:11px 20px;
+                   border-radius:8px;text-decoration:none">Add the link</a></p>`),
   };
 }
 
@@ -174,6 +230,7 @@ export function reminder(args: {
   startsAt: Date;
   meetingUrl: string | null;
   soon: boolean;
+  bookingId: string;
 }) {
   return {
     subject: args.soon
@@ -189,6 +246,18 @@ export function reminder(args: {
                   style="display:inline-block;background:${BRAND_BLUE};color:#FFFFFF;padding:11px 20px;
                          border-radius:8px;text-decoration:none">Join the call</a></p>`
           : "<p>Your expert will send the join link shortly.</p>"
+      }
+      ${
+        /*
+           Only on the day-before reminder. An hour out, somebody is about to
+           be on the call — offering to put it in their calendar then is
+           noise in the one message that should be a single button.
+        */
+        args.soon
+          ? ""
+          : `<p style="font-size:13px;color:#6B6B6B;margin-top:22px">
+               Not in your calendar yet?
+               <a href="${calendarUrl(args.bookingId)}" style="color:${BRAND_BLUE}">Add it</a>.</p>`
       }`),
   };
 }

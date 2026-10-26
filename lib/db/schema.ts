@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   date,
   index,
   integer,
@@ -67,6 +68,19 @@ export const notificationKind = pgEnum("notification_kind", [
   "reminder_1h",
   "followup",
   "refund_apology",
+  /*
+     Two nudges to the EXPERT, not the customer, when a confirmed session is
+     approaching and still has no joining link. A booking with no link is a
+     customer standing outside a room that was never opened, and until a
+     Google Cloud project exists the link is pasted in by hand — which means
+     it can be forgotten. These are the safety net under that.
+
+     Two kinds rather than one because they are different messages: a day out
+     is a reminder, two hours out is a problem. The unique index on
+     (booking_id, kind) makes each of them send exactly once.
+  */
+  "expert_link_missing",
+  "expert_link_urgent",
 ]);
 
 export const experts = pgTable(
@@ -930,4 +944,54 @@ export const accountDeletions = pgTable(
     keptUntil: timestamp("kept_until", { withTimezone: true }),
   },
   (t) => [index("account_deletions_customer_idx").on(t.customerId)],
+);
+
+/** What a member is writing to us about. Shapes the form, and the triage. */
+export const supportTopic = pgEnum("support_topic", [
+  "session",
+  "payment",
+  "account",
+  "other",
+]);
+
+/**
+ * A member writing to us, kept rather than only emailed.
+ *
+ * WHY A TABLE AND NOT JUST A MAILTO. The console had no contact surface at
+ * all: a customer whose expert did not turn up had the address in the footer
+ * and nothing else, with no booking reference to quote and no way to know the
+ * message had arrived. A mailto link would have fixed the address and none of
+ * the rest — and on many clients it silently does nothing.
+ *
+ * STORED FIRST, EMAILED SECOND, and in that order on purpose. RESEND_API_KEY
+ * is not set yet, so today every outbound email throws. If this only emailed,
+ * every message a member sent before that key lands would be lost at the
+ * moment they most needed to be heard. The row is written in the same request
+ * and survives the send failing.
+ *
+ * NO FREE-TEXT EMAIL FIELD. Who they are comes from the session, so a message
+ * cannot be sent in somebody else's name, and the reply goes to the address
+ * on the account rather than one typed into a form.
+ */
+export const supportMessages = pgTable(
+  "support_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customers.id, { onDelete: "cascade" }),
+    /** Optional: set when they wrote from a specific session. */
+    bookingId: uuid("booking_id").references(() => bookings.id, { onDelete: "set null" }),
+    topic: supportTopic("topic").notNull().default("other"),
+    body: text("body").notNull(),
+    /** Whether the copy to the ops inbox went out. False is not a lost message. */
+    emailed: boolean("emailed").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Stamped in the ops console when somebody has dealt with it. */
+    handledAt: timestamp("handled_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("support_messages_created_idx").on(t.createdAt),
+    index("support_messages_customer_idx").on(t.customerId),
+  ],
 );

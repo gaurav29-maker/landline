@@ -82,6 +82,36 @@ A comment now sits next to the hex so nobody else tries.
 
 ---
 
+## 3c. The three holes a first customer fell into — closed 26 October 2026
+
+**Add to calendar.** `lib/ics.ts` and `/booking/[id]/calendar`, linked from
+the console and from the confirmation and 24-hour reminder emails. Valid
+RFC 5545: CRLF, 75-octet folding, UTC stamps, a UID stable per booking so a
+re-download updates the event rather than duplicating it, and SEQUENCE from
+the reschedule count. Refuses a cancelled booking.
+
+**A joining link that is never missing.** The automatic one still needs a
+Google Cloud project that does not exist — see `lib/meet` — so what is built
+is the safety net under the manual paste: the hourly cron now chases the
+expert a day out (`expert_link_missing`) and again about two hours out
+(`expert_link_urgent`) when a confirmed session still has no link. The window
+arithmetic is a pure function, `linkNudgeDue`, because `sendOnce` rolls its
+notification row back when a send fails and with no Resend key nothing is
+left to assert on.
+
+**Somewhere to write to.** `/member/help`, in the console nav and linked per
+session from Coming up. Stores the message, then tries to email a copy — in
+that order, because with `RESEND_API_KEY` unset every send throws today and a
+form that only emailed would lose messages written in exactly the period when
+things go wrong. `/ops/support` is where they are read until that key lands,
+and shows which ones never made it to an inbox.
+
+**Still open from the map:** a real automatic meeting link (needs the Cloud
+project), a gap between back-to-back sessions, the follow-up email, and the
+second and third expert.
+
+---
+
 ## 3b. Found while building, not yet decided
 
 **Muted prose in the console measures 2.47:1.**
@@ -119,6 +149,6 @@ These are real work, already designed, that cannot start without a file.
   desk behind the sign-in panel, no "they read it before the call". Each
   of those was considered and refused for a reason written down where
   the decision lives.
-- **Work the tests already cover.** 153 checks pass against a database
+- **Work the tests already cover.** 161 checks pass against a database
   built by `npm run db:reset`; if something here broke one of them it
   would not be a todo, it would be a bug.

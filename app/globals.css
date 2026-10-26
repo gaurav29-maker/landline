@@ -1400,6 +1400,37 @@
      than the tighter one the console uses for data, because this is prose
      somebody has to actually read before pressing a button with no undo.
   */
+  /* Help: the same list treatment as the erase pages, same reason. */
+  .help-list { margin: 0; padding: 0 0 0 20px; }
+  .help-list li { margin-bottom: 12px; line-height: 1.6; color: var(--ink-body, var(--ink)); }
+  .help-list li:last-child { margin-bottom: 0; }
+
+  .help-sent { list-style: none; margin: 0; padding: 0; }
+  .help-sent li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    border-top: 1px solid var(--sheet-line, var(--line));
+  }
+  .help-sent li:first-child { border-top: 0; }
+
+  .ops-support { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .ops-support-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ops-support-body {
+    white-space: pre-wrap;
+    margin: 12px 0 14px;
+    line-height: 1.6;
+  }
+
   .erase-list { margin: 0; padding: 0 0 0 20px; }
   .erase-list li {
     margin-bottom: 12px;
@@ -7447,6 +7478,24 @@
      ops consoles is a design decision and not a bug fix.
   */
   .site-dark.os .erase-page .bp-muted { color: var(--ink-mute, var(--ink-soft)); }
+
+  /*
+     The help page carries the same prose as the erase pages — sentences a
+     person reads when something has already gone wrong — so it gets the same
+     readable ink rather than the micro-label token. See the note above and
+     TODO 3b for why this is scoped rather than applied console-wide.
+  */
+  .site-dark.os .help-page .bp-muted { color: var(--ink-mute, var(--ink-soft)); }
+  .site-dark.os *:not(.signin):not(.signin *):is(.help-list li) { line-height: 1.7; }
+
+  /* Members' messages, in the ops console. */
+  .site-dark.os .ops-support-body {
+    white-space: pre-wrap;
+    border-left: 2px solid var(--os-rule);
+    padding-left: 12px;
+    margin: 12px 0 14px;
+  }
+  .site-dark.os .ops-support-item.is-done { opacity: 0.6; }
 
   .site-dark.os .todo {
     background: var(--os-rule);
