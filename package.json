@@ -15,7 +15,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:local": "tsx scripts/local-db.ts",
     "db:reset": "tsx scripts/db-reset.ts",
-    "verify": "tsx scripts/verify-flow.ts"
+    "verify": "tsx scripts/verify-flow.ts",
+    "check:email": "tsx scripts/check-email.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.36.4",

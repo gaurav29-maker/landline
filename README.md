@@ -191,6 +191,24 @@ Until step 4, `EMAIL_FROM` falls back to Resend's sandbox sender, which only
 delivers to the address that owns the Resend account. That is fine for a
 first test and is not a launch state.
 
+**Check it rather than hope:**
+
+```bash
+npm run check:email
+```
+
+It reports what is configured and whether Resend accepts it: the key, every
+domain on the account and its verification status, and whether `EMAIL_FROM`
+actually sends from one of them. Three of the four ways this goes wrong fail
+silently — a revoked key, a domain added but never verified, and the sandbox
+sender that delivers only to you — and none of them surface anywhere in the
+app, because every send is wrapped so that a booking survives a failed
+confirmation. Pass an address to send a real one:
+
+```bash
+npm run check:email you@example.in
+```
+
 ### Phone sign-in, and the paperwork in front of it
 
 Members sign in with their mobile number and a six-digit code. The whole
