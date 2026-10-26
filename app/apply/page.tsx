@@ -20,11 +20,18 @@ export default function Apply() {
       <div className="wrap">
         <div className="doc">
           <h1 className="doc-name">Be useful, and paid, without taking on a client.</h1>
+          {/*
+            Said people arrive having already written down what they hold and
+            that it is on your screen when the call opens — which the intake
+            form was what made true, and it is switched off. Promising an
+            expert a prepared brief that will not be there is the worst place
+            on the site to leave that claim standing: they would find out on
+            the call, in front of a customer.
+          */}
           <p className="doc-lede">
-            People arrive having already written down what they hold and what they are worried
-            about. It is on your screen when the call opens, you go through it with them, and that
-            is the whole job. No mandate, no onboarding, no ongoing
-            obligation to anybody.
+            People arrive with their portfolio open and a question they have been sitting on. You
+            go through it with them on the call, and that is the whole job. No mandate, no
+            onboarding, no ongoing obligation to anybody.
           </p>
 
           {/*

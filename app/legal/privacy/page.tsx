@@ -25,10 +25,10 @@ export default function Privacy() {
 
       <h2>The short version</h2>
       <p>
-        We collect your name, email, an optional phone number, and the portfolio summary you write
-        in the intake form. Your portfolio summary goes to one person: the expert you booked. It is
-        deleted 90 days after your call. We never see your card details, and we never ask for a
-        broker login.
+        We collect your name, email and an optional phone number. We do not ask you to write down
+        what you hold any more &mdash; you show your expert on the call instead &mdash; so the only
+        account of your portfolio we keep is what your expert writes up afterwards, and that is
+        deleted 90 days later. We never see your card details, and we never ask for a broker login.
       </p>
 
       <h2>1. Who is responsible</h2>
@@ -47,10 +47,19 @@ export default function Privacy() {
           <strong>Phone number</strong> — optional, used only if we need to reach you about a
           session.
         </li>
+        {/*
+          Kept rather than removed, and reworded. We no longer ASK for this —
+          the intake form is switched off — but the form still answers at a
+          link already sent, and every submission made before the change is
+          still held until its retention clock runs out. A policy that stopped
+          listing data the business still holds would be the wrong kind of
+          tidy.
+        */}
         <li>
-          <strong>Your portfolio summary, goals, risk comfort and questions</strong> — so the expert
-          has your situation in front of them during the session. This is the point of the intake
-          form.
+          <strong>Your portfolio summary, goals, risk comfort and questions</strong> — only if you
+          filled in an intake form. We no longer ask for one: you show your expert what you hold
+          on the call instead. Anything sent before that change is still held, and still deleted
+          on the clock below.
         </li>
         <li>
           <strong>Payment records</strong> — the amount, the time and Razorpay&rsquo;s reference for it.
@@ -71,8 +80,8 @@ export default function Privacy() {
       <h2>4. Who sees your data</h2>
       <ul>
         <li>
-          <strong>The expert you booked</strong> — your name and your intake form. No other expert
-          sees it.
+          <strong>The expert you booked</strong> — your name, and an intake form if you filled one
+          in before we stopped asking. No other expert sees it.
         </li>
         <li>
           <strong>Razorpay</strong>, to take the payment.{" "}

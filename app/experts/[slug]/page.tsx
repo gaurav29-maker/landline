@@ -261,13 +261,12 @@ export default async function ExpertProfile({ params }: { params: Promise<{ slug
             <h2 className="doc-h2">What happens</h2>
             <ol className="ol">
               <li>
-                <b>You send your holdings first.</b> A short form after payment — what you hold and
-                in what proportion, in your own words. It is what lets the call start at the question
-                rather than at the summary.
+                <b>You have your portfolio open.</b> Your broker or demat app, on the screen in
+                front of you. There is nothing to fill in beforehand and nothing to send us.
               </li>
               <li>
-                <b>It is on their screen.</b> Your expert has the whole book in front of them for
-                the session, so you are not reciting it from memory.
+                <b>You show them what you hold.</b> On the call, in your own words, at whatever
+                level of detail you are comfortable with. Nothing about it is stored.
               </li>
               <li>
                 <b>One to one, on video.</b> You ask. They read the position back to

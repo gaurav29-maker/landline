@@ -5445,26 +5445,60 @@
      sheet of facts somebody checks, this is three sentences somebody
      reads once and either recognises themselves in or does not.
   */
-  .site .notfor { list-style: none; margin: 0; padding: 0; }
+  /*
+     ---- the disqualifiers, as bordered cells ----
+
+     Asked for in the shape of x.ai, and measured off it rather than
+     recalled: ground rgb(10,10,10) with cells only eleven points lighter,
+     hairline borders at 6-8% white, 12px radius, and headings at weight
+     500 with -0.01em tracking and a line-height of 1.0.
+
+     TRANSPARENT CELLS, WHICH IS THEIR PATTERN TOO — two of the four
+     bordered elements on that page carry rgba(0,0,0,0). It is also the
+     only version of this that survives both themes: a fill a shade lighter
+     than the band reads as raised on their black and as a smudge on our
+     light one, where the same gesture has to go the other way. A hairline
+     and nothing else means the band underneath does the work.
+
+     Three across, because three stacked rows of a few lines each left the
+     band mostly empty and the heading orphaned at the top of it.
+  */
+  .site .notfor {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
   .site .notfor li {
-    padding: 20px 0;
-    border-top: 1px solid var(--rule);
-    max-width: 68ch;
+    min-width: 0;
+    padding: 22px 20px 24px;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
   }
   .site .notfor b {
     display: block;
     font-size: 1.0625rem;
     font-weight: 500;
-    line-height: 1.625rem;
+    /* 1.0 is x.ai's; 1.15 here because these headings run to two and three
+       lines where theirs run to one, and 1.0 sets them solid. */
+    line-height: 1.15;
     letter-spacing: -0.01em;
     color: var(--ink);
+    text-wrap: balance;
   }
   .site .notfor span {
     display: block;
-    margin-top: 5px;
+    margin-top: 10px;
     font-size: 0.9375rem;
     line-height: 1.4375rem;
     color: var(--ink-mute);
+  }
+
+  @media (max-width: 860px) {
+    .site .notfor { grid-template-columns: 1fr; }
+    .site .notfor li { padding: 18px 18px 20px; }
   }
 
   /*

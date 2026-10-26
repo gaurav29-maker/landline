@@ -3,8 +3,14 @@ import "./globals.css";
 import { sitePublic } from "@/lib/launch";
 
 const TITLE = "Landline — book a market expert to read your portfolio";
+/*
+   Said "you send your holdings ahead so they are in front of your expert",
+   which the intake form was what made true. This is the description search
+   results and every share card carry, so it was the furthest-travelling copy
+   left describing a step the product no longer asks for.
+*/
 const DESCRIPTION =
-  "Book an experienced market professional directly. You send your holdings ahead so they are in front of your expert for the session, and they tell you what they actually see in them.";
+  "Book an experienced market professional directly. One call, one to one, where you open your portfolio and they tell you what they actually see in it. Nothing to fill in first, and nobody sells you anything.";
 
 /**
  * `metadataBase` is what turns the relative image paths below into the

@@ -285,7 +285,7 @@ export default async function ExpertSchedule() {
           </dl>
           <p className="apply-hint">
             A session counts once it is closed out, and a no-show counts too &mdash; the slot
-            was held and your intake was read. Refunded sessions do not.
+            was held and you turned down other work for it. Refunded sessions do not.
           </p>
         </section>
       ) : null}

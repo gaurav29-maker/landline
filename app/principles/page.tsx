@@ -166,10 +166,10 @@ export default function Principles() {
             <h2 className="doc-h2">We never ask for your broker login</h2>
             <p>
               Not as an option, not for convenience, not &ldquo;read-only&rdquo;. There is no
-              field for one anywhere in the product. You write down what you hold, in your own
-              words, and that is what your expert has in front of them on the call. It is deleted{" "}
-              {INTAKE_RETENTION_DAYS} days afterwards, and you can download your own copy before
-              then.
+              field for one anywhere in the product. You show your expert what you hold, in your
+              own words and on your own screen, and nothing about it is stored except what they
+              write up afterwards. That is deleted {INTAKE_RETENTION_DAYS} days later, and you
+              can download your own copy before then.
             </p>
           </section>
 

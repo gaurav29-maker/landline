@@ -346,10 +346,15 @@ export default async function Home() {
             {/*
               Was "your review, effortlessly", which promised ease two lines
               above the one bit of work we ask for. Naming that work is more
-              persuasive than hiding it: people who will not write down what
-              they hold are people this product cannot help.
+              persuasive than hiding it: people who will not open what they
+              hold are people this product cannot help.
+
+              "One piece of work on your side" meant the intake form, which
+              is switched off. The work left is turning up with the portfolio
+              open, which is a smaller ask and still an ask — so it is still
+              named rather than smoothed away.
             */}
-            <p>Six steps. One piece of work on your side.</p>
+            <p>Six steps. Nothing to fill in first.</p>
           </div>
           <div className="flow">
             <div className="flow-step">
@@ -367,15 +372,22 @@ export default async function Home() {
               <h3>A real slot</h3>
               <p>Live availability. Nobody emails you back.</p>
             </div>
+            {/*
+              Step four was "your holdings, written down — five minutes, the
+              only work on your side", and five was "with somebody who has
+              read it". Both described the intake form. The work asked of
+              somebody is now having the portfolio open, so that is what it
+              says; and the expert reads it with them rather than before.
+            */}
             <div className="flow-step">
               <p className="n">04</p>
-              <h3>Your holdings, written down</h3>
-              <p>Five minutes. The only work on your side.</p>
+              <h3>Your portfolio, open</h3>
+              <p>On your screen. Nothing to fill in first.</p>
             </div>
             <div className="flow-step">
               <p className="n">05</p>
               <h3>The call</h3>
-              <p>One to one, with somebody who has read it.</p>
+              <p>One to one. They read it back to you.</p>
             </div>
             <div className="flow-step">
               <p className="n">06</p>
@@ -420,9 +432,11 @@ export default async function Home() {
 
         Three, and the third is the one that matters. Nobody writes "you
         will not do the work" on a sales page, and it is the single
-        biggest predictor of a wasted session: the intake IS the product's
-        input, and "six steps, one piece of work on your side" two
-        sections up is the same fact said kindly.
+        biggest predictor of a wasted session: what you hold IS the
+        product's input. It used to say "you will not write down what you
+        hold", which was about the intake form — switched off, so the
+        disqualifier moved to the thing now actually asked of somebody,
+        which is opening the portfolio on the call.
       */}
       <section className="band" id="notfor">
         <div className="wrap">
@@ -448,11 +462,11 @@ export default async function Home() {
               </span>
             </li>
             <li>
-              <b>&hellip;you will not write down what you hold.</b>
+              <b>&hellip;you will not open your portfolio on the call.</b>
               <span>
-                It takes about five minutes and it is the only work asked of you. Without
-                it the expert arrives with nothing to read, and the hour is worth a
-                fraction of what you paid for it.
+                The whole hour is a read of what you actually hold. If you are not willing
+                to put it on the screen, there is nothing to read and you have paid for a
+                conversation about nothing.
               </span>
             </li>
           </ul>
@@ -596,8 +610,9 @@ export default async function Home() {
             <details>
               <summary>Do I need to share my demat login?</summary>
               <p>
-                No. You share a summary of your holdings before the call — never login credentials.
-                There is no field anywhere on Landline that accepts one.
+                No. You show your expert what you hold on the call, in your own words and on your
+                own screen — never login credentials. There is no field anywhere on Landline that
+                accepts one.
               </p>
             </details>
             <details>
