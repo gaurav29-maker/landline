@@ -5462,12 +5462,29 @@
   */
   .site .shapes { display: flex; flex-direction: column; align-items: center; gap: 40px; }
 
+  /*
+     THE TRACK IS TRANSPARENT AND THE ACTIVE PILL IS THE RAISED ONE, which
+     is the only arrangement of these two that works in both themes.
+
+     The first version had it the other way round — a --bg-alt track with a
+     --surface pill — and --surface is NOT redefined in the dark .site
+     scope. It fell through to the light value, so the active pill rendered
+     #F4F4F4 while --ink correctly gave the dark theme's #F5F6F7: white text
+     on a white pill, 1.01:1, the label simply gone. Measured, after it was
+     spotted on screen.
+
+     "Raised" points in opposite directions in the two themes, so the fix is
+     not a different colour but a different structure: the pill takes the
+     band's own alt tone and the track takes a hairline. Lighter than the
+     ground on dark, darker on light, legible on both, and every token in
+     here is one the dark scope actually redefines.
+  */
   .site .shapes-tabs {
     display: inline-flex;
     gap: 2px;
     padding: 3px;
     border-radius: 999px;
-    background: var(--bg-alt);
+    background: transparent;
     border: 1px solid var(--rule);
     max-width: 100%;
     overflow-x: auto;
@@ -5493,9 +5510,8 @@
   .site .shapes-tab:hover { color: var(--ink); }
   .site .shapes-tab:focus-visible { outline: 2px solid var(--accent-ink, var(--blue)); outline-offset: 2px; }
   .site .shapes-tab.on {
-    background: var(--surface);
+    background: var(--bg-alt);
     color: var(--ink);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
   }
 
   .site .shapes-body {
