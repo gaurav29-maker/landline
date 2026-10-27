@@ -152,7 +152,7 @@ export default async function Home() {
             <p className="hero-badge">
               <i aria-hidden />
               {panel.experts} expert{panel.experts === 1 ? "" : "s"} &middot; {panel.years} year
-              {panel.years === 1 ? "" : "s"} of market experience
+              {panel.years === 1 ? "" : "s"} in the market
             </p>
           ) : null}
           {/*
@@ -194,32 +194,6 @@ export default async function Home() {
               Audit my portfolio
             </a>
           </div>
-
-          {preview && preview.days.length > 0 ? (
-            <div className="inst glassy">
-              <div className="inst-top">
-                <span className="eyebrow">Next available · {preview.name}</span>
-                <span className="live">
-                  <i className="dot" /> Live
-                </span>
-              </div>
-              <div className="inst-grid">
-                {preview.days.map((d) => (
-                  <div className="inst-cell" key={d.day}>
-                    <b>{d.day}</b>
-                    <span>
-                      from {istTime(d.first)}
-                      {d.count > 1 ? ` · ${d.count} times` : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="inst-foot">
-                {preview.total} open time{preview.total === 1 ? "" : "s"} across the next{" "}
-                {PREVIEW_DAYS} days · all times IST
-              </p>
-            </div>
-          ) : null}
         </div>
       </header>
 
@@ -317,6 +291,44 @@ export default async function Home() {
             </p>
           </div>
           <ExpertGrid experts={experts} dbReady={dbReady} />
+
+          {/*
+            THE AVAILABILITY INSTRUMENT LIVES HERE, not in the hero.
+
+            It opened the page until now, which put a four-column grid of
+            times under a headline on a phone and made the hero 633px of
+            mostly table. It also asked the question in the wrong order:
+            when somebody is free only matters once you know who they are.
+
+            So it sits directly under the card for the person it describes,
+            between the grid and the link to the rest. Same data, same
+            component, read from the database on every request.
+          */}
+          {preview && preview.days.length > 0 ? (
+            <div className="inst glassy">
+              <div className="inst-top">
+                <span className="eyebrow">Next available · {preview.name}</span>
+                <span className="live">
+                  <i className="dot" /> Live
+                </span>
+              </div>
+              <div className="inst-grid">
+                {preview.days.map((d) => (
+                  <div className="inst-cell" key={d.day}>
+                    <b>{d.day}</b>
+                    <span>
+                      from {istTime(d.first)}
+                      {d.count > 1 ? ` · ${d.count} times` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="inst-foot">
+                {preview.total} open time{preview.total === 1 ? "" : "s"} across the next{" "}
+                {PREVIEW_DAYS} days · all times IST
+              </p>
+            </div>
+          ) : null}
           {/*
             The homepage shows everyone while there are three. The page it
             links to is the one that filters, sorts and shows when each of
