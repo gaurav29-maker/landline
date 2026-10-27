@@ -3885,36 +3885,21 @@
      below: backdrop-filter makes an element a containing block for fixed
      descendants, and the phone menu is position: fixed inside this nav.
   */
-  /*
-     A CENTRED CAPSULE WITH THE CONSOLE LINK BESIDE IT.
-
-     Measured off lobby's at a wide viewport, which is where the structure
-     shows: the pill holds the logo, the links and the primary action, and
-     the account link sits OUTSIDE it at the far right. The first pass here
-     put everything in one pill, which read fine at 1280 and was wrong — the
-     markup has always separated these two (see the note in SiteNav: "sign-in
-     sits outside the capsule, not in it"), and the glass was simply drawn
-     around both.
-
-     A three-column grid rather than flex with a spacer: 1fr | auto | 1fr
-     keeps the capsule dead centre whatever the console link is called, which
-     a flex row cannot promise once one side grows.
-  */
   .site .nav {
     position: sticky;
     top: 12px;
     z-index: 50;
     height: 56px;
-    margin: 14px 0 0;
-    padding: 0 max(16px, calc((100% - 1400px) / 2));
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    margin: 14px auto 0;
+    display: flex;
     align-items: center;
     gap: 12px;
     background: transparent;
     border-bottom: 0;
+    padding: 0;
   }
-
   /*
      The ground is on ::before rather than on .nav, and that is
      load-bearing rather than tidy. backdrop-filter makes an element a
@@ -3923,20 +3908,7 @@
      the phone menu stops covering the viewport and covers the 64px bar
      instead — a full-screen sheet 64px tall, over its own header.
   */
-  /*
-     The capsule's ground, and its children have to be lifted off it.
-
-     ::before is positioned with z-index 0; the wordmark and the links are
-     static. In one stacking context a positioned box at z-index 0 paints
-     ABOVE static siblings, so moving this pseudo-element from .nav into
-     .nav-in put the glass on top of the capsule's own contents and the
-     whole row went blank — on desktop as well as on the phone. The filled
-     button survived only because it carries its own positioning.
-
-     Lifting the children (below) rather than sending this to z-index -1,
-     which would work until something above it gained a background.
-  */
-  .site .nav-in::before {
+  .site .nav::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -3944,6 +3916,7 @@
     background: var(--mat-bg);
     -webkit-backdrop-filter: var(--glass-near);
     backdrop-filter: var(--glass-near);
+    /* A rim all the way round now, not a line under a strip. */
     border: 1px solid var(--hairline);
     border-radius: 999px;
     box-shadow: var(--mat-lift);
@@ -3952,9 +3925,8 @@
   .site .nav-in,
   .site .nav-aside { position: relative; z-index: 3; }
   .site .nav-in {
-    grid-column: 2;
+    flex: 1;
     min-width: 0;
-    height: 56px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -3962,7 +3934,6 @@
        because the trailing button already carries its own padding. */
     padding: 0 8px 0 18px;
   }
-  .site .nav-in > * { position: relative; z-index: 1; }
   .site .nav-in .mark { flex: 0 0 auto; }
   /*
      No longer pushed apart. On a full-width bar the wordmark belonged at one
@@ -3970,7 +3941,7 @@
      the middle, so everything sits in one evenly spaced row.
   */
   .site .nav-mid { margin-right: 0; }
-  .site .nav-aside { grid-column: 3; justify-self: end; display: flex; align-items: center; }
+  .site .nav-aside { display: flex; align-items: center; }
 
   .site .mark { font-family: var(--font-mark); font-size: 0.9375rem; font-weight: 800; letter-spacing: 0; color: var(--ink); text-decoration: none; }
   .site .mark span { color: var(--accent); }
@@ -4098,33 +4069,26 @@
      rationales stacked on top of each other, two of them describing a
      button that no longer existed. One comment now, and it is this one.
 
-     It was outlined once and moved off that, on the argument that an
-     outline with nothing behind it reads as a stray rule rather than an
-     object. The counter-argument was that on a desktop the nav is a bar
-     with a ground, so the button sits on a surface and an outline on a
-     surface is a button drawn on a thing.
+     It was outlined once and moved off it, on the argument that an outline
+     with nothing behind it reads as a stray rule rather than an object.
+     That argument was about the PHONE, where the nav floats as a capsule
+     over the scrolling page — and below 900 this button is not rendered at
+     all. On a desktop the nav is a bar with a ground, the button sits on
+     that ground, and an outline on a surface is exactly what it looks
+     like: a button drawn on a thing.
 
-     THAT PREMISE IS GONE. The nav is a floating capsule at every width now,
-     and this button sits outside it on the page itself — which is exactly
-     the case the first argument was about. So it stops being an outline and
-     takes the same glass as the capsule beside it: same ground, same rim,
-     same lift. Two objects of one material, with the blue call to action
-     inside the capsule as the only filled thing in the row.
-
-     It is also what the reference does with the account link — a solid
-     object of its own, separated from the navigation rather than drawn as a
-     hairline next to it.
+     So it takes .b-line unmodified, which makes it the same object as
+     Audit my portfolio in the hero — transparent, --ink label, --ink-mute
+     hairline, fully round. Two secondary actions on one page that are the
+     same shape, rather than two that merely coexist.
 
      The sizing below still belongs to the bar: 44 tall and 20px of side
      padding, because the hero's 68 is a hero's number.
   */
   .site .nav-aside .b {
-    background: var(--mat-bg);
-    border: 1px solid var(--hairline);
-    color: var(--ink);
-    box-shadow: var(--mat-lift);
-    -webkit-backdrop-filter: var(--glass-near);
-    backdrop-filter: var(--glass-near);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
     min-height: 44px;
     min-width: 0;
     padding: 0 20px;
