@@ -180,6 +180,11 @@ These are genuine, and getting them wrong changes what gets built.
    implies many more, and that list becomes the navigation, the filters and
    the SEO surface all at once.
 
+   The machinery is already there, which I got wrong once and should not
+   again: `app/experts/(list)/page.tsx` filters by focus off `specialties`
+   and sorts by experience or price, URL-backed. Widening the enum lights up
+   a browse page that exists. It is the list that is thin, not the plumbing.
+
 3. **Ratings and reviews.** Every marketplace has them and this one has none.
    On a SEBI-sensitive service a star average reads as a performance claim,
    and fabricated reviews carry real exposure under the Consumer Protection

@@ -3867,22 +3867,38 @@
      the same tokens the capsule used, so the bar is made of what the rest
      of the site is made of rather than of what x.ai is made of.
   */
+  /*
+     A FLOATING PILL, not a bar across the top.
+
+     Measured off lobby's: a rounded track about 23px of radius, a
+     translucent ground with a heavy blur behind it, a hairline rim at
+     roughly 6% white, and the whole thing detached from the edges with its
+     items spaced inside rather than pushed to the corners.
+
+     It hugs its own content rather than taking a fixed width. Lobby's is
+     675px because theirs holds five short items; this one carries a
+     wordmark, four links, a theme control and two buttons, and a fixed
+     width would either crush them or leave a gap in the middle. max-content
+     with a cap is the same shape without the magic number.
+
+     The ground stays on ::before. That is not tidiness — see the note
+     below: backdrop-filter makes an element a containing block for fixed
+     descendants, and the phone menu is position: fixed inside this nav.
+  */
   .site .nav {
     position: sticky;
-    top: 0;
+    top: 12px;
     z-index: 50;
-    height: 64px;
+    height: 56px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    margin: 14px auto 0;
     display: flex;
     align-items: center;
     gap: 12px;
     background: transparent;
     border-bottom: 0;
-    /*
-       The row holds the page's own 1140 while the ground runs edge to
-       edge: ::before is inset: 0 on this box, so it covers the padding
-       too. No wrapper element, and one number to keep level with .wrap.
-    */
-    padding: 0 max(24px, calc((100% - 1140px) / 2));
+    padding: 0;
   }
   /*
      The ground is on ::before rather than on .nav, and that is
@@ -3900,7 +3916,10 @@
     background: var(--mat-bg);
     -webkit-backdrop-filter: var(--glass-near);
     backdrop-filter: var(--glass-near);
-    border-bottom: 1px solid var(--hairline);
+    /* A rim all the way round now, not a line under a strip. */
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    box-shadow: var(--mat-lift);
   }
   /* Both above the ground, and above the scrim when the menu is open. */
   .site .nav-in,
@@ -3910,11 +3929,18 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    /* Inside the pill: more room at the wordmark end than the button end,
+       because the trailing button already carries its own padding. */
+    padding: 0 8px 0 18px;
   }
   .site .nav-in .mark { flex: 0 0 auto; }
-  /* Links sit with the wordmark; everything that acts goes to the far end. */
-  .site .nav-mid { margin-right: auto; }
+  /*
+     No longer pushed apart. On a full-width bar the wordmark belonged at one
+     edge and the buttons at the other; inside a pill that leaves a hole in
+     the middle, so everything sits in one evenly spaced row.
+  */
+  .site .nav-mid { margin-right: 0; }
   .site .nav-aside { display: flex; align-items: center; }
 
   .site .mark { font-family: var(--font-mark); font-size: 0.9375rem; font-weight: 800; letter-spacing: 0; color: var(--ink); text-decoration: none; }
