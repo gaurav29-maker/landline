@@ -4298,7 +4298,34 @@
   .site a:focus-visible, .site button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   /* ---- hero ---- */
-  .site .hero-band { padding: 76px 0 64px; text-align: center; }
+  /*
+     THE FRAME, read off the reference's own computed style at two widths.
+
+     It is a 700px box at BOTH of them — 1503px wide and 455px wide — with
+     its content centred in it on the cross axis and the main axis, no
+     vertical padding of its own, and a gutter that steps from 64 to 24.
+     That is the whole frame, and it does not change with the viewport; only
+     the gutter and the type inside it do.
+
+     min-height AND NOT height, which is the one place this does not copy
+     them exactly. 700 is their number, but ours carries a line theirs does
+     not — the three "not a" chips — and a fixed height would clip the
+     buttons on a short viewport rather than growing to hold them. At every
+     width this has been measured at, it is 700 either way.
+  */
+  .site .hero-band {
+    min-height: 700px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+  /*
+     64px of gutter, theirs, against .wrap's usual 24 — and it is set on the
+     wrap rather than the band so the two do not add up to 88.
+  */
+  .site .hero-band .wrap { padding: 0 64px; }
   /*
      The credential above the headline.
 
@@ -4316,8 +4343,10 @@
     margin-bottom: 14px;
     font-family: var(--mono);
     font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
+    font-weight: 700;
+    /* 1.6px, theirs, and the same at 1503 as at 455 — not an em value, so
+       it does not drift with the size the way 0.14em did. */
+    letter-spacing: 1.6px;
     text-transform: uppercase;
     color: var(--accent-ink);
   }
@@ -4401,26 +4430,18 @@
   }
 
   /*
-     THE REFERENCE'S LABEL, to the number: 11px, 700, 1.6px of tracking.
+     The label is one size everywhere, as theirs is — 11px/700/1.6px at 1503
+     and at 455 alike — so only the gap to the dot comes in on a phone.
 
-     It was 10px/500 on 1em of tracking, which is the size the words forced
-     rather than the size they wanted — the line ran about ten pixels long
-     at the real one and wrapped, stranding the dot beside the first of two
-     lines. The copy gave way instead of the type this time: "10 years in
-     the market" says what "10 years of market experience" said in ten
-     fewer characters, which is what buys the line back at 11px.
-
-     1.6px, not an em value: that is what the reference computes to, and at
-     this size the difference between 0.1455em and 0.145em is visible in the
-     width of the whole label.
+     It used to drop to 10px/500 here, which was the size the words forced
+     rather than the size they wanted: the line ran about ten pixels long at
+     375 and wrapped, stranding the dot beside the first of two lines. The
+     copy gave way instead of the type — "10 years in the market" says what
+     "10 years of market experience" said in ten fewer characters, which is
+     what buys the line back at 11px.
   */
   @media (max-width: 460px) {
-    .site .hero-badge {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 1.6px;
-      gap: 7px;
-    }
+    .site .hero-badge { gap: 7px; }
   }
 
   /* Sits under the headline now, so its margin is the gap to the buttons. */
@@ -4480,7 +4501,7 @@
   .site .hero-band h1 {
     max-width: 21ch;
     margin: 0 auto 18px;
-    font-size: clamp(2.25rem, 9.6vw, 6rem);
+    font-size: clamp(2.25rem, 9.6vw, 6.875rem);
     line-height: 1.1;
     letter-spacing: -0.05em;
   }
@@ -5012,8 +5033,12 @@
     .site .band { padding: 60px 0; }
 
     /* 1.3 here against 1.1 on the desktop rule; see the note on that rule
-       for why the ratio loosens as the type gets smaller. */
+       for why the ratio loosens as the type gets smaller. Both numbers are
+       the reference's, measured at 1503 and at 455. */
     .site .hero-band h1 { line-height: 1.3; }
+
+    /* The gutter steps back to .wrap's own 24, which is theirs at 455. */
+    .site .hero-band .wrap { padding: 0 24px; }
 
     /*
        The hero's buttons come back down from 68.
@@ -5194,30 +5219,14 @@
     .site .b-pair { flex-direction: column; }
 
     /*
-       THE HERO IS SIZED TO THE REFERENCE, at the width it was measured at.
+       The hero's frame is in the base rule now, at every width. What is
+       left here is the headline, pinned rather than fluid.
 
-       700px tall with its content centred in it, no vertical padding of its
-       own, and the 24px gutter it already had from .wrap. Every number here
-       was read off the reference's own computed style rather than estimated
-       from a screenshot of it.
-
-       min-height AND NOT height, which is the one place this does not copy
-       them exactly. 700 is their number, but ours carries a line theirs does
-       not — the three "not a" chips — and a fixed height would clip the
-       buttons on a shorter phone rather than growing to hold them. At 375 it
-       is 700 either way.
-
-       It was 633px tall before this, of which the bottom 240 was a table of
-       available times; that table is now down beside the expert it belongs
-       to, which is most of where the rest of the height went.
+       Theirs is 36px at 455 and 36px at 375 — one size across the phone
+       range, not a curve through it. Ours was fluid and read 43.7px at 455,
+       so the clamp is overruled for the width where they hold it still.
     */
-    .site .hero-band {
-      min-height: 700px;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
+    .site .hero-band h1 { font-size: 2.25rem; }
     .site .row2 { grid-template-columns: 1fr; }
     .site .doc-head { gap: 14px; }
 
