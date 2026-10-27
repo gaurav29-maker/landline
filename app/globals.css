@@ -114,7 +114,15 @@
   }
 
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  /*
+     The anchors have to clear the capsule.
+
+     Every in-page link on the home page — Audit my portfolio, How it works,
+     What it costs — lands its section at y=0, and the nav floats over the
+     first 70px of it. The heading arrived underneath the thing you clicked.
+     86 is the capsule's 14 + 56 and 16 of air.
+  */
+  html { scroll-behavior: smooth; scroll-padding-top: 86px; }
 
   body {
     margin: 0;
@@ -3899,6 +3907,33 @@
     background: transparent;
     border-bottom: 0;
     padding: 0;
+  }
+  /*
+     ON THE LANDING PAGE IT LEAVES THE FLOW, so the page runs underneath it.
+
+     The reference's navbar is position: fixed at top 0 and its hero's 700px
+     box starts at page y=0. Ours was sticky — which pins identically once
+     you scroll, but costs 70px of the first screen standing still, and
+     pushed the hero's centred content 70px below the viewport's centre.
+
+     left/right 0 with width: max-content is what keeps `margin: auto`
+     centring a fixed box; a fixed element with auto insets would sit where
+     it last was in the flow instead.
+
+     14px, which is where it already sat at rest: 14 of margin above a
+     sticky top of 12. Their pill lands at 13 inside an 82px bar. The safe
+     area is added rather than replacing it, so on a notched phone it
+     clears the status bar instead of sitting under it.
+
+     .nav-over AND NOT .nav, because every other page opens with a heading
+     in its first 70px and a floating bar would sit on top of it.
+  */
+  .site .nav-over {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    margin: 0 auto;
   }
   /*
      The ground is on ::before rather than on .nav, and that is

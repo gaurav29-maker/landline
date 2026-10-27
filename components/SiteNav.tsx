@@ -64,7 +64,22 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
         than in CSS alone because backdrop-filter needs an element.
       */}
       <div className="scroll-edge" aria-hidden="true" />
-      <nav className="nav">
+      {/*
+        THE NAV LEAVES THE FLOW ON THE LANDING PAGE, and only there.
+
+        The reference's navbar is position: fixed at top 0 and its hero
+        starts at page y=0 — the 700px box runs underneath the bar rather
+        than beginning below it. Ours was sticky and in the flow, so it
+        spent 70px of the first screen before the hero had started, and the
+        hero's own centring was 70px off the viewport's.
+
+        Only on the landing page, because every other page opens with a
+        band or a document that has real content in its first 70px. There,
+        a floating nav would sit on top of a heading. The hero can carry it
+        because the hero's content is centred in 700px and the top of that
+        box is empty by construction.
+      */}
+      <nav className={onLanding ? "nav nav-over" : "nav"}>
       <div className="nav-in">
         <Wordmark className="mark" href="/" />
         <div className="nav-mid">
