@@ -5446,6 +5446,155 @@
      reads once and either recognises themselves in or does not.
   */
   /*
+     ---- shapes a book arrives in ----
+
+     The tabbed-media block from davidprotein.com, which is a pill switcher
+     over a large piece of media beside a heading and one button. Measured
+     off it: the switcher is a rounded track with the active pill filled and
+     the rest of the track a shade lighter than the ground, and the two
+     columns run roughly 45/55 with the copy on the left at desktop width.
+
+     WHAT CHANGED IN THE BORROWING is the media. Theirs is a photograph of a
+     product. There is no photography here at all — no portraits, no
+     logotype, nothing — and a grey box where a picture goes is worse than
+     not copying the pattern. So the media is the book itself, drawn from the
+     sample record, which is the only artefact this product has.
+  */
+  .site .shapes { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+
+  .site .shapes-tabs {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--bg-alt);
+    border: 1px solid var(--rule);
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site .shapes-tabs::-webkit-scrollbar { display: none; }
+
+  .site .shapes-tab {
+    border: 0;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    padding: 9px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    /* 2.5.8: a tab is a target, and 24px is the floor. */
+    min-height: 38px;
+  }
+  .site .shapes-tab:hover { color: var(--ink); }
+  .site .shapes-tab:focus-visible { outline: 2px solid var(--accent-ink, var(--blue)); outline-offset: 2px; }
+  .site .shapes-tab.on {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  }
+
+  .site .shapes-body {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 48px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .site .shapes-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+  .site .shapes-h {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .site .shapes-ask { margin: 0; font-size: 1.1875rem; line-height: 1.75rem; color: var(--ink); }
+  .site .shapes-ask-who {
+    margin: -10px 0 0;
+    font-size: 0.8125rem;
+    color: var(--ink-mute);
+  }
+
+  /* The book. A panel, because it is one object. */
+  .site .shapes-book {
+    min-width: 0;
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 28px 26px 22px;
+    background: var(--bg-alt);
+  }
+  .site .shapes-fig {
+    margin: 0;
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .site .shapes-fig-cap { margin: 8px 0 22px; font-size: 0.875rem; color: var(--ink-mute); }
+
+  /* One scale: the two widths are the two percentages and they total 100. */
+  .site .shapes-split { display: flex; height: 10px; border-radius: 999px; overflow: hidden; }
+  .site .shapes-split-a { background: var(--blue); }
+  .site .shapes-split-b { background: color-mix(in srgb, var(--ink) 14%, transparent); }
+  .site .shapes-split-key {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 9px 0 24px;
+    font-size: 0.75rem;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .site .shapes-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+  .site .shapes-rows li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1.2fr auto;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8125rem;
+  }
+  .site .shapes-row-label { color: var(--ink); min-width: 0; }
+  .site .shapes-row-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    overflow: hidden;
+  }
+  .site .shapes-row-bar > span { display: block; height: 100%; background: var(--blue); border-radius: 999px; }
+  .site .shapes-row-pct {
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .site .shapes-note {
+    margin: 22px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    color: var(--ink-mute);
+  }
+
+  @media (max-width: 900px) {
+    .site .shapes { gap: 28px; }
+    .site .shapes-body { grid-template-columns: 1fr; gap: 28px; }
+    .site .shapes-book { padding: 22px 20px 18px; }
+    .site .shapes-fig { font-size: 2.5rem; }
+    .site .shapes-rows li { grid-template-columns: minmax(0, 1fr) 1fr auto; }
+  }
+
+  /*
      ---- the disqualifiers, as bordered cells ----
 
      Asked for in the shape of x.ai, and measured off it rather than

@@ -13,6 +13,7 @@ import {
 import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import BookShapes from "@/components/BookShapes";
 import AuditExample from "@/components/AuditExample";
 import QuestionsStrip from "@/components/QuestionsStrip";
 import Testimonials from "@/components/Testimonials";
@@ -438,67 +439,37 @@ export default async function Home() {
         disqualifier moved to the thing now actually asked of somebody,
         which is opening the portfolio on the call.
       */}
-      <section className="band" id="notfor">
+      {/*
+        What a book looks like, and what an expert asks about it.
+
+        Replaces the "wrong thing to buy if" band, at Gaurav's request, with
+        the tabbed-media shape from davidprotein.com. The trade is worth
+        naming: that band turned people away, which is the strongest trust
+        signal a SEBI-sensitive page has, and this one does the opposite job
+        — it shows somebody their own portfolio in the list and gives them a
+        reason to book. The disqualifiers still exist in the FAQ and in the
+        terms; they no longer have a band of their own.
+
+        The media is the book rather than a photograph, because there is no
+        photography in this product and a placeholder where a picture goes
+        would be worse than not borrowing the pattern at all.
+      */}
+      <section className="band" id="shapes">
         <div className="wrap">
           <div className="band-head idx">
             <span className="eyebrow">Before you pay</span>
             <h2>
-              This is the <span className="said">wrong</span> thing to buy if&hellip;
+              Find the one that looks like <span className="said">yours</span>.
             </h2>
+            <p>
+              Three shapes a book arrives in, and the first thing an expert asks about each.
+              The figures are from the example record you can download.
+            </p>
           </div>
-          <ul className="notfor">
-            <li>
-              <b>&hellip;you want somebody to manage it for you.</b>
-              <span>
-                Landline never touches your money and there is nothing to hand over. You
-                leave the call holding exactly what you held walking in.
-              </span>
-            </li>
-            <li>
-              <b>&hellip;you want to be told what to buy.</b>
-              <span>
-                No tips, no targets, no model portfolio. If that is what you came for, an
-                expert will spend the whole call not giving it to you.
-              </span>
-            </li>
-            <li>
-              <b>&hellip;you will not open your portfolio on the call.</b>
-              <span>
-                The whole hour is a read of what you actually hold. If you are not willing
-                to put it on the screen, there is nothing to read and you have paid for a
-                conversation about nothing.
-              </span>
-            </li>
-          </ul>
+          <BookShapes />
         </div>
       </section>
 
-
-      {/*
-        One product.
-
-        This was three rungs — a call, a quarterly pass and an annual pass —
-        plus a bundle offered in the booking dialog. All four are still built
-        and still honoured; they are simply no longer for sale.
-
-        The arithmetic is why. At a 2,200 payout a single call earns 3,299
-        and the three-call bundle earns 3,399: three times the work and three
-        times an expert's diary for a hundred rupees more. The discount was
-        funded entirely out of margin, because the third call costs exactly
-        what the first one does — this is a person's time, not software, and
-        it does not get cheaper with volume.
-
-        The passes had the same shape of problem from the other end. Unlimited
-        for 90 days breaks even at 20.5 calls, so one enthusiastic member
-        erases the margin — and an unlimited pass selects for exactly that
-        member. Four quarterlies also cost less than one annual for identical
-        coverage, which the price list has said in a comment since September.
-
-        Nothing is deleted. /api/memberships/*, /api/bundles/hold and
-        /api/bookings/redeem all still work, the console still honours a pass
-        or a bundle somebody holds, and the suite still proves it. Selling
-        them again is putting the markup back, not rebuilding the product.
-      */}
       <section className="band alt" id="ways">
         <div className="wrap">
           <div className="band-head idx">
