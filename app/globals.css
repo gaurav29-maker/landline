@@ -6654,6 +6654,18 @@
     overflow: hidden;
   }
   .site .flow-step { background: var(--bg); padding: 24px 22px; }
+  /*
+     The icon above the number. 32px on a 40 grid, so the strokes sit in
+     from the edge the way the reference's do, and --accent-ink so it is
+     the same ink as the number under it rather than a third colour.
+  */
+  .site .flow-ico {
+    display: block;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 14px;
+    color: var(--accent-ink);
+  }
   .site .flow-step .n { font-family: var(--mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.14em; color: var(--accent-ink); }
   .site .flow-step h3 { margin: 11px 0 7px; font-size: 1rem; line-height: 1.4375rem; }
   .site .flow-step p { font-size: 0.84375rem; line-height: 1.25rem; color: var(--ink-mute); }
