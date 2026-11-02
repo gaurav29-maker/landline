@@ -181,6 +181,27 @@ export default async function Home() {
             room to explain, but that section is seven screens down and this
             reader may not get there.
           */}
+          {/*
+            THE LINE UNDER THE HEADLINE, which the reference has and we did
+            not. Theirs reads "Affordable, fast and human powered video
+            edits" — three adjectives in a row, and each one pre-empts an
+            objection in the order a reader has them: what will it cost, how
+            long will it take, is a machine doing it.
+
+            Ours answers the three a different reader has. What will it cost
+            — one price, because there is one product. What am I committing
+            to — one call, with nothing to cancel afterwards. And the one
+            that is specific to Indian retail, where "book a market expert"
+            usually does mean somebody on commission: nobody here is paid
+            more because of what you own. That last clause is the whole
+            business in nine words and it had no place on the page.
+
+            It sits ABOVE the "not a" chips, so the claim arrives before its
+            denials rather than after them.
+          */}
+          <p className="hero-sub">
+            One price, one call, and nobody earning a rupee from what you hold.
+          </p>
           <p className="reject">
             <span>Not a tip service</span>
             <span>Not a Telegram group</span>

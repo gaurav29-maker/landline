@@ -36,23 +36,26 @@ the way.
 
 ## What it sells
 
-Priced in `lib/constants.ts`, one source of truth for the whole site.
+**One product: the call, ₹5,499.** No packages, no passes, nothing to cancel.
+The storefront says exactly that and the software holds it: a POST to
+`/api/memberships/purchase` answers `410 Gone` rather than 404, because 404
+reads as a bad deploy worth retrying and 410 says a decision was taken. A
+check in `verify-flow.ts` posts a body that used to be accepted, so the test
+fails if the handler is ever restored rather than only if the file is renamed.
 
-| | Price | What it is |
-|---|---|---|
-| Single call | ₹5,499 | One session, no time limit |
-| Three-call bundle | ₹9,999 | ₹3,333 a call, expires in 60 days |
-| Quarterly pass | ₹45,000 | 90 days, unlimited, no throttle |
-| Annual pass | ₹2,45,000 | 365 days, unlimited |
+`MEMBERSHIP_TIERS` and the `BUNDLE_*` constants are still in
+`lib/constants.ts`, and they are not a ladder waiting to be re-enabled.
+`/api/memberships/book` is deliberately alive so somebody who already bought a
+pass can still book inside it — ceasing to sell a thing and refusing to honour
+what was already sold are different decisions, and only the first was taken.
 
-Two things about that ladder are knowingly odd and were shipped anyway: four
-quarterly passes cost ₹1,80,000 against ₹2,45,000 for an annual with identical
-coverage, and the bundle sells calls at a 39% discount to list, the widest gap
-in the ladder.
-
-A pass is **bought outright, not auto-renewed**. That sidesteps the RBI
-e-mandate framework, and it means the renewal prompt in the console is not a
-nudge — it is the entire renewal mechanism. Without it, people simply lapse.
+> **This paragraph was wrong for five days and the error is worth recording.**
+> The first version of this document, written 27 October, printed a
+> four-product ladder — single call, three-call bundle, quarterly pass, annual
+> pass — and went on to discuss which of them was mispriced. The decision to
+> sell one product shipped on **29 September**, a month earlier. I read the
+> constants and assumed a constant that exists is a product that sells. The
+> constants exist to honour what was already sold. Corrected 2 November.
 
 Experts set their own price within `PRICE_MIN_PAISE` and `PRICE_MAX_PAISE`,
 and an expert can sell more than one product — a long audit and a short second
@@ -195,6 +198,7 @@ These are genuine, and getting them wrong changes what gets built.
    searching a specific question. At ₹5,499 a call this needs either organic
    search or a referral loop, and neither exists in the software.
 
-5. **Whether the price ladder is intentional.** Four quarterlies costing less
-   than one annual is either a decision or an oversight, and it is recorded as
-   a decision.
+5. ~~**Whether the price ladder is intentional.**~~ **Closed, and it was never
+   open.** There is no ladder — one product, by a decision that shipped on 29
+   September. The question only existed because this document had the catalogue
+   wrong. See **What it sells** above.

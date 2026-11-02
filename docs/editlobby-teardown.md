@@ -225,12 +225,23 @@ want a table.
 pack name 26/700, feature lines 16/500. Premium is a 42/400 Instrument Serif
 head — the serif marks the expensive tier.
 
-**Landline.** `#ways`, "One call, one price." Our four products are a single
-call, a 3-call bundle, a quarterly pass, an annual pass — a comparable
-ladder. Two things to take: **two buttons per tier** (ours has one), and the
-**in-card toggle** instead of four separate cards. Our known pricing oddity
-(four quarterlies cost less than one annual) is exactly what a compare table
-would expose, which is an argument for building one.
+**Landline.** `#ways`, "One call, one price."
+
+**CORRECTED 2 Nov, after reading the code rather than my own notes.** The
+first draft of this section said we have four products and should copy their
+tiering. We do not. **The ladder deliberately came down to one product** —
+the call. `/api/memberships/purchase` answers `410 Gone` with a note
+explaining why it is a refusal and not a deleted file, and a check in
+`verify-flow.ts` posts to it the way a caller would so it fails if the
+handler is ever restored. `MEMBERSHIP_TIERS` survives only so somebody who
+already bought a pass can still book inside it: ceasing to sell a thing and
+refusing to honour what was sold are different decisions.
+
+So **their pricing section is the one part of this page we should not take**.
+Two buttons per tier, the in-card pack toggle and a compare table all
+presuppose tiers, and having one product is a position rather than an
+omission. The storefront line — "No packages, no passes, nothing to cancel"
+— is the stronger claim precisely because their page cannot make it.
 
 ---
 
@@ -290,8 +301,12 @@ lingers.
 
 **CDO.** 66/500 head, 23/500 sub, the same two buttons.
 
-**Landline.** Ours is the closer, "One call. One honest read." Right register,
-no sub line under it. Theirs has one and it earns its place.
+**Landline.** Ours is the closer, "One call. One honest read."
+
+**CORRECTED.** The first draft said ours has no sub line under it. It does —
+`.closer-line`, reading "They read it with you. Nobody sells you anything."
+That is the same move theirs makes, answering the last objection last. No
+change needed.
 
 ---
 
@@ -319,14 +334,15 @@ placement.
 
 1. **Feature cards with no card.** Padding and a radius, no fill, no border.
    Instantly less generic than bordered boxes.
-2. **Two buttons on every price.** Buy, and talk to someone.
+2. ~~Two buttons on every price.~~ **Withdrawn** — presupposes tiers, and we
+   deliberately have one product. See § 7.
 3. **A constraint in the hero headline.** Theirs is 48-72hrs; ours is a
    single call with no time limit.
 4. **Objections before price, not after.** Their Features at slot 5; our
    "What this is not" at slot 9.
 5. **The LobbyOS slot.** We have three consoles and mention none.
 6. **Three steps, not six.**
-7. **A sub line under the closing CTA.**
+7. ~~A sub line under the closing CTA.~~ **Withdrawn** — we already have one.
 8. **Recruit in the footer, not as a band.**
 
 ## 4. What not to take
@@ -344,5 +360,5 @@ placement.
 2. Is there a true "Built by Editors" line for Landline — a founder
    credential that does a testimonial's work?
 3. Six steps or three?
-4. Does the price ladder get a compare table, given four quarterlies cost
-   less than one annual?
+4. ~~Does the price ladder get a compare table?~~ **Closed** — there is no
+   ladder. One product, by decision, enforced by a 410 and a test.
