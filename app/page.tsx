@@ -214,6 +214,21 @@ export default async function Home() {
             a person before they go live, and they cannot edit it afterwards.
             It is the same sentence the experts band makes at length, said
             short, seven screens earlier.
+
+            THE WORDING, SECOND PASS. It read "Checked by a person before
+            they are listed", which narrates our own admin in the passive
+            voice: it is a sentence about us, and the reader has to do the
+            work of turning it into a reason to trust anybody.
+
+            "Checked by a person, not bought" gives them the consequence
+            instead, and carries both halves of the claim in five words.
+            Checked earns the tick beside it. Not bought is the half that
+            matters in Indian retail, where the prior is that whoever is
+            advising you is paid to: there is no listing fee, no placement
+            charge and nothing featured or sponsored in this codebase, and
+            the money runs the other way at 80% of the session to the
+            expert. An expert goes draft to live when a person approves
+            them, never when they pay.
           */}
           <p className="hero-trust">
             <svg
@@ -229,7 +244,7 @@ export default async function Home() {
               <circle cx="12" cy="12" r="9" />
               <path d="M8 12.2l2.6 2.6L16 9.4" />
             </svg>
-            Checked by a person before they are listed
+            Checked by a person, not bought
           </p>
         </div>
       </header>
