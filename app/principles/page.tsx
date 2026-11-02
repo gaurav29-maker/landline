@@ -66,7 +66,7 @@ export default function Principles() {
               no measurement of visitors at all.
             </p>
             <p>
-              The site talks to exactly four outside services, and each one is doing a job you
+              The site talks to exactly five outside services, and each one is doing a job you
               asked for:
             </p>
             <ul className="doc-list">
@@ -77,8 +77,14 @@ export default function Principles() {
                 <strong>MSG91</strong> — to send the six-digit code when you sign in.
               </li>
               <li>
-                <strong>Google</strong> — a calendar invite if you connect a calendar, and the
-                fonts this page is set in.
+                <strong>Google</strong> — a calendar invite if you connect a calendar, and two
+                of the fonts this page is set in.
+              </li>
+              <li>
+                <strong>Fontshare</strong> — the typeface the rest of this page is set in. It is
+                the Indian Type Foundry&rsquo;s own font service, and it was a fifth entry on this
+                list before it was a design decision: adding it failed the build, which is how it
+                comes to be written down here.
               </li>
               <li>
                 <strong>Cloudflare Turnstile</strong> — a bot check on the sign-in form, so
@@ -86,8 +92,10 @@ export default function Principles() {
               </li>
             </ul>
             <p className="doc-note">
-              If a fifth ever appears, a test in the build fails and somebody has to justify it in
-              writing. That is the whole enforcement mechanism, and it is more than a promise.
+              If a sixth ever appears, a test in the build fails and somebody has to justify it in
+              writing. That is the whole enforcement mechanism, and it is more than a promise —
+              the Fontshare line above is there because the test refused the change until somebody
+              wrote it.
             </p>
           </section>
 

@@ -1857,7 +1857,7 @@ async function main() {
     "plausible.io",
   ];
 
-  /* Exactly the four the page names, expanded to the hosts they use. */
+  /* Exactly the five the page names, expanded to the hosts they use. */
   const ALLOWED_HOSTS = new Set([
     "checkout.razorpay.com", // Razorpay — taking the payment
     "control.msg91.com", // MSG91 — the sign-in code
@@ -1865,8 +1865,10 @@ async function main() {
     "oauth2.googleapis.com",
     "www.googleapis.com",
     "calendar.google.com",
-    "fonts.googleapis.com", // Google — the fonts this site is set in
+    "fonts.googleapis.com", // Google — Instrument Serif, IBM Plex Mono, Inter
     "fonts.gstatic.com",
+    "api.fontshare.com", // Fontshare — Satoshi, the face the site reads in
+    "cdn.fontshare.com",
     "challenges.cloudflare.com", // Turnstile — the bot check on sign-in
   ]);
 
@@ -1896,7 +1898,7 @@ async function main() {
     strangers.length === 0,
     strangers.length > 0
       ? `unlisted: ${strangers.join(", ")}`
-      : `${sourceHosts.size} hosts, all four services accounted for`,
+      : `${sourceHosts.size} hosts, all five services accounted for`,
   );
 
   check(

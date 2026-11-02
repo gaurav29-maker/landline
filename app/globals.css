@@ -34,7 +34,7 @@
    * A display face: the wordmark only, never reading type.
    */
   :root {
-    --font-mark: 'Korataki', 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mark: 'Korataki', 'Satoshi', 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
 
     /* Buttons are pills. Cards and inputs are not — they keep their own. */
     --radius-btn: 999px;
@@ -128,7 +128,7 @@
     margin: 0;
     background: var(--canvas);
     color: var(--ink-dark);
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Satoshi', 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -190,7 +190,7 @@
      lines by an 11ch measure.
   */
   .hero h1 {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Satoshi', 'Inter', sans-serif;
     font-weight: 800;
     font-size: 3rem;
     line-height: 1.12;
@@ -202,7 +202,7 @@
 
   /* What every other heading gets: a page title, not a billboard. */
   h1 {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Satoshi', 'Inter', sans-serif;
     font-weight: 700;
     font-size: 1.625rem;
     line-height: 1.2;
@@ -224,7 +224,7 @@
     border: none;
     padding: 13px 28px;
     border-radius: var(--radius-btn);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Satoshi', 'Inter', sans-serif;
     font-size: 0.90625rem;
     font-weight: 600;
     cursor: pointer;
@@ -284,7 +284,7 @@
   .section-eyebrow { font-size: 0.78125rem; font-weight: 700; color: var(--blue-deep); text-transform: none; margin: 0 0 8px; }
   .section-head { margin-bottom: 36px; }
   .section-head h2 {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Satoshi', 'Inter', sans-serif;
     font-weight: 800;
     font-size: 1.875rem;
     margin: 0 0 8px;
@@ -2202,7 +2202,7 @@
   }
   .site-dark .price-amount span,
   .site-dark .expert-rate span {
-    font-family: "Inter", sans-serif;
+    font-family: "Satoshi", "Inter", sans-serif;
     letter-spacing: 0;
   }
 
@@ -3599,7 +3599,7 @@
 
     background: var(--bg);
     color: var(--ink-body);
-    font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "Satoshi", "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.25rem;
@@ -4335,11 +4335,24 @@
      everywhere else the button is one of several things on the row and
      this size would be shouting.
   */
+  /*
+     THEIR HERO BUTTON, measured: 68 tall, 24px 48px of padding, and a
+     21px/500 label on -0.02em.
+
+     The height was already theirs. The label was not — 15px/600 against
+     their 21px/500, which is the difference between a button sized for a
+     toolbar and one sized to be the second thing you read on the page.
+     Their vertical padding is expressed here as min-height, which lands
+     the same 68 while letting a wrapped label grow the box instead of
+     spilling out of it.
+  */
   .site .hero-band .b {
     min-height: 68px;
-    padding: 0 34px;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    padding: 0 48px;
+    font-size: 1.3125rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.5rem;
   }
   /* Inside a document the text is left-aligned, so the buttons under it are too. */
   .site .doc .b-pair { justify-content: flex-start; margin-top: 4px; }
@@ -5124,7 +5137,15 @@
     .site .hero-band .b {
       min-height: 44px;
       padding: 0 20px;
-      font-size: 0.84375rem;
+      /*
+         16, not their desktop 21 and not the 13.5 this was. The 44px floor
+         below is the accessibility rule this sweep exists for and it is not
+         moving, so the label is sized to sit in 44 rather than to scale
+         their 21 down by the same ratio as everything else. Their own phone
+         hero button was not measured — the selector that found it at 1440
+         finds the nav button at 375 — so this is a judgement, not a copy.
+      */
+      font-size: 1rem;
     }
 
     /*
@@ -7919,7 +7940,7 @@
      the colours were always the site's.
   */
   .site-dark.os .signin {
-    font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "Satoshi", "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 0.875rem;
     line-height: 1.25rem;
     letter-spacing: normal;

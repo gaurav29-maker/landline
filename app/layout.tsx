@@ -67,6 +67,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="" />
+        {/*
+          SATOSHI, from Fontshare, which is the reference's reading face.
+
+          A second host for one family, which is a real cost on a cold load
+          — but Satoshi is not on Google Fonts and the alternative is
+          self-hosting a file this repo would then have to carry. Fontshare
+          is the Indian Type Foundry's own CDN and the ITF Free Font Licence
+          covers commercial use, so this is the intended way to load it.
+
+          Inter stays in every stack behind it. Until Satoshi arrives, or if
+          Fontshare is blocked, the site renders in Inter exactly as it did
+          — same trick as the Korataki wordmark above.
+
+          400 / 500 / 700 / 900: 500 is the body and heading weight on the
+          reference, 700 the labels, 900 the footer heads.
+
+          600 IS NOT A SATOSHI WEIGHT and 22 rules in this stylesheet ask
+          for it, nearly all of them in the consoles. They are left alone:
+          CSS font matching for a desired 600 looks upward first, so every
+          one of them resolves to 700 — a deterministic step, not a
+          synthesised fake. Worth knowing before wondering why a console
+          label looks a shade heavier than it did.
+        */}
+        <link
+          href="https://api.fontshare.com/v2/css?f%5B%5D=satoshi@400,500,700,900&display=swap"
+          rel="stylesheet"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
