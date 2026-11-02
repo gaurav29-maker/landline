@@ -3862,7 +3862,35 @@
     display: flex; flex-direction: column; gap: 16px;
     align-items: center; text-align: center; margin-bottom: 44px;
   }
+  /*
+     THE LABEL IS A PILL, which is theirs and is site-wide on their page:
+     every section head wears one — Process, Our Work, Features, Pricing,
+     Our Testimonials, Frequently Asked Questions. 40px tall, 12px 16px of
+     padding, a 50px radius and a 10px blur over a translucent ground.
+
+     height AND NOT vertical padding, so the box lands on 40 whether or not
+     the border is counted. Theirs draws its 1px through a pseudo-element,
+     so its computed border reads 0 and its height still reads 40; ours
+     uses a real border and gets there by fixing the height instead.
+
+     THE RIGHT PADDING IS SHORT BY THE TRACKING. Ours is uppercase on
+     0.1em, and letter-spacing is applied after the last character too —
+     so a symmetric 16px would sit the text 1.6px left of centre inside
+     its own pill. Theirs is title case and has no such trailing space.
+
+     Tokens, not their literals: rgba(13,13,13,0.4) over a 10px blur has
+     no light mode, and these heads render on both.
+  */
   .site .band-head .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 calc(16px - 0.1em) 0 16px;
+    border-radius: 50px;
+    background: var(--mat-bg);
+    border: 1px solid var(--hairline);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     font-size: 1rem;
     font-weight: 700;
     /* 0.1em, not their -0.02: theirs is title case and ours is uppercase,
@@ -3872,7 +3900,12 @@
     /* 1.0, theirs: a label is one line and should occupy one line's worth. */
     line-height: 1;
     color: var(--ink-mute);
-    margin-bottom: 4px;
+    /*
+       -8px against the 16px flex gap lands on their 8. The 20px I recorded
+       in the teardown was measured from the label's TEXT; from the pill's
+       own box it is 8, because the pill carries 12 of bottom padding.
+    */
+    margin-bottom: -8px;
   }
   .site .band-head h2 {
     font-size: clamp(1.75rem, 6.675vw, 4.5rem);
@@ -5318,7 +5351,12 @@
        tighter fit than 28px can.
     */
     .site .band-head h2 { font-size: 1.75rem; letter-spacing: -0.02em; }
-    .site .band-head .eyebrow { font-size: 0.875rem; }
+    /*
+       14 is theirs at 375. The 34px pill around it is not — their phone
+       pill was never measured, and 40 around a 14px label is loose. A
+       judgement, said out loud rather than dressed up as a number.
+    */
+    .site .band-head .eyebrow { font-size: 0.875rem; height: 34px; padding: 0 14px; }
     .site .row2 { grid-template-columns: 1fr; }
     .site .doc-head { gap: 14px; }
 
