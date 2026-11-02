@@ -8057,3 +8057,107 @@
   .site-dark.os .ops-input:not(.signin *):focus,
   .site-dark.os .bp-field input:not(.signin *):focus,
   .site-dark.os .bp-field textarea:not(.signin *):focus { border-color: var(--blue); }
+
+  /* ------------------------------------------------------------------
+     THE DESKTOP NAV, AT THEIR MEASUREMENTS.
+
+     Read off the reference's own inline styles rather than a screenshot:
+     the outer bar is 24px 64px of padding, the capsule is padding 6px 4px
+     on a 23px radius with justify-content: space-evenly, and the account
+     link sits OUTSIDE the capsule at the far right.
+
+     901 AND NOT EVERY WIDTH, which is the whole point of this block. This
+     structure shipped once before and was reverted, correctly: at 878 the
+     links, the theme button and the console pill are all hidden by the
+     900 sweep below, so the glass was being drawn around a wordmark and
+     nothing else — a 170px pill with one word in it and the burger
+     floating outside it with no ground under it. Above 901 every one of
+     those items exists, so the capsule has something to be a capsule
+     around. Below it, the single capsule stays exactly as it is.
+
+     23px is theirs and it is not a pill: their capsule measures about
+     50.8px tall inside a 98.8px bar, so 23 is just under half and the
+     sides are very slightly flat. Ours is 56 tall, which keeps the same
+     relationship.
+
+     WHAT IS DELIBERATELY NOT COPIED: their capsule is pinned to a fixed
+     675px, and their link colour is a hardcoded rgba(255,255,255,0.55).
+     The width is theirs because their five labels fit it; ours are longer
+     ("Audit my portfolio", "What it costs") and a fixed width sized to
+     somebody else's words would clip ours. The colour is worse: a literal
+     white alpha has no light mode, and this nav renders on both themes.
+     Tokens stay.
+  */
+  @media (min-width: 901px) {
+    .site .nav {
+      width: auto;
+      max-width: none;
+      /*
+         24px 64px, theirs exactly. Their bar is 98.8 tall with 24 of
+         vertical padding, which puts the capsule 24 from the top of the
+         viewport; ours sat at 14. height goes to auto because a fixed 56
+         with 24 of padding would crush the capsule to 8.
+      */
+      height: auto;
+      margin: 0;
+      padding: 24px 64px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+    }
+    /* The 24px of padding above now does what the 14px offset used to. */
+    .site .nav-over { top: env(safe-area-inset-top, 0px); margin: 0; }
+
+    /* One ground, on the capsule rather than around the pair. */
+    .site .nav::before { content: none; }
+    .site .nav-in::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--mat-bg);
+      -webkit-backdrop-filter: var(--glass-near);
+      backdrop-filter: var(--glass-near);
+      border: 1px solid var(--hairline);
+      border-radius: 23px;
+      box-shadow: var(--mat-lift);
+    }
+    /*
+       LOAD-BEARING. ::before is positioned at z-index 0 and the wordmark
+       and links are static, and in one stacking context a positioned box
+       at z-index 0 paints ABOVE its static siblings. Without this the
+       glass covers the capsule's own contents and the row goes blank —
+       which is exactly what happened the first time, and it looked
+       plausible in a scaled-down screenshot because the filled button
+       carries its own positioning and survived.
+    */
+    .site .nav-in > * { position: relative; z-index: 1; }
+
+    .site .nav-in {
+      grid-column: 2;
+      padding: 6px 4px;
+      gap: 0;
+      justify-content: space-evenly;
+      border-radius: 23px;
+    }
+    /* 6px 8px, theirs, against the 7px 10px this had. */
+    .site .nav-mid a { padding: 6px 8px; }
+
+    .site .nav-aside { grid-column: 3; justify-self: end; }
+    /*
+       The console link takes the capsule's material. It was an outline,
+       on the argument that an outline reads as a button when it sits on
+       the nav's own ground — and out here it has no ground under it, so
+       the premise is gone. Two glass objects, one blue action inside the
+       first, which is the hierarchy the reference has.
+    */
+    .site .nav-aside .b {
+      background: var(--mat-bg);
+      border: 1px solid var(--hairline);
+      color: var(--ink);
+      box-shadow: var(--mat-lift);
+      -webkit-backdrop-filter: var(--glass-near);
+      backdrop-filter: var(--glass-near);
+    }
+  }
