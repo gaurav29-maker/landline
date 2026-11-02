@@ -6737,11 +6737,20 @@
   .site .recruit p { max-width: 52ch; margin: 0 auto 24px; font-size: 1rem; line-height: 1.5625rem; color: var(--ink-mute); }
   .site .panel a.b { margin-top: 8px; }
 
+  /*
+     THREE INTO ONE, NOT INTO TWO.
+
+     This said "six into two, eight into two — still whole rows", and that
+     was true of six. The flow is three now, and three in two columns is
+     2 + 1: a ragged last row with one card sitting alone beside a gap.
+     Measured at 800 before changing it.
+
+     Three is the one count with no clean middle step, so there is no
+     middle step — three columns while they fit, one when they do not.
+     The old 560 rule said 1fr and is gone with the two-column stage it
+     existed to end.
+  */
   @media (max-width: 900px) {
-    /* Six into two, eight into two — still whole rows. */
-    .site .flow { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 560px) {
     .site .flow { grid-template-columns: 1fr; }
   }
 

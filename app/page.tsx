@@ -367,45 +367,48 @@ export default async function Home() {
               open, which is a smaller ask and still an ask — so it is still
               named rather than smoothed away.
             */}
-            <p>Six steps. Nothing to fill in first.</p>
+            <p>Three steps. Nothing to fill in first.</p>
           </div>
+          {/*
+            THREE, NOT SIX, AND THE SIX ARE ALL STILL HERE.
+
+            The reference runs this section as three, and the count is the
+            argument: three steps is a small thing, six is a process. Ours
+            said "nothing to fill in first" directly above six numbered
+            cards — a sentence and a layout disagreeing in one glance.
+
+            Nothing was dropped to get there. Every fact the six carried is
+            in the three: the question can be a holding, a company or a
+            sector; the expert is chosen by a person rather than matched by
+            software; availability is live and nobody emails you back; there
+            is no form; the call is one to one with the portfolio open and
+            read back; and nothing renews afterwards. What went is the
+            numbering of them, not the content.
+          */}
           <div className="flow">
             <div className="flow-step">
               <p className="n">01</p>
-              <h3>Your question</h3>
-              <p>A holding, a company, a sector. However it arrives.</p>
+              <h3>Your question, your expert</h3>
+              <p>
+                A holding, a company, a sector &mdash; however it arrives. You pick the
+                person, not a matching algorithm.
+              </p>
             </div>
             <div className="flow-step">
               <p className="n">02</p>
-              <h3>Your choice of expert</h3>
-              <p>A person, not a matching algorithm.</p>
+              <h3>A real slot</h3>
+              <p>
+                Live availability, booked in the open. Nobody emails you back, and there
+                is nothing to fill in first.
+              </p>
             </div>
             <div className="flow-step">
               <p className="n">03</p>
-              <h3>A real slot</h3>
-              <p>Live availability. Nobody emails you back.</p>
-            </div>
-            {/*
-              Step four was "your holdings, written down — five minutes, the
-              only work on your side", and five was "with somebody who has
-              read it". Both described the intake form. The work asked of
-              somebody is now having the portfolio open, so that is what it
-              says; and the expert reads it with them rather than before.
-            */}
-            <div className="flow-step">
-              <p className="n">04</p>
-              <h3>Your portfolio, open</h3>
-              <p>On your screen. Nothing to fill in first.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">05</p>
-              <h3>The call</h3>
-              <p>One to one. They read it back to you.</p>
-            </div>
-            <div className="flow-step">
-              <p className="n">06</p>
-              <h3>It stops</h3>
-              <p>Nothing renews. Nobody follows up.</p>
+              <h3>The call, then nothing</h3>
+              <p>
+                One to one, your portfolio open on your screen and read back to you.
+                Nothing renews and nobody follows up.
+              </p>
             </div>
           </div>
         </div>
