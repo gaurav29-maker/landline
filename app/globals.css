@@ -4505,25 +4505,6 @@
     .site .hero-badge { gap: 7px; }
   }
 
-  /*
-     The line under the headline, at their size: 28/500 on -0.02em and a 1.5
-     line at 1440, 16 at 375, both measured. 2.4vw passes through their
-     phone number at the bottom and reaches 28 at 1167, where they stop.
-
-     --ink-mute rather than --ink: it is a sub, and a second line at full
-     strength competes with the headline instead of supporting it.
-  */
-  .site .hero-sub {
-    max-width: 34ch;
-    margin: 0 auto 22px;
-    font-size: clamp(1rem, 2.4vw, 1.75rem);
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    line-height: 1.5;
-    color: var(--ink-mute);
-    text-wrap: balance;
-  }
-
   /* Sits under the headline now, so its margin is the gap to the buttons. */
   .site .reject { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
   .site .reject span {
