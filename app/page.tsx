@@ -194,6 +194,43 @@ export default async function Home() {
               Audit my portfolio
             </a>
           </div>
+
+          {/*
+            THE TRUST LINE UNDER THE BUTTONS, which is the slot the reference
+            fills with three customer faces and "Trusted by 100+ Brands".
+
+            WE CANNOT FILL IT THAT WAY AND SHOULD NOT PRETEND TO. There is no
+            photo, avatar or image column anywhere in the schema — we hold no
+            picture of any expert, let alone a customer. TESTIMONIALS is an
+            empty array on purpose. Nothing has been sold yet, so a count of
+            clients would be a number invented for a hero. And the initials
+            disc that once stood in for a face was deliberately taken off the
+            expert card, for reasons recorded in ExpertGrid.
+
+            So the slot keeps its job — give a reason to believe before the
+            fold — and changes its evidence. The one claim here that is both
+            true today and the actual difference from a directory anybody can
+            buy a listing on: the work history on every expert is checked by
+            a person before they go live, and they cannot edit it afterwards.
+            It is the same sentence the experts band makes at length, said
+            short, seven screens earlier.
+          */}
+          <p className="hero-trust">
+            <svg
+              className="hero-trust-ico"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M8 12.2l2.6 2.6L16 9.4" />
+            </svg>
+            Checked by a person before they are listed
+          </p>
         </div>
       </header>
 

@@ -4538,6 +4538,31 @@
     .site .hero-badge { gap: 7px; }
   }
 
+  /*
+     The trust line, in the slot the reference gives to customer faces.
+     34px tall and 14/500 on -0.02em, which is their row's geometry; what
+     stands in it is a claim rather than a photograph, because we have no
+     photographs — see the note in page.tsx.
+  */
+  .site .hero-trust {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 34px;
+    margin: 28px auto 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ink-mute);
+  }
+  .site .hero-trust-ico {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: var(--accent-ink);
+  }
+
   /* Sits under the headline now, so its margin is the gap to the buttons. */
   .site .reject { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
   .site .reject span {
@@ -5171,12 +5196,20 @@
       min-height: 44px;
       padding: 0 20px;
       /*
-         16, not their desktop 21 and not the 13.5 this was. The 44px floor
-         below is the accessibility rule this sweep exists for and it is not
-         moving, so the label is sized to sit in 44 rather than to scale
-         their 21 down by the same ratio as everything else. Their own phone
-         hero button was not measured — the selector that found it at 1440
-         finds the nav button at 375 — so this is a judgement, not a copy.
+         16, against their desktop 21 and the 13.5 this was.
+
+         CORRECTED 2 NOVEMBER. This comment used to say the 44px floor
+         below "is not moving", and that was already false when it was
+         written: the 360-460 block further down sets min-height: 0 and a
+         36px height on .b-pair .b, deliberately and with its own
+         reasoning, so between 360 and 460 the button is 36 tall with a
+         14px label and neither line here applies. Measured at 375: 36/14.
+
+         What is left of this rule is the range BELOW 360, where the other
+         block does not match. So a 320px phone gets 44/16 and a 375px
+         phone gets 36/14 — a real inconsistency, recorded rather than
+         quietly papered over, because deciding between a target-size floor
+         and the reference's 36 is a judgement call and not a typo.
       */
       font-size: 1rem;
     }
