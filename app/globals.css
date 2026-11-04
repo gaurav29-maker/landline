@@ -4202,15 +4202,43 @@
      The sizing below still belongs to the bar: 44 tall and 20px of side
      padding, because the hero's 68 is a hero's number.
   */
+  /*
+     THE CONSOLE LINK IS A FILLED PILL, which is what the reference's
+     account link actually is — 36 tall, 9px 13px of padding, a 999px
+     radius, no border, a 10px blur behind it and a three-part shadow
+     whose last layer is a 1px ring of the accent at 12%.
+
+     I GOT THIS WRONG WHEN I MOVED IT OUT OF THE CAPSULE. The commit that
+     did so argued the link should take the capsule's glass because that
+     was "the hierarchy the reference has". Measured, it is not: theirs
+     is a filled accent pill, the same treatment as the primary action
+     sitting inside the capsule beside it. Two filled buttons in one bar
+     is their decision, not an accident, and copying the material without
+     checking it was mine.
+
+     Our accent rather than their lavender: the shape and the treatment
+     transfer, the brand colour does not. color-mix keeps the 12% ring on
+     the token instead of hardcoding an rgba of it.
+  */
   .site .nav-aside .b {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: none;
-    min-height: 44px;
+    min-height: 36px;
     min-width: 0;
-    padding: 0 20px;
+    padding: 0 13px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--on-accent);
     font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 4px 10px -2px rgba(0, 0, 0, 0.05),
+      0 2px 2px -1px rgba(0, 0, 0, 0.1),
+      0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
   }
+  .site .nav-aside .b:hover { background: var(--accent-ink); color: var(--on-accent); }
 
   /*
      ---- the phone nav ----
@@ -8212,21 +8240,6 @@
     .site .nav-mid a { padding: 6px 8px; }
 
     .site .nav-aside { grid-column: 3; justify-self: end; }
-    /*
-       The console link takes the capsule's material. It was an outline,
-       on the argument that an outline reads as a button when it sits on
-       the nav's own ground — and out here it has no ground under it, so
-       the premise is gone. Two glass objects, one blue action inside the
-       first, which is the hierarchy the reference has.
-    */
-    .site .nav-aside .b {
-      background: var(--mat-bg);
-      border: 1px solid var(--hairline);
-      color: var(--ink);
-      box-shadow: var(--mat-lift);
-      -webkit-backdrop-filter: var(--glass-near);
-      backdrop-filter: var(--glass-near);
-    }
   }
 
   /* ------------------------------------------------------------------
