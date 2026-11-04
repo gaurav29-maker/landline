@@ -5494,6 +5494,21 @@
     .site .hero-band h1 { margin-bottom: 10px; }
     .site .reject { margin-bottom: 26px; }
     /*
+       THE TWO PADDINGS I SKIPPED LAST TIME, and they are what actually
+       sets where the stack sits rather than how it is spaced inside.
+
+       Their hero holds three blocks: the eyebrow's container, carrying
+       padding: 50px 0 0 on a phone; the main section, carrying
+       0 0 20px; and the logo row. Ours has two — .wrap, which plays the
+       part of their first two blocks at once, and .strip. So .wrap takes
+       their 50 above and their 20 below.
+
+       The 50 is the reason their eyebrow sits lower in the box than ours
+       did: it pads the top of the centred stack, which pushes everything
+       down without changing any gap between the rows.
+    */
+    .site .hero-band .wrap { padding-top: 50px; padding-bottom: 20px; }
+    /*
        28 and 14, theirs at 375, and flat across the phone range for the
        same reason the hero is: they hold one size there rather than
        running a curve through it. The heading's tracking opens from -0.05
