@@ -6465,10 +6465,28 @@
   .site .aud-ico svg { width: 24px; height: 24px; }
 
   .site .aud-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  /*
+     OUR LABEL, NOT THEIRS. This arrived as editlobby's 14px / 600 / 0.14em
+     and that is their type, not ours. .site .eyebrow — the treatment every
+     other label on this site uses — is var(--mono) at 500 with 0.16em, and
+     a section cannot be the one place that sets uppercase labels in a
+     different face at a different weight.
+
+     The size stays at 0.875rem rather than dropping to the eyebrow's
+     0.625rem: this is a row heading inside a card, not a section eyebrow,
+     and at 10px it stops being readable next to a 15px sentence.
+
+     var(--mono) RESOLVES TO NOTHING ON .site TODAY — the token is declared
+     only inside .site-dark, so this falls back to the body sans exactly as
+     every other eyebrow on this page already does. The token is still the
+     right thing to name: when --mono is fixed, this comes with it instead
+     of being left behind as the one hardcoded label.
+  */
   .site .aud-label {
+    font-family: var(--mono);
     font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--ink-mute);
@@ -6492,8 +6510,8 @@
   }
   .site .aud-chip b {
     font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.03em;
     line-height: 1;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
@@ -6507,10 +6525,11 @@
 
   /* Names the bar, so it is not read as a drawing of the figure above. */
   .site .aud-bar-h {
+    font-family: var(--mono);
     margin: 10px 0 -4px;
     font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--ink-faint);
@@ -6539,17 +6558,23 @@
   }
   .site .aud-panel-head { display: flex; flex-direction: column; gap: 8px; }
   .site .aud-panel-n {
+    font-family: var(--mono);
     font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--accent-ink);
   }
+  /*
+     500, not 700. .shapes-h — the heading on the section nine screens
+     down that shows these same three shapes — is 1.5rem / 500 / -0.015em,
+     and so is every other heading on this site. 700 was editlobby's.
+  */
   .site .aud-panel h3 {
     font-size: 1.375rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
     line-height: 1.2;
     margin: 0;
     color: var(--ink);
@@ -6561,10 +6586,20 @@
      have to share a line somewhere.
   */
   .site .aud-fig { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0 0; }
+  /*
+     500 and -0.03em are .shapes-fig's, which is the SAME NUMBER rendered
+     further down this page. Two sections printing 51% in two weights would
+     have been the clearest possible sign that one of them was pasted in
+     from somewhere else. Only the size is ours, because theirs is 68px and
+     the sibling's is 48.
+
+     Not var(--mono): .shapes-fig is not mono either, and these two have to
+     agree before either agrees with .price-one-fig.
+  */
   .site .aud-fig b {
     font-size: clamp(2.75rem, 7vw, 4.25rem);
-    font-weight: 700;
-    letter-spacing: -0.04em;
+    font-weight: 500;
+    letter-spacing: -0.03em;
     line-height: 0.95;
     color: var(--ink);
     font-variant-numeric: tabular-nums;
@@ -6614,7 +6649,11 @@
     margin: 6px 0 0;
     padding-top: 16px;
     border-top: 1px solid var(--hairline);
-    font-family: "Instrument Serif", Georgia, serif;
+    /* var(--display), not the string. The site declares the display serif
+       once on .site and this section had been naming the family itself —
+       which works until the day the serif changes and one blockquote on
+       the home page does not come with it. */
+    font-family: var(--display);
     font-style: italic;
     font-size: 1.25rem;
     line-height: 1.35;
