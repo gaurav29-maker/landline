@@ -195,8 +195,16 @@ export default async function Home() {
             </a>
           </div>
         </div>
-      </header>
 
+        {/*
+          THE MARQUEE LIVES INSIDE THE HERO, which is where the reference
+          puts it: their logo row is a child of #hero, the last item in the
+          same centred column as the eyebrow, the headline and the buttons
+          — not a band underneath it. Ours was a sibling of <header>, so it
+          read as a separate shelf the hero was sitting on.
+
+          Nothing about the row itself changes; only which box it is in.
+        */}
       <div className="strip">
         <div className="strip-in">
           <span className="eyebrow">Built for investors using</span>
@@ -225,6 +233,7 @@ export default async function Home() {
           </div>
         </div>
       </div>
+      </header>
 
       <section className="band ink" id="audit">
         <div className="wrap">
