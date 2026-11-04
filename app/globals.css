@@ -5322,7 +5322,7 @@
      fingertip and applies to the whole page. This one is about whether
      four English words fit between two buttons.
   */
-  @media (max-width: 900px) {
+  @media (max-width: 1019px) {
     .site .nav-mid { display: none; }
 
     /* Everything the bar carried on a wide screen is in the panel instead. */
@@ -8182,6 +8182,16 @@
   .site-dark.os .bp-field textarea:not(.signin *):focus { border-color: var(--blue); }
 
   /* ------------------------------------------------------------------
+     1020 AND NOT 901. The capsule used to collapse at 900, which was the
+     width its old tight spacing fitted in. Their 16px rhythm and 21px end
+     insets make ours 773px wide at 1440, and the capsule plus the console
+     link plus the gutters need 1012px of viewport. Measured at 940 before
+     moving it: the capsule's content wanted 705px inside 696, so the last
+     item sat nine pixels past the right edge — clipped, not merely tight.
+
+     Below 1020 the bare bar takes over, which is the same layout the
+     phone gets and is honest about there not being room.
+
      THE DESKTOP NAV, AT THEIR MEASUREMENTS.
 
      Read off the reference's own inline styles rather than a screenshot:
@@ -8211,7 +8221,7 @@
      white alpha has no light mode, and this nav renders on both themes.
      Tokens stay.
   */
-  @media (min-width: 901px) {
+  @media (min-width: 1020px) {
     .site .nav {
       width: auto;
       max-width: none;
@@ -8273,11 +8283,28 @@
          than height, so a longer label still grows it.
       */
       min-height: 51px;
-      padding: 6px 4px;
-      gap: 0;
+      /*
+         THE RHYTHM IS 16 AND THE ENDS ARE 21, measured off theirs: seven
+         children, every gap exactly 16px, the first 21 from the left edge
+         and the last 21 from the right.
+
+         Those are OUTPUTS on their side, not declarations — space-evenly
+         on a fixed 675px happens to produce them. Ours is content-sized,
+         so space-evenly has no free space to distribute and produced 0 to
+         2px gaps with the items jammed against 4px of padding. To get the
+         same rhythm the numbers have to be stated: 16 of gap, 21 of side
+         padding.
+      */
+      padding: 6px 21px;
+      gap: 16px;
       justify-content: space-evenly;
       border-radius: 23px;
     }
+    /*
+       And inside the link group, which is one flat run of children on
+       their side and a nested group on ours. 2px was ours; 16 is theirs.
+    */
+    .site .nav-mid { gap: 16px; }
     /*
        6px 8px, theirs, against the 7px 10px this had — and the ink comes
        down with it. Theirs is rgba(255,255,255,0.55); ours was --ink-body
@@ -8312,7 +8339,7 @@
      to the top of the viewport, already in the markup — is exactly that.
      It was built for the floating capsule and it does more work here.
   */
-  @media (max-width: 900px) {
+  @media (max-width: 1019px) {
     .site .nav {
       width: auto;
       max-width: none;
