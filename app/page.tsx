@@ -14,7 +14,7 @@ import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import BookShapes from "@/components/BookShapes";
-import AuditExample from "@/components/AuditExample";
+import AuditShapes from "@/components/AuditShapes";
 import QuestionsStrip from "@/components/QuestionsStrip";
 import Testimonials from "@/components/Testimonials";
 import PhoneCta from "@/components/PhoneCta";
@@ -252,11 +252,31 @@ export default async function Home() {
 
           {/*
             The specimen, and it is a component because the reader operates
-            it: three invented shapes, and picking one swaps both columns.
-            The reasoning — and the rule every line of it was written
-            against — is in components/AuditExample.
+            it: three invented shapes, and picking one swaps the panel
+            beside them. The reasoning — and the rule every line of it was
+            written against — is in components/AuditShapes.
+
+            THIS PAGE NOW SHOWS THE SAME THREE SHAPES TWICE, and it did
+            before this component existed too. 51%, 4% and 62%, their
+            three bars and their three expert questions are here, and
+            they are in <BookShapes /> under #shapes about nine screens
+            down — once as a picker, once as a tab strip.
+
+            The duplication is older than this section: the film that
+            stood here cycled the same three. It is more obvious now,
+            because two pick-one controls showing identical figures read
+            as a mistake in a way that a moving card and a tab strip did
+            not.
+
+            NOT RESOLVED HERE, because the fix is a content decision
+            rather than a styling one. Either #shapes goes and this
+            carries the argument alone, or #shapes keeps the shapes and
+            this card goes back to being about the record. Whoever picks
+            should also move the "The figures are from the example record
+            you can download" line, which is currently only under the
+            other one.
           */}
-          <AuditExample />
+          <AuditShapes />
         </div>
       </section>
 

@@ -3,7 +3,7 @@ import { INTAKE_RETENTION_DAYS } from "@/lib/constants";
 /**
  * The worked example, and the file it produces.
  *
- * LIFTED OUT OF components/AuditExample so two things can share it: the
+ * LIFTED OUT OF the home page's audit card so two things can share it: the
  * card on the home page that shows eight lines of a record, and the route
  * that hands over the whole file. A visitor who wants to read the artefact
  * before paying should get the same artefact the card is quoting, not a
