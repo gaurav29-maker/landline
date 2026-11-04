@@ -3881,25 +3881,43 @@
      Tokens, not their literals: rgba(13,13,13,0.4) over a 10px blur has
      no light mode, and these heads render on both.
   */
+  /*
+     THE LABEL DROPS ITS CAPITALS, and that settles something that has
+     been a compromise since the pill went in.
+
+     The note here used to read: "0.1em, not their -0.02 — theirs is title
+     case and ours is uppercase, and uppercase set tight is the one thing
+     this scale cannot borrow." True, and the wrong half to give up. With
+     text-transform off the whole measurement transfers: -0.02em, the
+     symmetric 16px padding (no trailing letter-space left to correct for),
+     and a label that reads at its written length rather than stretched —
+     "Audit my portfolio" goes from 232px of tracked capitals to about a
+     hundred, which is why theirs fits a 88px pill.
+
+     The copy does not change: it is already written in sentence case in
+     the markup and was only being shouted by CSS.
+
+     Ground and ink are theirs too — rgba(13,13,13,0.4) under a near-white
+     label, against our rgba(30,30,30,0.66) under a grey one. color-mix
+     off --bg keeps that on the token instead of a literal.
+  */
   .site .band-head .eyebrow {
     display: inline-flex;
     align-items: center;
     height: 40px;
-    padding: 0 calc(16px - 0.1em) 0 16px;
+    padding: 0 16px;
     border-radius: 50px;
-    background: var(--mat-bg);
+    background: color-mix(in srgb, var(--bg) 40%, transparent);
     border: 1px solid var(--hairline);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     font-size: 1rem;
     font-weight: 700;
-    /* 0.1em, not their -0.02: theirs is title case and ours is uppercase,
-       and uppercase set tight is the one thing this scale cannot borrow.
-       It comes in from 0.16 because tracking should fall as size rises. */
-    letter-spacing: 0.1em;
+    letter-spacing: -0.02em;
+    text-transform: none;
     /* 1.0, theirs: a label is one line and should occupy one line's worth. */
     line-height: 1;
-    color: var(--ink-mute);
+    color: var(--ink);
     /*
        -8px against the 16px flex gap lands on their 8. The 20px I recorded
        in the teardown was measured from the label's TEXT; from the pill's
