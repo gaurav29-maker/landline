@@ -5469,6 +5469,30 @@
        so the clamp is overruled for the width where they hold it still.
     */
     .site .hero-band h1 { font-size: 2.25rem; }
+
+    /*
+       THE PHONE HERO'S RHYTHM, read out of their own stylesheet rather
+       than measured off the rendered page — their framework puts a
+       perspective transform on the hero, which corrupts every top a
+       bounding rect reports. The rules are not corruptible:
+
+         hero          height: 90vh            (min-height: 700 stays)
+         hero          gap: 20px
+         main section  gap: 26px               (phone override of 48)
+         text block    gap: 10px
+
+       90vh IS THE ANSWER TO SOMETHING THAT HAD NOT ADDED UP. Their hero
+       measured 731 at an 812-tall viewport and I recorded it as "theirs
+       is taller and I do not know why". 90% of 812 is 730.8. It was
+       never a fixed 700 on a phone; min-height: 700 only catches short
+       handsets, where 90vh would fall under it.
+
+       Their 10 and 26 land on our own rows: the headline's gap to what
+       follows it, and that row's gap to the buttons. Ours were 18 and 30.
+    */
+    .site .hero-band { height: 90vh; gap: 20px; }
+    .site .hero-band h1 { margin-bottom: 10px; }
+    .site .reject { margin-bottom: 26px; }
     /*
        28 and 14, theirs at 375, and flat across the phone range for the
        same reason the hero is: they hold one size there rather than
