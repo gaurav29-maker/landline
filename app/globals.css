@@ -7348,13 +7348,25 @@
      from the edge the way the reference's do, and --accent-ink so it is
      the same ink as the number under it rather than a third colour.
   */
-  .site .flow-ico {
+  /*
+     THE PANEL, in place of the 40px icon that used to sit here.
+
+     16/10 and the card's own 14px radius, bled to the padding edges so
+     the picture is the top of the step rather than an inset inside it —
+     which is how editlobby's service cards sit. The negative margins are
+     the step's 24/22 padding, inverted.
+
+     No fixed height: the aspect ratio holds the box and the SVG scales
+     into it, so a 1fr column at any width gets the same composition.
+  */
+  .site .flow-art {
     display: block;
-    width: 32px;
-    height: 32px;
-    margin-bottom: 14px;
-    color: var(--accent-ink);
+    width: calc(100% + 44px);
+    margin: -24px -22px 18px;
+    aspect-ratio: 16 / 10;
+    border-radius: 14px 14px 0 0;
   }
+
   .site .flow-step .n { font-family: var(--mono); font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.14em; color: var(--accent-ink); }
   .site .flow-step h3 { margin: 11px 0 7px; font-size: 1rem; line-height: 1.4375rem; }
   .site .flow-step p { font-size: 0.84375rem; line-height: 1.25rem; color: var(--ink-mute); }

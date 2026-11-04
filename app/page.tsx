@@ -14,6 +14,7 @@ import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import BookShapes from "@/components/BookShapes";
+import { ArtQuestion, ArtSlot, ArtCall } from "@/components/FlowArt";
 import AuditShapes from "@/components/AuditShapes";
 import QuestionsStrip from "@/components/QuestionsStrip";
 import Testimonials from "@/components/Testimonials";
@@ -417,24 +418,20 @@ export default async function Home() {
           <div className="flow">
             <div className="flow-step">
               {/*
-                DRAWN HERE, NOT TRACED. The reference puts a circular arrow,
-                a bolt and a thumbs-up over its three steps, which are the
-                right idea and the wrong pictures for this: they illustrate
-                buying, briefing and approving a video. Ours illustrate what
-                our three steps actually are — a question, a slot in a
-                calendar, and a handset, which is the thing the company is
-                named after.
+                PICTURES NOW, NOT BULLETS. These were three 40px line icons
+                — the right marks at the wrong size, reading as bullets
+                beside a heading rather than as anything to look at.
 
-                Stroked at 1.6 on a 40 grid and painted with currentColor,
-                so they take the accent from .flow-ico and nothing has a
-                colour of its own. aria-hidden: the heading beside each one
-                already says what it is, and a screen reader announcing
-                "question mark" before "Your question" is noise.
+                They are 320x200 illustrated panels in the register of
+                editlobby's service cards: abstract geometry on a
+                brand-coloured ground, one dominant form, small shapes
+                around it. Their subject is not copied — theirs draw a
+                video editor, ours draw a question against a list of
+                holdings, a week with one time gone, and a handset whose
+                signal stops. The reasoning, and the rule about depicting
+                no data, is in components/FlowArt.
               */}
-              <svg className="flow-ico" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M13.8 14.6a6.4 6.4 0 1 1 7.6 6.3c-1 .2-1.3 1-1.3 1.9v2.1" />
-                <circle cx="20" cy="30.4" r="1.5" fill="currentColor" stroke="none" />
-              </svg>
+              <ArtQuestion className="flow-art" />
               <p className="n">01</p>
               <h3>Your question, your expert</h3>
               <p>
@@ -443,11 +440,7 @@ export default async function Home() {
               </p>
             </div>
             <div className="flow-step">
-              <svg className="flow-ico" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="6.5" y="9.5" width="27" height="24" rx="3" />
-                <path d="M6.5 16.5h27M13.5 6v6M26.5 6v6" />
-                <rect x="15" y="21.5" width="10" height="7" rx="1.5" fill="currentColor" stroke="none" />
-              </svg>
+              <ArtSlot className="flow-art" />
               <p className="n">02</p>
               <h3>A real slot</h3>
               <p>
@@ -456,9 +449,7 @@ export default async function Home() {
               </p>
             </div>
             <div className="flow-step">
-              <svg className="flow-ico" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M11.5 7.5h5.2l2 6.6-3.8 2.3a16.4 16.4 0 0 0 8.7 8.7l2.3-3.8 6.6 2v5.2a3 3 0 0 1-3 3C18.6 31.5 8.5 21.4 8.5 10.5a3 3 0 0 1 3-3z" />
-              </svg>
+              <ArtCall className="flow-art" />
               <p className="n">03</p>
               <h3>The call, then nothing</h3>
               <p>
