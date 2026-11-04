@@ -4465,26 +4465,23 @@
   */
   .site .hero-band {
     /*
-       THE WASH AT THE TOP OF THE PAGE, theirs in our blue.
+       PLAIN GROUND, 5 NOVEMBER.
 
-       Theirs is on the hero itself, not an overlay:
-       linear-gradient(#af94ff3d 0%, #0a0a0a 14.9704%) — their lavender at
-       0x3d alpha, which is 61/255 or about 24%, resolving to their page
-       black by roughly a seventh of the way down. On a 700px hero that is
-       the top ~105px.
+       This carried a blue wash for a while — their
+       linear-gradient(#af94ff3d 0%, #0a0a0a 14.9704%) rebuilt in our
+       accent ink, lavender swapped for blue, resolving to the page
+       colour about a seventh of the way down.
 
-       --accent-ink rather than --accent: theirs is a LIGHT lavender, and
-       our #387ED1 is a mid blue that would read as a solid band rather
-       than a haze. --accent-ink is #5CA8FF on the dark theme, which sits
-       at a similar lightness to their lavender.
+       It worked on their page because their ground is #0a0a0a and a pale
+       haze over black reads as depth. Ours is white, and a blue haze over
+       white reads as a tint on the top of the page — a band the nav
+       floats in rather than a light source. Asked to keep it plain, so
+       plain: the hero is the page's own ground and nothing else.
 
-       Tokens on both stops, so the light theme gets its own ink over its
-       own ground instead of a hardcoded night colour.
+       Explicit rather than transparent, so the hero paints its own
+       background instead of borrowing whatever sits behind it.
     */
-    background: linear-gradient(
-      color-mix(in srgb, var(--accent-ink) 24%, transparent) 0%,
-      var(--bg) 15%
-    );
+    background: var(--bg);
     /*
        CORRECTED 4 NOVEMBER, MEASURED AT 1440x900: theirs is 900 there
        and ours was 700.
@@ -7684,71 +7681,25 @@
   /* The target takes focus programmatically; it should not draw a ring. */
   .site main:focus { outline: none; }
 
-  /* ================================================ the scroll edge effect
-     Apple's materials guidance, verbatim: "Scroll edge effects further
-     enhance legibility by blurring and reducing the opacity of background
-     content." It is the thing that makes floating chrome work, and the
-     piece this site was missing — the nav floats, the page runs under it,
-     and until now it ran under there at full contrast, so a headline
-     sliding behind the bar competed with the links printed on it.
+  /* ============================================ the scroll edge effect
+     REMOVED 5 NOVEMBER, both halves.
 
-     The blurring half of that sentence, and only that half: a band of
-     blur pinned to the top of the viewport, masked so it falls off to
-     nothing below the bar. BELOW the nav in z-order and above the page,
-     so it treats the content and never the controls. The opacity half
-     was removed on 4 November; see the note where it used to be.
+     It was Apple's materials guidance built out as a 104px band pinned
+     under the nav: blur the content passing beneath floating chrome, and
+     drop its opacity. The opacity half went yesterday because on a white
+     page it was 72% white fighting the hero's own wash. The blur half
+     goes now, with the wash, because the page is plain behind the bar and
+     there is nothing left for it to be doing.
 
-     The mask does the whole job: the blur is strongest where the bar is
-     and gone by the bottom edge, which is what stops it reading as a grey
-     stripe across the top of the page.
+     Legibility is not lost with it. The capsule carries its own
+     backdrop-filter: blur(18px) saturate(1.8) over a 0.72 fill, and the
+     capsule is the only place on that row where there are controls to
+     read. The band blurred the full width, including the stretch either
+     side of the bar where nothing is printed — which was always the
+     weaker part of the idea.
+
+     The <div className="scroll-edge"> went out of SiteNav with it.
   */
-  .site .scroll-edge {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 104px;
-    z-index: 45;
-    pointer-events: none;
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 38%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 38%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-
-  /*
-     THE WASH IS GONE, 4 NOVEMBER, AND THE BLUR ABOVE STAYS.
-
-     There used to be a ::after here carrying the second half of Apple's
-     sentence — "and reducing the opacity of background content" — as a
-     gradient from --bg at 72% down to transparent across the same 104px.
-
-     On a dark app chrome that is a scrim and it disappears into the
-     design. On this page --bg is #FFFFFF, so it was 72% white laid full
-     width over the top of the hero, and the hero's own wash opens blue.
-     The two fought: the blue read at the left and right edges where the
-     bar was not, and washed out to near-white behind the capsule. What
-     looked like a glow around the nav was this gradient meeting that one.
-
-     Only the wash goes. The blur above is doing the other half of the
-     job and does not tint anything — it matters once a headline actually
-     scrolls under the bar, which is the case the effect exists for.
-  */
-
-  /* It is an effect made of transparency; asked for less, it goes. */
-  @media (prefers-reduced-transparency: reduce) {
-    .site .scroll-edge { display: none; }
-  }
 
   /* ========================================================= the highlight
      visionOS's one unmistakable interaction: look at a control and it

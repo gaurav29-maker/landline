@@ -50,21 +50,6 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
         Skip to content
       </a>
       {/*
-        THE SCROLL EDGE EFFECT.
-
-        Apple's materials guidance: "Scroll edge effects further enhance
-        legibility by blurring and reducing the opacity of background
-        content." The nav floats and the page runs underneath it, and
-        until now it ran under there at full contrast — a headline
-        sliding behind a translucent bar, competing with the links on it.
-
-        A band of blur pinned to the top of the viewport, masked so it
-        falls off to nothing below the bar. It sits under the nav and
-        over the page, catches no clicks, and is in the layout rather
-        than in CSS alone because backdrop-filter needs an element.
-      */}
-      <div className="scroll-edge" aria-hidden="true" />
-      {/*
         THE NAV LEAVES THE FLOW ON THE LANDING PAGE, and only there.
 
         The reference's navbar is position: fixed at top 0 and its hero
