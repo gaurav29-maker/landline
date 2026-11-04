@@ -4485,7 +4485,26 @@
       color-mix(in srgb, var(--accent-ink) 24%, transparent) 0%,
       var(--bg) 15%
     );
-    min-height: 700px;
+    /*
+       CORRECTED 4 NOVEMBER, MEASURED AT 1440x900: theirs is 900 there
+       and ours was 700.
+
+       The note above this rule said 700 was "their number" and that
+       min-height rather than height was the only place we part company.
+       Only the second half was true. Their base rule is
+
+         height: 100vh; min-height: 700px;
+
+       so 700 is their FLOOR, not their height — it catches a short
+       window and nothing else. On any ordinary laptop their hero is the
+       full viewport and ours was 200px shorter, which put their logo row
+       at 741 and ours at 541.
+
+       max(700px, 100vh) is their arithmetic with our property: identical
+       on every viewport taller than 700, and still able to grow instead
+       of clipping on one shorter. Same call the phone rule makes.
+    */
+    min-height: max(700px, 100vh);
     /*
        THE 131 IS AN EMPTY BLOCK OF THEIRS, STANDING IN THE FLOW.
 
@@ -4989,19 +5008,30 @@
      The distance one cycle covers is one list plus one gap, which is why
      the offset is -50% minus half a gap rather than a round -50%.
 
-     34s TO 20s. Their marquee runs at 35px a second, which is roughly
-     1.7x ours. ESTIMATED, NOT MEASURED: the track is eight broker names
-     set in 11px with 0.1em of tracking plus seven 24px gaps, which comes
-     to something near 660px, and 660 over 35 is about 19 seconds. The
-     browser pane has been unusable all session so the real track width
-     has not been read back; this is arithmetic on an assumed glyph
-     width, and it wants calibrating against a measurement.
+     34s TO 19.25s, AND THE 20s THAT STOOD HERE IS NOW MEASURED RATHER
+     THAN GUESSED.
+
+     The note this replaces said the 20 was arithmetic on an assumed
+     glyph width and wanted calibrating. Both halves have now been read
+     off the running pages at 390 wide:
+
+       their row   35.04 px/s, sampled over six seconds
+       our track   1325px, so one cycle is 650 + 24 = 674.5px
+
+     674.5 over 35.04 is 19.25 seconds. The guess was 33.7 px/s against
+     their 35.04 — out by 4%, which is below what an eye catches, so this
+     is a correction for the record more than a visible change.
+
+     Theirs is not a CSS animation at all: one list of 27 items with its
+     transform driven from script, which is why the speed had to be
+     sampled rather than read. Ours is two copies of eight and a
+     keyframe, and the loop is seamless either way.
   */
   .site .ticker-track {
     display: flex;
     gap: 24px;
     width: max-content;
-    animation: landline-ticker 20s linear infinite;
+    animation: landline-ticker 19.25s linear infinite;
   }
   @keyframes landline-ticker {
     to { transform: translateX(calc(-50% - 12px)); }
@@ -5016,6 +5046,41 @@
     .site .ticker { overflow-x: auto; }
     .site .ticker-track { animation: none; width: auto; }
     .site .ticker-track ul[aria-hidden] { display: none; }
+  }
+  /*
+     THE LABEL GOES ABOVE THE LOGOS ON A PHONE, because beside them it
+     leaves almost nothing to see.
+
+     Measured at 390: .strip-in has 342px inside its gutters, "Built for
+     investors using" takes 202 of them and the gap takes 24, so the
+     ticker gets 140. The quarter-width fade at each end then eats 70 of
+     those, leaving a 70px window — about one broker name. The row was
+     technically running and effectively invisible.
+
+     Theirs has no label, so their logos get the full 390 and read as a
+     row. Stacking is how ours gets the same row while keeping the
+     sentence, and the sentence is the part that keeps the logos honest:
+     these are the brokers our members use, not clients of ours. Dropping
+     it to match their width would turn the row into the logo wall we
+     have no right to show.
+
+     600px, where the ticker's share falls under 326 — four names at this
+     size, and the first real width at which the fade starts eating more
+     than it reveals.
+
+     36px of top padding against the 40 above: the two rows plus their
+     gap are 10px taller than the one row was, and the box is a fixed 129
+     with the logos needing to stay on their own baseline.
+  */
+  @media (max-width: 600px) {
+    .site .hero-band .strip-in {
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      padding: 36px 24px 10px;
+    }
+    .site .hero-band .strip-in .eyebrow { white-space: normal; }
+    .site .hero-band .ticker { width: 100%; flex: 0 0 auto; }
   }
   .site .strip-in ul { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; flex: 0 0 auto; }
   .site .strip-in li { font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
