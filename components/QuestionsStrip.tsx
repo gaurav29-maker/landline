@@ -73,18 +73,26 @@ export default function QuestionsStrip() {
       <h2 className="band-pill">What it is for</h2>
 
       {/*
-        A scroll container is only reachable with a keyboard if it can take
-        focus, so it does — role and label included, because a focusable
-        div with neither is a trap rather than a control. No arrows: the
-        card cut off at the right edge is the affordance, which is how
-        theirs says it too.
+        A GRID NOW, NOT A SIDEWAYS RAIL.
+
+        This was six 255x453 portrait cards in a horizontal scroller with
+        the next one cut off at the right edge — editlobby's work carousel,
+        which is the right shape for video stills and the wrong one for
+        sentences. Five of the six questions were off screen, and the one
+        you could read was in a column 255px wide.
+
+        Their service page lays the same kind of card out as a two-up row
+        instead, and that is the shape this content wanted all along:
+        611x314 landscape, 22px of radius, 28px of padding, 16px gap,
+        capped at 1080 — all measured off their desktop breakpoint rather
+        than the mobile variant, which is centred and had me briefly
+        building the wrong thing.
+
+        No tabIndex and no role any more. A grid is not a scroll region:
+        it has nothing to scroll, so there is nothing for a keyboard to
+        land on and no label to explain.
       */}
-      <div
-        className="work-rail"
-        tabIndex={0}
-        role="group"
-        aria-label="Questions a Landline session is for. Scroll sideways for more."
-      >
+      <div className="work-grid">
         {ASKS.map((a, n) => (
           <article className="work-card" key={a.tag} data-tone={n % 3}>
             <span className="work-tag">{a.tag}</span>
