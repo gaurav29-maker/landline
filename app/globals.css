@@ -4464,6 +4464,27 @@
      width this has been measured at, it is 700 either way.
   */
   .site .hero-band {
+    /*
+       THE WASH AT THE TOP OF THE PAGE, theirs in our blue.
+
+       Theirs is on the hero itself, not an overlay:
+       linear-gradient(#af94ff3d 0%, #0a0a0a 14.9704%) — their lavender at
+       0x3d alpha, which is 61/255 or about 24%, resolving to their page
+       black by roughly a seventh of the way down. On a 700px hero that is
+       the top ~105px.
+
+       --accent-ink rather than --accent: theirs is a LIGHT lavender, and
+       our #387ED1 is a mid blue that would read as a solid band rather
+       than a haze. --accent-ink is #5CA8FF on the dark theme, which sits
+       at a similar lightness to their lavender.
+
+       Tokens on both stops, so the light theme gets its own ink over its
+       own ground instead of a hardcoded night colour.
+    */
+    background: linear-gradient(
+      color-mix(in srgb, var(--accent-ink) 24%, transparent) 0%,
+      var(--bg) 15%
+    );
     min-height: 700px;
     padding: 0;
     display: flex;
