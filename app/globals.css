@@ -3937,10 +3937,44 @@
     height: 40px;
     padding: 0 16px;
     border-radius: 50px;
-    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    /*
+       THE NAV CAPSULE'S MATERIAL, not a second recipe that looks like it.
+
+       This pill was mixing its own glass: --bg at 40% under a flat
+       blur(10px) and a hairline. The capsule at the top of the page is
+       the site's glass control and it is built from tokens —
+
+         background: var(--mat-bg);
+         backdrop-filter: var(--glass-near);
+         border: 1px solid var(--hairline);
+         box-shadow: var(--mat-lift);
+
+       — so these take the same four lines. Two materials that are nearly
+       the same is worse than one: the pill was a touch flatter and a
+       touch more transparent than the capsule, which reads as a mistake
+       rather than a distinction.
+
+       EVERY VALUE FOLLOWS THE GROUND IT IS ON, which is why the token
+       matters more than the look. --mat-bg is rgba(252,253,255,0.72) on
+       a light band and rgba(30,30,30,0.66) on .band.ink, so one rule
+       gives a white pill on the light sections and a dark one on the ink
+       run without a second selector. The old color-mix off --bg did
+       follow the theme, but not the BAND — on ink it was mixing the
+       page's ground, not the band's.
+
+       --glass-near is blur(18px) saturate(180%), and it resolves to none
+       under prefers-reduced-transparency, so the fallback is already
+       written.
+
+       --mat-lift rather than --mat-rim: the capsule uses the lift for
+       depth and a real border for the rim, and this is the same shape of
+       object at a smaller size.
+    */
+    background: var(--mat-bg);
     border: 1px solid var(--hairline);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: var(--glass-near);
+    backdrop-filter: var(--glass-near);
+    box-shadow: var(--mat-lift);
     /*
        THE SANS, NOT THE MONO .site .eyebrow HANDS DOWN.
 
