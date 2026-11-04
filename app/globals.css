@@ -4548,14 +4548,46 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    /* 8px to the label and 30px above the row, both theirs. */
+    gap: 8px;
     height: 34px;
-    margin: 28px auto 0;
+    margin: 30px auto 0;
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: -0.02em;
     color: var(--ink-mute);
   }
+  /*
+     The discs, at their measurements: 34px on a 100px radius, overlapping
+     by 11px, the row flush left inside a box that is centred.
+
+     The 2px ring is ours and theirs does not need one — theirs are
+     photographs, whose own edges separate them. Flat discs of one colour
+     would merge into a single blob at an 11px overlap, so each carries a
+     ring in the page's own ground to cut itself out of the one behind.
+  */
+  .site .hero-faces {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+  .site .hero-face {
+    box-sizing: border-box;
+    width: 34px;
+    height: 34px;
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .site .hero-face + .hero-face { margin-left: -11px; }
+
   .site .hero-trust-ico {
     width: 20px;
     height: 20px;

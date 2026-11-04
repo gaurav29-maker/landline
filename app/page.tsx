@@ -231,19 +231,48 @@ export default async function Home() {
             them, never when they pay.
           */}
           <p className="hero-trust">
-            <svg
-              className="hero-trust-ico"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M8 12.2l2.6 2.6L16 9.4" />
-            </svg>
+            {/*
+              THE DISCS ARE THE EXPERTS, NOT CUSTOMERS, and that is the only
+              honest way to fill this shape. Their row is three photographs
+              of clients over "Trusted by 100+ Brands"; we hold no
+              photograph of anybody and have sold nothing, so neither the
+              pictures nor the count exists for us.
+
+              What does exist is `initials`, on the expert record, already
+              read by this page, and the rows here are the live ones —
+              the query is where(status = "live"), so a draft can never
+              appear in this row. One expert today means one disc, and it
+              becomes three when three are live. Nothing is padded to make
+              the shape look fuller.
+
+              The initials disc was taken off the EXPERT CARD for a reason
+              that does not apply here: there it sat beside the name and
+              spelled out the same letters. In this row there is no name to
+              repeat.
+            */}
+            {experts.length > 0 ? (
+              <span className="hero-faces" aria-hidden="true">
+                {experts.slice(0, 3).map((e) => (
+                  <span className="hero-face" key={e.slug}>
+                    {e.initials}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              <svg
+                className="hero-trust-ico"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8 12.2l2.6 2.6L16 9.4" />
+              </svg>
+            )}
             Checked by a person, not bought
           </p>
         </div>
