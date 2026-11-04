@@ -3941,6 +3941,31 @@
     border: 1px solid var(--hairline);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
+    /*
+       THE SANS, NOT THE MONO .site .eyebrow HANDS DOWN.
+
+       This pill was built against the reference's own section label and
+       everything in it is a deliberate override of the plain eyebrow —
+       1rem against 0.625, 700 against 500, -0.02em against +0.16em,
+       sentence case against uppercase. The family was the one property
+       that was left to inherit, and it did not matter while --mono
+       resolved to nothing on .site and every eyebrow was quietly falling
+       back to the body sans.
+
+       Declaring --mono made that inheritance visible: six section labels
+       turned typewriter in a page set in Satoshi. The pill was always a
+       sans pill; the inheritance was load-bearing by accident.
+
+       inherit rather than naming the stack, because .site declares the
+       body face once and this should follow it rather than keeping a
+       second copy of the same list.
+
+       NOT changed with it: the plain .eyebrow outside a band head — the
+       marquee's label, the instrument panel's — which stays mono, and
+       the hero badge and the "not a" chips, which were never .eyebrow at
+       all. Those read as instrument type and are meant to.
+    */
+    font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
