@@ -3480,6 +3480,26 @@
     */
     --display:    "Instrument Serif", Georgia, serif;
     /*
+       --mono WAS DECLARED ONLY ON .site-dark, AND 81 RULES ASKED FOR IT.
+
+       Same trap as --ink-dark on .band.ink, and bigger. The consoles got
+       the mono face; every public page reached for an undeclared custom
+       property, which is invalid-at-computed-value-time, so the
+       declaration was dropped and the element inherited the body sans.
+
+       Nothing errored and nothing looked obviously broken — the labels
+       simply rendered in Satoshi, which is a reasonable-looking wrong
+       answer. What gave it away is that layout.tsx has been loading IBM
+       Plex Mono from Google Fonts the whole time: two weights fetched on
+       every visit for a face that no public page could use.
+
+       What comes back with this: .eyebrow on every band, .hero-badge,
+       the hero's three "not a" chips, .price-one-fig, .work-tag,
+       .find-count, .notice-label, the sign-in code fields, and the three
+       labels in the audit card that prompted the fix.
+    */
+    --mono:       "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    /*
        Fields are not buttons. --radius-btn is 999px because every button here
        is a pill; an input wearing that reads as a control you press rather
        than one you type into. 8px matches the booking dialog's fields, so the
@@ -5019,6 +5039,16 @@
      their 35.04 — out by 4%, which is below what an eye catches, so this
      is a correction for the record more than a visible change.
 
+     RE-MEASURED AFTER --mono WAS FIXED. The row is set in var(--mono),
+     which resolved to nothing on .site until that token was declared —
+     so the 1325 above was Satoshi's metrics, not IBM Plex Mono's. In the
+     face the rule actually asks for, the track is 1330 and one cycle is
+     653 + 24 = 677. 677 over 35.04 is 19.32s.
+
+     A reminder that this duration is a function of the typeface: change
+     the face and the speed changes with it, because the distance is
+     fixed by the glyphs and only the time is ours to set.
+
      Theirs is not a CSS animation at all: one list of 27 items with its
      transform driven from script, which is why the speed had to be
      sampled rather than read. Ours is two copies of eight and a
@@ -5028,7 +5058,7 @@
     display: flex;
     gap: 24px;
     width: max-content;
-    animation: landline-ticker 19.25s linear infinite;
+    animation: landline-ticker 19.32s linear infinite;
   }
   @keyframes landline-ticker {
     to { transform: translateX(calc(-50% - 12px)); }
