@@ -73,32 +73,51 @@ export default function QuestionsStrip() {
       <h2 className="band-pill">What it is for</h2>
 
       {/*
-        A GRID NOW, NOT A SIDEWAYS RAIL.
+        ZERODHA'S, AND THE CARDS ARE GONE.
 
-        This was six 255x453 portrait cards in a horizontal scroller with
-        the next one cut off at the right edge — editlobby's work carousel,
-        which is the right shape for video stills and the wrong one for
-        sentences. Five of the six questions were off screen, and the one
-        you could read was in a column 255px wide.
+        Their homepage was read rather than remembered, at 1280:
 
-        Their service page lays the same kind of card out as a two-up row
-        instead, and that is the shape this content wanted all along:
-        611x314 landscape, 22px of radius, 28px of padding, 16px gap,
-        capped at 1080 — all measured off their desktop breakpoint rather
-        than the mobile variant, which is centred and had me briefly
-        building the wrong thing.
+          container   1100px
+          h2          24px / 500 / lh 36 / #424242, margin 0 0 40px
+          h3          20px / 500 / lh 32 / #424242, margin 0
+          p           16px / 400 / lh 28.8 / #666666, margin 5px 0 32px
+          link        16px / 500 / #387ED1, no underline
+          letter-spacing: normal, everywhere
+          no cards, no borders, no radius, no shadows, no fills
 
-        No tabIndex and no role any more. A grid is not a scroll region:
-        it has nothing to scroll, so there is nothing for a keyboard to
-        land on and no label to explain.
+        The whole system is four type sizes, two weights and two greys on
+        white. The only colour on the page is the link blue — and it is
+        #387ED1, which is this site's --accent to the byte. We were
+        already using their blue.
+
+        WHAT THAT MEANS FOR THIS SECTION. Every card went: the gradient
+        grounds, the 22px radius, the 28px of padding, the chip behind
+        the tag and the rule above the closing line. Zerodha would not
+        draw a box around a sentence. What is left is the sentence, a
+        label over it and a line under it, with air doing the separating
+        that six rectangles were doing before.
+
+        The questions, the labels and the closing lines are unchanged —
+        this is a change of setting, not of content.
+
+        TWO OF THEIRS THAT ARE NOT TAKEN, both on purpose:
+
+        Inter. Theirs is Inter throughout; ours stays Satoshi, because
+        the instruction on this site is to use its own faces and the
+        scale is the transferable part.
+
+        The white ground. Theirs is white and this band is in the dark
+        run that starts at the audit card — a page-level rhythm, not a
+        section decision. The restraint survives the ground; the type
+        below reads the same on either.
       */}
-      <div className="work-grid">
-        {ASKS.map((a, n) => (
-          <article className="work-card" key={a.tag} data-tone={n % 3}>
-            <span className="work-tag">{a.tag}</span>
-            <p className="work-ask">{a.ask}</p>
+      <div className="work-list">
+        {ASKS.map((a) => (
+          <div className="work-item" key={a.tag}>
+            <p className="work-tag">{a.tag}</p>
+            <h3 className="work-ask">{a.ask}</h3>
             <p className="work-does">{a.does}</p>
-          </article>
+          </div>
         ))}
       </div>
 

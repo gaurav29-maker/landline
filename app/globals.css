@@ -7209,87 +7209,65 @@
      grid, so the first card lines up with the heading above it.
   */
   /*
-     TWO UP, FROM THEIR SERVICE PAGE, measured at their desktop
-     breakpoint:
+     ZERODHA'S SECTION, measured off their homepage at 1280 rather than
+     recalled:
 
-       container   max-width 1080px, gap 16px
-       card        611 x 314, radius 22, padding 28
-       card inside flex column, align-items: flex-start,
-                   justify-content: space-between, text-align: start
+       container  1100px
+       h2         24 / 500 / lh 36,  margin 0 0 40px
+       h3         20 / 500 / lh 32,  margin 0
+       p          16 / 400 / lh 28.8, margin 5px 0 32px
+       link       16 / 500, #387ED1, no underline
+       tracking   normal, on every one of them
 
-     WHAT THIS REPLACED, and why. It was a sideways scroller of six
-     255x453 portrait cards with the next one bleeding off the right
-     edge — their WORK carousel, which is built to show video stills. Our
-     cards hold sentences, and the result was five of six questions off
-     screen and the sixth set in a 255px column.
+     And nothing else. No card, no border, no radius, no shadow, no
+     fill — their multi-item sections are an h2 and a run of h3 + p
+     pairs in a narrow column, with the air doing the separating.
 
-     The mobile variant of their section centres everything, and reading
-     that first had me building a centred card. At the desktop breakpoint
-     the type is left-aligned with the rows pushed apart — which is what
-     ours already did, so the alignment did not change at all. Only the
-     shape did: portrait to landscape, one row to two columns.
+     THIS REPLACED SIX GRADIENT CARDS. Two columns of 532x314 with 22px
+     radius, 28px of padding and a chip behind each tag. Zerodha would
+     not draw a box around a sentence, and once the boxes go the
+     sentences are easier to read than they were inside them.
 
-     THE TYPE IS UNCHANGED AND DELIBERATELY SO. Their title is 21px/700;
-     ours stays at this site's own weight and tracking. The layout is the
-     thing being borrowed.
+     The ground stays dark because this band is in the run that starts
+     at the audit card, so every colour below is a token rather than
+     their #424242 and #666666. Those two greys are what their scale
+     assumes; --ink and --ink-mute are ours in the same two roles.
   */
-  .site .work-grid {
-    margin-top: 44px;
+  .site .work-list {
     width: 100%;
-    max-width: 1080px;
+    max-width: 1100px;
+    /* Their h2 carries margin-bottom: 40px; the list answers it. */
+    margin-top: 40px;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    /* 32px down, theirs, from the bottom margin on their paragraph.
+       The column gap is ours: they run one column and never needed one. */
+    column-gap: 64px;
+    row-gap: 32px;
   }
 
-  .site .work-card {
-    min-height: 314px;
-    border-radius: 22px;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    /*
-       The tag at the head and everything else at the FOOT, which is
-       theirs: align-items flex-start, justify-content space-between. With
-       three children that drops the dead space between the question and
-       the line under it rather than above the question — the one place on
-       the card you can see it.
-    */
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 18px;
-    overflow: hidden;
-  }
+  .site .work-item { min-width: 0; }
 
   /*
-     Three grounds rather than one. Their cards differ because each is a
-     still from a different film; ours would be six identical rectangles
-     without this, and six identical rectangles read as a template. The
-     hue is the brand blue throughout — this is variety, not a palette.
+     THE THREE GRADIENT GROUNDS WENT WITH THE CARDS. They existed so six
+     identical rectangles would not read as a template; with no
+     rectangles there is nothing to tint, and data-tone is now an
+     attribute nothing styles. Left on the markup rather than stripped,
+     because it costs nothing and says which third of the list an item
+     is in if a ground is ever wanted again.
   */
-  .site .work-card[data-tone="0"] {
-    background: linear-gradient(160deg, #000000 0%, #0A1A30 60%, #16305C 100%);
-  }
-  .site .work-card[data-tone="1"] {
-    background: linear-gradient(200deg, #050B16 0%, #102748 55%, #0A1A30 100%);
-  }
-  .site .work-card[data-tone="2"] {
-    background: linear-gradient(140deg, #0A1A30 0%, #060D1A 55%, #000000 100%);
-  }
 
   /* The chip. Theirs is 12px of plain white on the still; ours needs a
      ground of its own, because the card under it is type and not video. */
+  /* A label, not a chip. The fill and the 7px radius were the card's. */
   .site .work-tag {
-    align-self: flex-start;
-    margin-bottom: auto;
-    padding: 5px 10px;
-    border-radius: 7px;
-    background: rgba(255, 255, 255, 0.12);
+    margin: 0;
     font-family: var(--mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.14em;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #FFFFFF;
+    line-height: 1;
+    color: var(--ink-faint);
   }
 
   /*
@@ -7297,21 +7275,24 @@
      card is Instrument Serif in italic; keeping these two apart is the
      only thing on the page that says which of the two people is talking.
   */
+  /* Their h3 exactly: 20 / 500 / lh 32, and no tracking at all. The
+     -0.015em this had was ours and is the first thing their scale drops. */
   .site .work-ask {
-    margin: 0;
-    font-size: 1.3125rem;
-    line-height: 1.28;
-    letter-spacing: -0.015em;
-    color: #FFFFFF;
+    margin: 10px 0 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.6;
+    letter-spacing: normal;
+    color: var(--ink);
   }
 
+  /* Their p: 16 / 400 / lh 28.8, 5px under the heading. The rule that
+     used to sit above this was the card's caption divider. */
   .site .work-does {
-    margin: 0;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    font-size: 0.8125rem;
-    line-height: 1.1875rem;
-    color: rgba(255, 255, 255, 0.62);
+    margin: 5px 0 0;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--ink-mute);
   }
 
   .site .work-note {
@@ -7335,11 +7316,10 @@
      make a row of the same two rectangles.
   */
   @media (max-width: 860px) {
-    .site .work-grid { grid-template-columns: minmax(0, 1fr); }
+    .site .work-list { grid-template-columns: minmax(0, 1fr); }
   }
   @media (max-width: 640px) {
-    .site .work-grid { margin-top: 32px; gap: 12px; }
-    .site .work-card { min-height: 0; padding: 22px; }
+    .site .work-list { margin-top: 32px; row-gap: 28px; }
     .site .work-ask { font-size: 1.125rem; }
   }
 
