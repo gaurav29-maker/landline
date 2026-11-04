@@ -4545,12 +4545,25 @@
      photographs — see the note in page.tsx.
   */
   .site .hero-trust {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    /*
+       NO WRAP ON THE ROW, and flex-start rather than centre.
+
+       With flex-wrap the glyph and the text are two flex items, so on a
+       phone the text wrapped to a second LINE OF THE ROW and left the
+       glyph stranded on its own, centred above it. Without wrapping the
+       text is one item that wraps inside itself, which is what was
+       wanted: the glyph beside the first line.
+
+       flex-start, because centre would float the glyph to the midpoint
+       of a two-line block instead of sitting on the line it belongs to.
+    */
+    align-items: flex-start;
     justify-content: center;
-    /* 8px to the label and 30px above the row, both theirs. */
+    /* 8px from the glyph to the words, theirs. */
     gap: 8px;
-    height: 34px;
+    min-height: 34px;
+    max-width: 42ch;
     margin: 30px auto 0;
     font-size: 0.875rem;
     font-weight: 500;
@@ -4566,28 +4579,6 @@
      would merge into a single blob at an 11px overlap, so each carries a
      ring in the page's own ground to cut itself out of the one behind.
   */
-  .site .hero-faces {
-    display: inline-flex;
-    align-items: center;
-    flex: 0 0 auto;
-  }
-  .site .hero-face {
-    box-sizing: border-box;
-    width: 34px;
-    height: 34px;
-    border-radius: 100px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--bg);
-    background: var(--accent);
-    color: var(--on-accent);
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-  }
-  .site .hero-face + .hero-face { margin-left: -11px; }
-
   .site .hero-trust-ico {
     width: 20px;
     height: 20px;

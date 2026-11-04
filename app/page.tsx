@@ -250,30 +250,42 @@ export default async function Home() {
               spelled out the same letters. In this row there is no name to
               repeat.
             */}
-            {experts.length > 0 ? (
-              <span className="hero-faces" aria-hidden="true">
-                {experts.slice(0, 3).map((e) => (
-                  <span className="hero-face" key={e.slug}>
-                    {e.initials}
-                  </span>
-                ))}
-              </span>
-            ) : (
-              <svg
-                className="hero-trust-ico"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M8 12.2l2.6 2.6L16 9.4" />
-              </svg>
-            )}
-            Checked by a person, not bought
+            {/*
+              THE PRICE IS THE TRUST SIGNAL, which is the Zerodha frame.
+
+              Their pages lead with the number and state it flat — a figure,
+              a full stop, the condition, no adjective and no exclamation.
+              The confidence is in printing the price with no asterisk, not
+              in describing it. They built a brokerage on that and never ran
+              a testimonial.
+
+              This row used to carry "Checked by a person, not bought" over
+              a disc of the expert's initials, which is a claim about us.
+              Under the Zerodha frame it is replaced by the two facts a
+              stranger in front of a button actually wants: what it costs,
+              and what happens if they change their mind.
+
+              The figure is read from SINGLE_CALL_PAISE, the same constant
+              the pricing section prints, so the hero and § What it costs
+              cannot drift apart. The refund clause is cut from
+              /legal/refunds: "more than 24 hours before the call — full
+              refund, no questions".
+            */}
+            <svg
+              className="hero-trust-ico"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4.5 10.5a8 8 0 1 1 .9 6" />
+              <path d="M3.4 4.9l1.1 5.6 5.6-1.1" />
+            </svg>
+            {rupees(SINGLE_CALL_PAISE)} a call. Full refund if you cancel more than 24 hours
+            before.
           </p>
         </div>
       </header>
