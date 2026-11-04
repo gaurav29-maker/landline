@@ -7692,9 +7692,11 @@
      and until now it ran under there at full contrast, so a headline
      sliding behind the bar competed with the links printed on it.
 
-     A band of blur pinned to the top of the viewport, masked so it falls
-     off to nothing below the bar. BELOW the nav in z-order and above the
-     page, so it treats the content and never the controls.
+     The blurring half of that sentence, and only that half: a band of
+     blur pinned to the top of the viewport, masked so it falls off to
+     nothing below the bar. BELOW the nav in z-order and above the page,
+     so it treats the content and never the controls. The opacity half
+     was removed on 4 November; see the note where it used to be.
 
      The mask does the whole job: the blur is strongest where the bar is
      and gone by the bottom edge, which is what stops it reading as a grey
@@ -7725,20 +7727,23 @@
   }
 
   /*
-     "and reducing the opacity of background content" — the second half of
-     the sentence. A wash of the page's own ground, carried by the same
-     mask, so what passes under the bar loses contrast as well as focus.
+     THE WASH IS GONE, 4 NOVEMBER, AND THE BLUR ABOVE STAYS.
+
+     There used to be a ::after here carrying the second half of Apple's
+     sentence — "and reducing the opacity of background content" — as a
+     gradient from --bg at 72% down to transparent across the same 104px.
+
+     On a dark app chrome that is a scrim and it disappears into the
+     design. On this page --bg is #FFFFFF, so it was 72% white laid full
+     width over the top of the hero, and the hero's own wash opens blue.
+     The two fought: the blue read at the left and right edges where the
+     bar was not, and washed out to near-white behind the capsule. What
+     looked like a glow around the nav was this gradient meeting that one.
+
+     Only the wash goes. The blur above is doing the other half of the
+     job and does not tint anything — it matters once a headline actually
+     scrolls under the bar, which is the case the effect exists for.
   */
-  .site .scroll-edge::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--bg) 72%, transparent) 0%,
-      transparent 100%
-    );
-  }
 
   /* It is an effect made of transparency; asked for less, it goes. */
   @media (prefers-reduced-transparency: reduce) {
