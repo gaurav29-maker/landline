@@ -4538,54 +4538,6 @@
     .site .hero-badge { gap: 7px; }
   }
 
-  /*
-     The trust line, in the slot the reference gives to customer faces.
-     34px tall and 14/500 on -0.02em, which is their row's geometry; what
-     stands in it is a claim rather than a photograph, because we have no
-     photographs — see the note in page.tsx.
-  */
-  .site .hero-trust {
-    display: flex;
-    /*
-       NO WRAP ON THE ROW, and flex-start rather than centre.
-
-       With flex-wrap the glyph and the text are two flex items, so on a
-       phone the text wrapped to a second LINE OF THE ROW and left the
-       glyph stranded on its own, centred above it. Without wrapping the
-       text is one item that wraps inside itself, which is what was
-       wanted: the glyph beside the first line.
-
-       flex-start, because centre would float the glyph to the midpoint
-       of a two-line block instead of sitting on the line it belongs to.
-    */
-    align-items: flex-start;
-    justify-content: center;
-    /* 8px from the glyph to the words, theirs. */
-    gap: 8px;
-    min-height: 34px;
-    max-width: 42ch;
-    margin: 30px auto 0;
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--ink-mute);
-  }
-  /*
-     The discs, at their measurements: 34px on a 100px radius, overlapping
-     by 11px, the row flush left inside a box that is centred.
-
-     The 2px ring is ours and theirs does not need one — theirs are
-     photographs, whose own edges separate them. Flat discs of one colour
-     would merge into a single blob at an 11px overlap, so each carries a
-     ring in the page's own ground to cut itself out of the one behind.
-  */
-  .site .hero-trust-ico {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 20px;
-    color: var(--accent-ink);
-  }
-
   /* Sits under the headline now, so its margin is the gap to the buttons. */
   .site .reject { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
   .site .reject span {
