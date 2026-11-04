@@ -4892,7 +4892,17 @@
   */
   /* 40px above and 10px below, theirs, and 24 of gap rather than 28. No
      side padding: the mask is what holds the edges in, not a gutter. */
-  .site .strip-in { display: flex; align-items: center; gap: 24px; padding: 40px 24px 10px; max-width: 1140px; margin: 0 auto; overflow: hidden; }
+  /*
+     129 TALL, THEIRS. 40 above and 10 below were already matched; the box
+     itself was 70 because our items are set type and theirs are logo
+     images with real height. min-height makes the row occupy the same
+     space whatever is in it.
+
+     The 24px of side padding is ours and stays. Theirs has none because
+     theirs has no label — ours opens with "Built for investors using",
+     and at zero padding that text would start hard against the edge.
+  */
+  .site .strip-in { display: flex; align-items: center; gap: 24px; padding: 40px 24px 10px; min-height: 129px; max-width: 1140px; margin: 0 auto; overflow: hidden; }
   .site .strip-in .eyebrow { white-space: nowrap; }
   .site .ticker {
     flex: 1;
@@ -4909,17 +4919,33 @@
     -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 25%, #000 75%, transparent 100%);
     mask-image: linear-gradient(to right, transparent 0%, #000 25%, #000 75%, transparent 100%);
   }
+  /*
+     A BUG FOUND WHILE MATCHING THE SPEED. This gap was 28 while the list
+     gap beside it was 24, and the -14px in the keyframe is half of 28 —
+     the correction that lands the second copy exactly where the first
+     began. The two numbers have to agree or the loop jumps by the
+     difference on every pass. Both are 24 now, so the offset is -12.
+
+     The distance one cycle covers is one list plus one gap, which is why
+     the offset is -50% minus half a gap rather than a round -50%.
+
+     34s TO 20s. Their marquee runs at 35px a second, which is roughly
+     1.7x ours. ESTIMATED, NOT MEASURED: the track is eight broker names
+     set in 11px with 0.1em of tracking plus seven 24px gaps, which comes
+     to something near 660px, and 660 over 35 is about 19 seconds. The
+     browser pane has been unusable all session so the real track width
+     has not been read back; this is arithmetic on an assumed glyph
+     width, and it wants calibrating against a measurement.
+  */
   .site .ticker-track {
     display: flex;
-    gap: 28px;
+    gap: 24px;
     width: max-content;
-    animation: landline-ticker 34s linear infinite;
+    animation: landline-ticker 20s linear infinite;
   }
   @keyframes landline-ticker {
-    to { transform: translateX(calc(-50% - 14px)); }
+    to { transform: translateX(calc(-50% - 12px)); }
   }
-  /* Hovering is somebody trying to read one. Let them. */
-  .site .strip:hover .ticker-track { animation-play-state: paused; }
   /*
      An endless sideways crawl is near the top of the list of things this
      setting exists to stop, so it stops — and the strip goes back to being
