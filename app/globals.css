@@ -4486,11 +4486,65 @@
       var(--bg) 15%
     );
     min-height: 700px;
-    padding: 0;
+    /*
+       THE 131 IS AN EMPTY BLOCK OF THEIRS, STANDING IN THE FLOW.
+
+       Their hero's children are not the two I had assumed. In their own
+       markup it holds five, of which four render on any one breakpoint:
+
+         .framer-2i00pm   the eyebrow's container
+         .framer-y9o50m   the main section (headline, line, buttons, avatars)
+         .framer-1se06mp  min-height: 111px, and COMPLETELY EMPTY
+         two logo rows, one per breakpoint, of which one is hidden
+
+       The third is a spacer. It has no content at all — its own padding
+       (60px desktop, 20px phone) never applies, because an empty
+       border-box element is just its min-height. So it puts 111px, plus
+       the hero's own 20px gap, into the bottom of the flow and nothing
+       else: 131px that exists only to push the centred stack up.
+
+       That is the whole difference I had been trying to close with row
+       gaps. In a justify-content: center column, 131px of flow below the
+       content lifts it 65.5px off true centre, and padding-bottom on the
+       container does exactly the same arithmetic without an empty div in
+       our markup.
+    */
+    padding: 0 0 131px;
+    /* The logo row below is absolute against this; see .hero-band .strip. */
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
+  }
+  /*
+     THE LOGO ROW IS NOT IN THE FLOW ON THEIRS — it is pinned.
+
+       .framer-1t2dlsi-container, .framer-oononf-container {
+         position: absolute; bottom: 30px; left: -.0714302%;
+         width: 100%; height: 129px; z-index: 1;
+       }
+
+     One rule, no media query, so it holds at every width. Ours was an
+     ordinary flex child of the hero, which meant the hero centred the
+     text AND the marquee together as one group. That is why our headline
+     sat low and theirs sat high: on theirs the marquee never entered the
+     sum.
+
+     Pinning it also explains the empty 111px block above. The spacer
+     reserves the room in the flow; the row itself is laid over that room.
+     They are two halves of one mechanism and only make sense together.
+
+     left: 0 rather than their -0.0714302%, which is a Framer rounding
+     artefact (about a third of a pixel at 455) and not a design decision.
+  */
+  .site .hero-band .strip {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    height: 129px;
+    z-index: 1;
   }
   /*
      64px of gutter, theirs, against .wrap's usual 24 — and it is set on the
@@ -4511,7 +4565,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 14px;
+    /*
+       20, theirs: their eyebrow sits in its own flex child and the hero's
+       gap: 20px is what separates it from the main section below. Ours is
+       one row inside one .wrap, so the hero gap cannot do that job and the
+       margin has to carry it. Was 14.
+    */
+    margin-bottom: 20px;
     font-family: var(--mono);
     font-size: 0.6875rem;
     font-weight: 700;
@@ -5490,7 +5550,16 @@
        Their 10 and 26 land on our own rows: the headline's gap to what
        follows it, and that row's gap to the buttons. Ours were 18 and 30.
     */
-    .site .hero-band { height: 90vh; gap: 20px; }
+    /*
+       max(700px, 90vh) AND NOT height: 90vh, which is the second place
+       this takes their number but not their property. Theirs is a fixed
+       height with overflow: hidden, so a phone that cannot fit the stack
+       gets it clipped. On a tall handset the two are identical — 90vh of
+       900 is 810 either way. On a short one, or once the 131px reserve
+       below is taken out of the box, ours grows and theirs would cut the
+       buttons off. Same reasoning as the min-height on the base rule.
+    */
+    .site .hero-band { min-height: max(700px, 90vh); height: auto; gap: 20px; }
     .site .hero-band h1 { margin-bottom: 10px; }
     .site .reject { margin-bottom: 26px; }
     /*
