@@ -3643,7 +3643,12 @@
       --accent-ink: #5CA8FF;
       --err:        #F2B8B5;
       --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-      --mat-bg: rgba(30, 30, 30, 0.66);
+      /* rgba(25,25,28,0.55), theirs: a shade lighter and less opaque than
+       the rgba(30,30,30,0.66) this was, so more of the page shows through
+       the glass. Four surfaces share this token and all four are glass —
+       the phone bar, the floating phone CTA, the band pill and the desktop
+       capsule — so they move together rather than drifting apart. */
+    --mat-bg: rgba(25, 25, 28, 0.55);
       --card: #181818;
       --card-radius: 16px;
       --card-edge: 0;
@@ -3700,7 +3705,12 @@
     --accent-ink: #5CA8FF;
     --err:        #F2B8B5;
     --lift: 0 8px 16px rgba(0, 0, 0, 0.5);
-    --mat-bg: rgba(30, 30, 30, 0.66);
+    /* rgba(25,25,28,0.55), theirs: a shade lighter and less opaque than
+       the rgba(30,30,30,0.66) this was, so more of the page shows through
+       the glass. Four surfaces share this token and all four are glass —
+       the phone bar, the floating phone CTA, the band pill and the desktop
+       capsule — so they move together rather than drifting apart. */
+    --mat-bg: rgba(25, 25, 28, 0.55);
     --card: #181818;
     --card-radius: 16px;
     --card-edge: 0;
@@ -8230,8 +8240,15 @@
       inset: 0;
       z-index: 0;
       background: var(--mat-bg);
-      -webkit-backdrop-filter: var(--glass-near);
-      backdrop-filter: var(--glass-near);
+      /*
+         blur(40px), theirs, against --glass-near's blur(18px)
+         saturate(180%). Scoped to the capsule rather than changed on the
+         token: --glass-near has twelve users and more than doubling the
+         blur on all of them is a far heavier change than this one
+         surface asked for.
+      */
+      -webkit-backdrop-filter: blur(40px);
+      backdrop-filter: blur(40px);
       border: 1px solid var(--hairline);
       border-radius: 23px;
       box-shadow: var(--mat-lift);
@@ -8249,13 +8266,30 @@
 
     .site .nav-in {
       grid-column: 2;
+      /*
+         50.8 is theirs and 44.4 was ours — the capsule was six pixels
+         short because its tallest child set the height and theirs is
+         driven by a 36px button inside 6px of padding. min-height rather
+         than height, so a longer label still grows it.
+      */
+      min-height: 51px;
       padding: 6px 4px;
       gap: 0;
       justify-content: space-evenly;
       border-radius: 23px;
     }
-    /* 6px 8px, theirs, against the 7px 10px this had. */
-    .site .nav-mid a { padding: 6px 8px; }
+    /*
+       6px 8px, theirs, against the 7px 10px this had — and the ink comes
+       down with it. Theirs is rgba(255,255,255,0.55); ours was --ink-body
+       at full strength, which read as seven equally loud links. 55% of
+       --ink rather than a literal white, so the light theme gets 55% of a
+       dark ink instead of invisible white on white.
+    */
+    .site .nav-mid a {
+      padding: 6px 8px;
+      color: color-mix(in srgb, var(--ink) 55%, transparent);
+    }
+    .site .nav-mid a:hover { color: var(--ink); }
 
     .site .nav-aside { grid-column: 3; justify-self: end; }
   }
