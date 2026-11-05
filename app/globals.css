@@ -7170,59 +7170,52 @@
      grid, so the first card lines up with the heading above it.
   */
   /*
-     ZERODHA'S SECTION, measured off their homepage at 1280 rather than
-     recalled:
+     ROBINHOOD'S TIER TABLE, measured on their banking page at 1280:
 
-       container  1100px
-       h2         24 / 500 / lh 36,  margin 0 0 40px
-       h3         20 / 500 / lh 32,  margin 0
-       p          16 / 400 / lh 28.8, margin 5px 0 32px
-       link       16 / 500, #387ED1, no underline
-       tracking   normal, on every one of them
+       row        label left, value right
+       both       16px / 400, tracking normal
+       padding    20px down
+       separator  a hairline between rows
+       groups     a small heading over each run of rows
+       body       rgb(218,211,192) — a WARM cream, not a neutral grey
 
-     And nothing else. No card, no border, no radius, no shadow, no
-     fill — their multi-item sections are an h2 and a run of h3 + p
-     pairs in a narrow column, with the air doing the separating.
+     WHAT THIS REPLACED: the same six pairs stacked as label / heading /
+     paragraph, which read as twelve paragraphs rather than six pairs.
+     The two columns were already in the content.
 
-     THIS REPLACED SIX GRADIENT CARDS. Two columns of 532x314 with 22px
-     radius, 28px of padding and a chip behind each tag. Zerodha would
-     not draw a box around a sentence, and once the boxes go the
-     sentences are easier to read than they were inside them.
+     TWO OF THEIRS DELIBERATELY NOT TAKEN:
 
-     The ground stays dark because this band is in the run that starts
-     at the audit card, so every colour below is a token rather than
-     their #424242 and #666666. Those two greys are what their scale
-     assumes; --ink and --ink-mute are ours in the same two roles.
+     The right alignment. Their values are "3.60%" and "$0" — two or
+     three characters, where a right edge makes a clean column to scan.
+     Ours are sentences, and a right-aligned sentence leaves a ragged
+     left edge the eye has to re-find on every row.
+
+     The warm cream. rgb(218,211,192) is the whole mood of their banking
+     page and it would be one section of this site in a different
+     temperature. The answer column takes var(--accent-ink) instead,
+     which is the job their gold does — making the "what the call does"
+     side scannable on its own — in this site's own colour.
   */
-  .site .work-list {
+  .site .work-table {
     width: 100%;
-    max-width: 1100px;
-    /* Their h2 carries margin-bottom: 40px; the list answers it. */
+    max-width: 1080px;
     margin-top: 40px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    /* 32px down, theirs, from the bottom margin on their paragraph.
-       The column gap is ours: they run one column and never needed one. */
-    column-gap: 64px;
-    row-gap: 32px;
   }
+  .site .work-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 24px 48px;
+    align-items: start;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  /* The last rule would draw a line straight into the note under it. */
+  .site .work-row:last-child { border-bottom: 0; }
 
-  .site .work-item { min-width: 0; }
+  .site .work-row-q { min-width: 0; }
 
-  /*
-     THE THREE GRADIENT GROUNDS WENT WITH THE CARDS. They existed so six
-     identical rectangles would not read as a template; with no
-     rectangles there is nothing to tint, and data-tone is now an
-     attribute nothing styles. Left on the markup rather than stripped,
-     because it costs nothing and says which third of the list an item
-     is in if a ground is ever wanted again.
-  */
-
-  /* The chip. Theirs is 12px of plain white on the still; ours needs a
-     ground of its own, because the card under it is type and not video. */
-  /* A label, not a chip. The fill and the 7px radius were the card's. */
   .site .work-tag {
-    margin: 0;
+    margin: 0 0 6px;
     font-family: var(--mono);
     font-size: 0.6875rem;
     letter-spacing: 0.16em;
@@ -7231,30 +7224,42 @@
     color: var(--ink-faint);
   }
 
-  /*
-     The member's question, upright. The expert's question on the audit
-     card is Instrument Serif in italic; keeping these two apart is the
-     only thing on the page that says which of the two people is talking.
-  */
-  /* Their h3 exactly: 20 / 500 / lh 32, and no tracking at all. The
-     -0.015em this had was ours and is the first thing their scale drops. */
   .site .work-ask {
-    margin: 10px 0 0;
-    font-size: 1.25rem;
+    margin: 0;
+    font-size: 1.125rem;
     font-weight: 500;
-    line-height: 1.6;
+    line-height: 1.5;
     letter-spacing: normal;
     color: var(--ink);
+    overflow-wrap: break-word;
   }
 
-  /* Their p: 16 / 400 / lh 28.8, 5px under the heading. The rule that
-     used to sit above this was the card's caption divider. */
+  /*
+     The value side. Accent where theirs is gold, and aligned to the
+     question's baseline rather than the row's top so the two halves of a
+     pair sit on one line when both are short.
+  */
   .site .work-does {
-    margin: 5px 0 0;
+    margin: 0;
+    padding-top: 21px;
     font-size: 1rem;
-    line-height: 1.8;
-    color: var(--ink-mute);
+    line-height: 1.5;
+    color: var(--accent-ink);
+    overflow-wrap: break-word;
   }
+
+  /*
+     THE THREE GRADIENT GROUNDS WENT WITH THE CARDS, and so did the
+     second copy of .work-tag / .work-ask / .work-does that used to sit
+     here.
+
+     THAT DUPLICATE WAS A LIVE BUG, not tidying. Those rules came in with
+     the Zerodha pass, mine came in with the table above, and at equal
+     specificity the later one wins — so the answer column rendered in
+     --ink-mute while the rule I had just written said --accent-ink.
+     Caught by reading the computed colour back rather than by looking,
+     because a grey sentence where a blue one was intended looks fine.
+  */
 
   .site .work-note {
     align-self: flex-start;
@@ -7276,12 +7281,20 @@
      rather than collapsing, so a short question and a long one still
      make a row of the same two rectangles.
   */
-  @media (max-width: 860px) {
-    .site .work-list { grid-template-columns: minmax(0, 1fr); }
+  /*
+     ONE COLUMN BELOW 760, where the answer column stops being wide
+     enough to hold a short sentence without breaking it over three
+     lines. Stacked, the pair still reads as a pair because the answer
+     keeps the accent — the colour is doing the work the column did.
+  */
+  @media (max-width: 760px) {
+    .site .work-row { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .site .work-does { padding-top: 0; }
   }
   @media (max-width: 640px) {
-    .site .work-list { margin-top: 32px; row-gap: 28px; }
-    .site .work-ask { font-size: 1.125rem; }
+    .site .work-table { margin-top: 32px; }
+    .site .work-ask { font-size: 1.0625rem; }
+    .site .work-does { font-size: 0.9375rem; }
   }
 
 
@@ -8201,8 +8214,14 @@
     .site .reel-file { color: rgba(255, 255, 255, 0.96); }
     .site .reel-name { color: rgba(255, 255, 255, 0.86); }
     .site .reel-bar { background: rgba(255, 255, 255, 0.4); }
-    .site .work-does { color: rgba(255, 255, 255, 0.92); }
-    .site .work-tag { background: rgba(255, 255, 255, 0.3); }
+    /*
+       .work-does and .work-tag used to be overridden here at full
+       strength, because they sat on the card's own gradient and could
+       not read the ink tokens. There is no card and no gradient now —
+       both take --accent-ink and --ink-faint from the band like
+       everything else, and the override was re-colouring the answer
+       column for no reason.
+    */
   }
 
   /* ============================================================ console

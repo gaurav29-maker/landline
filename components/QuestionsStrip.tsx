@@ -73,49 +73,35 @@ export default function QuestionsStrip() {
       <h2 className="band-pill">What it is for</h2>
 
       {/*
-        ZERODHA'S, AND THE CARDS ARE GONE.
+        ROBINHOOD'S COMPARISON TABLE, which is the shape this content was
+        already in without being drawn that way.
 
-        Their homepage was read rather than remembered, at 1280:
+        Their banking page, measured at 1280: a tier table of rows with
+        the label on the left and the value on the right, 16px/400 both
+        sides, 20px of padding down, hairline-separated, grouped under
+        small headings. "Checking APY¹ ........ 3.60%".
 
-          container   1100px
-          h2          24px / 500 / lh 36 / #424242, margin 0 0 40px
-          h3          20px / 500 / lh 32 / #424242, margin 0
-          p           16px / 400 / lh 28.8 / #666666, margin 5px 0 32px
-          link        16px / 500 / #387ED1, no underline
-          letter-spacing: normal, everywhere
-          no cards, no borders, no radius, no shadows, no fills
+        Ours is six pairs — what somebody arrives with, and what the call
+        does with it — so the two columns were already in the content. The
+        Zerodha list before this stacked them, which read as twelve
+        paragraphs rather than six pairs.
 
-        The whole system is four type sizes, two weights and two greys on
-        white. The only colour on the page is the link blue — and it is
-        #387ED1, which is this site's --accent to the byte. We were
-        already using their blue.
+        WHAT IS NOT THEIRS: the answers are left-aligned in their column,
+        not right. Their values are "3.60%" and "$0" — two or three
+        characters, where right-alignment makes a clean edge to scan down.
+        Ours are sentences, and a right-aligned sentence has a ragged left
+        edge that the eye has to re-find on every row.
 
-        WHAT THAT MEANS FOR THIS SECTION. Every card went: the gradient
-        grounds, the 22px radius, the 28px of padding, the chip behind
-        the tag and the rule above the closing line. Zerodha would not
-        draw a box around a sentence. What is left is the sentence, a
-        label over it and a line under it, with air doing the separating
-        that six rectangles were doing before.
-
-        The questions, the labels and the closing lines are unchanged —
-        this is a change of setting, not of content.
-
-        TWO OF THEIRS THAT ARE NOT TAKEN, both on purpose:
-
-        Inter. Theirs is Inter throughout; ours stays Satoshi, because
-        the instruction on this site is to use its own faces and the
-        scale is the transferable part.
-
-        The white ground. Theirs is white and this band is in the dark
-        run that starts at the audit card — a page-level rhythm, not a
-        section decision. The restraint survives the ground; the type
-        below reads the same on either.
+        The answer column takes the accent the way their values take gold,
+        so the "what the call does" side is scannable on its own.
       */}
-      <div className="work-list">
+      <div className="work-table">
         {ASKS.map((a) => (
-          <div className="work-item" key={a.tag}>
-            <p className="work-tag">{a.tag}</p>
-            <h3 className="work-ask">{a.ask}</h3>
+          <div className="work-row" key={a.tag}>
+            <div className="work-row-q">
+              <p className="work-tag">{a.tag}</p>
+              <h3 className="work-ask">{a.ask}</h3>
+            </div>
             <p className="work-does">{a.does}</p>
           </div>
         ))}

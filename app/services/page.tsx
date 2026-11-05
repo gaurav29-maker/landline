@@ -121,50 +121,62 @@ export default function Services() {
                 call, and usually one of them does.
               </p>
             </div>
-            <div className="work-list">
-              <div className="work-item">
-                <p className="work-tag">Reads it</p>
-                <h3 className="work-ask">Goes through the book with you, line by line.</h3>
+            <div className="work-table">
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Reads it</p>
+                  <h3 className="work-ask">Goes through the book with you, line by line.</h3>
+                </div>
                 <p className="work-does">
                   Not a summary read back. The holdings open on your screen, in the order you want
                   to take them.
                 </p>
               </div>
-              <div className="work-item">
-                <p className="work-tag">Names the shape</p>
-                <h3 className="work-ask">Says what the book is, before saying anything about it.</h3>
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Names the shape</p>
+                  <h3 className="work-ask">Says what the book is, before saying anything about it.</h3>
+                </div>
                 <p className="work-does">
                   Concentrated, scattered, mostly derivatives, or something else. The shape is
                   usually the thing nobody has said out loud.
                 </p>
               </div>
-              <div className="work-item">
-                <p className="work-tag">Asks</p>
-                <h3 className="work-ask">Puts the questions you have not been asked.</h3>
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Asks</p>
+                  <h3 className="work-ask">Puts the questions you have not been asked.</h3>
+                </div>
                 <p className="work-does">
                   Why this one, why this much, and whether it arrived by decision or one buy at a
                   time.
                 </p>
               </div>
-              <div className="work-item">
-                <p className="work-tag">Takes your question</p>
-                <h3 className="work-ask">Answers the specific thing you came with.</h3>
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Takes your question</p>
+                  <h3 className="work-ask">Answers the specific thing you came with.</h3>
+                </div>
                 <p className="work-does">
                   A single holding, a sector, a second opinion on something you have already
                   decided.
                 </p>
               </div>
-              <div className="work-item">
-                <p className="work-tag">Looks through</p>
-                <h3 className="work-ask">Checks what the funds already own for you.</h3>
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Looks through</p>
+                  <h3 className="work-ask">Checks what the funds already own for you.</h3>
+                </div>
                 <p className="work-does">
                   Four funds and twenty stocks is often fewer companies than it looks, and the
                   overlap is only visible if somebody looks for it.
                 </p>
               </div>
-              <div className="work-item">
-                <p className="work-tag">Writes it down</p>
-                <h3 className="work-ask">Leaves a record of what was discussed.</h3>
+              <div className="work-row">
+                <div className="work-row-q">
+                  <p className="work-tag">Writes it down</p>
+                  <h3 className="work-ask">Leaves a record of what was discussed.</h3>
+                </div>
                 <p className="work-does">
                   A short note afterwards and a plain-text file you can download. Nobody has to
                   remember the call.
