@@ -6100,19 +6100,160 @@
      large. The -0.05em this inherits is a bold-sans number and closes a
      400 face up too far.
 
-     Scoped to #shapes. #audit took the serif for the same reason two
-     commits ago; the other five band heads keep the sans at 500.
+     Scoped to #console, which is the band that used to be #shapes —
+     the id changed when the section did, and this rule silently
+     stopped matching until the weight was read back and found at 500
+     again. #audit took the serif for its own reason; the other band
+     heads keep the sans at 500.
   */
-  .site #shapes .band-head h2 {
+  .site #console .band-head h2 {
     font-weight: 400;
     line-height: 1.08;
     letter-spacing: -0.028em;
   }
   /* Their line is full strength and tightly led — one sentence doing a
      job, not a paragraph of supporting text. */
-  .site #shapes .band-head p {
+  .site #console .band-head p {
     color: var(--ink-body);
     line-height: 1.35;
+  }
+
+  /* ================================================== landline OS, shown
+     robinhood.com's "See your full financial picture": centred headline,
+     one line, then the product as the media. Measured on their banking
+     page — 72/400/-2px head, 30px, line, 50px, media — and this band
+     already carries those numbers from the section it replaces.
+
+     Theirs is a photograph of a phone running the app. Ours is the
+     console drawn from its own labels, because a screenshot needs a
+     signed-in member and a real booking and the database has neither.
+  */
+  .site .os-peek-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    width: 100%;
+  }
+
+  .site .os-peek {
+    width: 100%;
+    max-width: 46rem;
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    background: var(--bg-alt);
+    overflow: hidden;
+    text-align: left;
+  }
+
+  .site .os-peek-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+  .site .os-peek-mark {
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  /* Wordmark emits `land<span>line</span>` and `<em>` for the sub. */
+  .site .os-peek-mark span { color: var(--accent-ink); }
+  .site .os-peek-mark em {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--ink-mute);
+    margin-left: 1px;
+  }
+  .site .os-peek-mark .mark-r { font-size: 0.5em; vertical-align: super; color: var(--ink-faint); }
+  .site .os-peek-nav {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 16px;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .site .os-peek-nav .on { font-weight: 500; color: var(--ink); }
+
+  .site .os-peek-body { padding: 18px; }
+  .site .os-peek-h {
+    margin: 0 0 10px;
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .site .os-peek-row + .os-peek-h { margin-top: 22px; }
+
+  .site .os-peek-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--rule);
+    border-radius: 11px;
+    flex-wrap: wrap;
+  }
+  .site .os-peek-who { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .site .os-peek-who b { font-size: 0.9375rem; font-weight: 500; color: var(--ink); }
+  .site .os-peek-who > span { font-size: 0.8125rem; color: var(--ink-mute); }
+
+  .site .os-peek-acts { display: flex; list-style: none; margin: 0; padding: 0; gap: 8px; flex-shrink: 0; }
+  /*
+     Spans, not buttons. This is a picture of the console, and a real
+     button here would be a control that does nothing — the one at the
+     foot of the section is the one that goes somewhere.
+  */
+  .site .os-peek-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: var(--ink-mute);
+    white-space: nowrap;
+  }
+
+  .site .os-peek-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 46rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 36px;
+    text-align: left;
+  }
+  .site .os-peek-list li { font-size: 0.9375rem; line-height: 1.55; color: var(--ink-mute); }
+  .site .os-peek-list b { font-weight: 500; color: var(--ink); }
+
+  .site .os-peek-note {
+    margin: 0;
+    max-width: 46rem;
+    font-size: 0.78125rem;
+    line-height: 1.5;
+    color: var(--ink-faint);
+    text-align: left;
+  }
+
+  @media (max-width: 760px) {
+    .site .os-peek-list { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  }
+  @media (max-width: 560px) {
+    .site .os-peek-nav { gap: 10px; }
+    .site .os-peek-body { padding: 14px; }
+    .site .os-peek-row { padding: 12px; }
+    .site .os-peek-acts { width: 100%; }
   }
 
   .site .shapes { display: flex; flex-direction: column; align-items: center; gap: 40px; }

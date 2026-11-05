@@ -13,7 +13,7 @@ import {
 import ExpertGrid, { type ExpertCard } from "@/components/ExpertGrid";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
-import BookShapes from "@/components/BookShapes";
+import ConsolePeek from "@/components/ConsolePeek";
 import { ArtQuestion, ArtSlot, ArtCall } from "@/components/FlowArt";
 import AuditShapes from "@/components/AuditShapes";
 import QuestionsStrip from "@/components/QuestionsStrip";
@@ -257,25 +257,25 @@ export default async function Home() {
             beside them. The reasoning — and the rule every line of it was
             written against — is in components/AuditShapes.
 
-            THIS PAGE NOW SHOWS THE SAME THREE SHAPES TWICE, and it did
-            before this component existed too. 51%, 4% and 62%, their
-            three bars and their three expert questions are here, and
-            they are in <BookShapes /> under #shapes about nine screens
-            down — once as a picker, once as a tab strip.
+            THIS CARD IS NOW THE ONLY PLACE THE SHAPES APPEAR. It used
+            to be one of two: a second copy lived in a BookShapes
+            component under #shapes, nine screens down, with the same
+            51%, 4% and
+            62%, the same three bars and the same three expert questions
+            — once as a picker, once as a tab strip. The duplication was
+            older than either component; the film that stood here cycled
+            the same three.
 
-            The duplication is older than this section: the film that
-            stood here cycled the same three. It is more obvious now,
-            because two pick-one controls showing identical figures read
-            as a mistake in a way that a moving card and a tab strip did
-            not.
+            RESOLVED BY REPLACING #shapes, not this. That slot is the
+            console now. This card keeps the argument because it is the
+            one with the chart, and a chart is what makes three shapes
+            look like three shapes.
 
-            NOT RESOLVED HERE, because the fix is a content decision
-            rather than a styling one. Either #shapes goes and this
-            carries the argument alone, or #shapes keeps the shapes and
-            this card goes back to being about the record. Whoever picks
-            should also move the "The figures are from the example record
-            you can download" line, which is currently only under the
-            other one.
+            The line that went with the other one — "the figures are from
+            the example record you can download" — is not re-added here
+            as copy, because the panel already carries it twice over: the
+            footnote below says the whole thing is an example, and the
+            button inside the panel goes and gets the record.
           */}
           <AuditShapes />
         </div>
@@ -516,20 +516,37 @@ export default async function Home() {
         photography in this product and a placeholder where a picture goes
         would be worse than not borrowing the pattern at all.
       */}
-      <section className="band" id="shapes">
+      {/*
+        LANDLINE OS, IN PLACE OF A SECOND COPY OF THE SHAPES.
+
+        What stood here rendered the same three shapes as #audit — same
+        figures, same expert questions, two bands apart. See the note on
+        that card for the history.
+
+        What goes in its place is the thing the nav has always had a
+        button for and the page has never shown: the console. Same
+        robinhood.com pattern this band already carried — centred
+        headline, one line, then the product as the media.
+
+        Every label in the panel is the console's own, read out of
+        app/member rather than written for the picture. The reasoning is
+        in components/ConsolePeek.
+      */}
+      <section className="band" id="console">
         <div className="wrap">
-          {/* Centred, not idx — their section centres the whole column. */}
           <div className="band-head">
-            <span className="eyebrow">Before you pay</span>
+            <span className="eyebrow">Landline OS</span>
             <h2>
-              Find the one that looks like <span className="said">yours</span>.
+              Everything after the call, <span className="said">in one place</span>.
             </h2>
             <p>
-              Three shapes a book arrives in, and the first thing an expert asks about each.
-              The figures are from the example record you can download.
+              Your sessions, your receipts and the record from each one. You move a booking or
+              cancel it yourself; nobody has to be emailed.
             </p>
           </div>
-          <BookShapes />
+          <div className="os-peek-wrap">
+            <ConsolePeek />
+          </div>
         </div>
       </section>
 
