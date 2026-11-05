@@ -6657,6 +6657,67 @@
     color: var(--ink);
   }
 
+  /* ------------------------------------------- robinhood, on this band
+     robinhood.com, read at 1280 rather than remembered:
+
+       h1        Martina Plantijn, a SERIF, 110px / 400 / lh 1.0 / -0.5px
+       h2        Phonic, 40-52px / 400 / lh 1.2 / -1 to -2px
+       body      Capsule Sans Text, 16 / 400
+       button    44px tall, radius 36, padding 0 32, 13px, -1px
+       ink       rgb(17,14,8) — a warm near-black, never pure
+
+     THE ONE THAT MATTERS IS THE WEIGHT. Their display type is 400 at
+     110px. Not 600, not 500 — the same weight as their body copy, just
+     enormous. Almost every fintech site sets its headline bold; theirs
+     is light and that is why it reads as a magazine rather than a
+     dashboard.
+
+     And their headline is a serif making one specific numeric claim with
+     a footnote on it: "High-yield checking. 3.60% APY. No cap." plus a
+     superscript. This band's heading is already that shape — a specific
+     claim with a mark pointing at the qualification — so it is the one
+     place on this site where the borrow is structural rather than
+     cosmetic.
+
+     SCOPED TO #audit, which is what was asked. The other six band heads
+     keep the sans at 500; a serif on all of them would be a different
+     site rather than a different section.
+
+     var(--display) is Instrument Serif, already loaded and already
+     carrying the expert's question inside this same band — so the serif
+     was on this band before the heading joined it.
+  */
+  .site #audit .band-head h2 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(2.5rem, 7.2vw, 5rem);
+    /* 1.0 is theirs at 110px; a six-word sentence needs a little more. */
+    line-height: 1.06;
+    /* -0.5px at 110px is -0.0045em. The -0.05em this inherited is a sans
+       number and closes a serif up until it looks condensed. */
+    letter-spacing: -0.01em;
+  }
+
+  /*
+     Their button, on the one control in this band: 44 tall, radius 36,
+     0 32 of padding, 13px at -1px. Ours was a text link with an arrow.
+  */
+  .site #audit .aud-get a {
+    min-height: 44px;
+    padding: 0 32px;
+    border-radius: 36px;
+    border: 1px solid var(--hairline);
+    font-size: 0.8125rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .site #audit .aud-get a:hover {
+    text-decoration: none;
+    border-color: var(--accent-ink);
+    color: var(--accent-ink);
+  }
+  .site #audit .aud-get a svg { width: 15px; height: 15px; }
+
   .site .aud-get { margin: 0; font-size: 0.875rem; }
   .site .aud-get a {
     display: inline-flex;
