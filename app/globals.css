@@ -6479,212 +6479,160 @@
      beats, the spec list — is in the film now.
   */
   /* The mark on the headline. Small, the accent, and a real anchor. */
-  /* ============================================= the audit card's shapes
-     editlobby's PROBLEM section, rebuilt for the worked example.
+  /* ============================================= the audit card's chart
+     davidprotein.com's toggle, and a chart of our own under it.
 
-     Their numbers, read out of their own markup rather than measured off
-     the render:
+     Their control, measured at 1280:
 
-       grid            1fr min(420px, 100%)
-       grid gap        clamp(20px, 2.5vw, 36px)
-       row gap         12px
-       label           14px / 600 / 0.14em, uppercase
-       row headline    15px
-       row stat        20px, its caption 13px
-       panel stat      68px
+       track    46px tall, rounded-full, rgb(32,32,32)
+       pill     47px, rgb(22,22,22), 1px rgb(144,144,144)
+       label    12px, white active, rgb(144,144,144) inactive
 
-     THE COUNT IS NOT THEIRS. They run four rows; we have three shapes and
-     a fourth would have to be invented. The grid does not care.
+     Theirs slides the pill with GSAP Flip; ours is a transform on a
+     transition, which is the same effect without the library.
 
-     THE aud- PREFIX IS LOAD BEARING. components/BookShapes renders the
-     same three shapes further down this page and already owns .shapes,
-     .shapes-tab, .shapes-rows and friends. A first draft of this block
-     used those names and silently inherited that section's flex column.
+     WHAT THIS REPLACED: three rows and a side panel (editlobby's PROBLEM
+     layout), which asked the reader to picture "half the money in three
+     names". The chart is it.
 
-     The band is .band.ink, so every colour below is a token that block
-     has already flipped. Nothing here names a hex.
+     THE AXIS IS FIXED ACROSS ALL THREE TABS — see the note in
+     components/AuditShapes. Per-tab scaling would draw the concentrated
+     book and the scattered one identically and argue against the copy.
+
+     Colours are tokens: the band is .band.ink and has already flipped
+     them, so there is no hex below.
   */
-  .site .aud-grid {
+  .site .aud-toggle {
+    position: relative;
     display: grid;
-    grid-template-columns: 1fr min(420px, 100%);
-    gap: clamp(20px, 2.5vw, 36px);
-    align-items: stretch;
-  }
-  .site .aud-rows { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-
-  /*
-     A real <button>, not a div with a click handler: these are the only
-     controls in the section and they have to be reachable by keyboard and
-     announced as a tab list. role="tablist" is on the column.
-  */
-  .site .aud-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     align-items: center;
-    gap: 16px;
     width: 100%;
-    padding: 18px 20px;
+    max-width: 560px;
+    margin: 0 auto 28px;
+    height: 46px;
+    padding: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+  /*
+     One pill, moved — not three backgrounds crossfading, which is what
+     makes it read as a single object sliding rather than a dissolve.
+     Width is a third because there are three tabs; the component
+     translates it by 100% per index.
+  */
+  .site .aud-toggle-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% / 3);
+    height: 100%;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--mat-lift);
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  .site .aud-tab {
+    position: relative;
+    z-index: 1;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: var(--ink-mute);
+    cursor: pointer;
+    border-radius: 999px;
+    transition: color 200ms ease;
+  }
+  .site .aud-tab.on { color: var(--ink); }
+  .site .aud-tab:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+
+  /* ---------------------------------------------------------- the panel */
+  .site .aud-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 28px;
     border: 1px solid var(--hairline);
     border-radius: 16px;
     background: var(--card);
-    text-align: left;
-    cursor: pointer;
-    font: inherit;
-    color: var(--ink);
-    /* Named properties, never `all` — a blanket transition here would
-       animate the border colour, the shadow and the text colour on every
-       repaint. */
-    transition: border-color 160ms ease, background-color 160ms ease;
+    min-width: 0;
   }
-  .site .aud-row:hover { border-color: color-mix(in srgb, var(--accent-ink) 40%, transparent); }
-  .site .aud-row.on { border-color: var(--accent-ink); }
-  .site .aud-row:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
-
-  .site .aud-ico {
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    border: 1px solid var(--hairline);
-    border-radius: 12px;
-    color: var(--ink-mute);
-    transition: color 160ms ease;
-  }
-  .site .aud-row.on .aud-ico { color: var(--accent-ink); }
-  .site .aud-ico svg { width: 24px; height: 24px; }
-
-  .site .aud-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  /*
-     OUR LABEL, NOT THEIRS. This arrived as editlobby's 14px / 600 / 0.14em
-     and that is their type, not ours. .site .eyebrow — the treatment every
-     other label on this site uses — is var(--mono) at 500 with 0.16em, and
-     a section cannot be the one place that sets uppercase labels in a
-     different face at a different weight.
-
-     The size stays at 0.875rem rather than dropping to the eyebrow's
-     0.625rem: this is a row heading inside a card, not a section eyebrow,
-     and at 10px it stops being readable next to a 15px sentence.
-
-     var(--mono) RESOLVES TO NOTHING ON .site TODAY — the token is declared
-     only inside .site-dark, so this falls back to the body sans exactly as
-     every other eyebrow on this page already does. The token is still the
-     right thing to name: when --mono is fixed, this comes with it instead
-     of being left behind as the one hardcoded label.
-  */
-  .site .aud-label {
+  .site .aud-chart-h {
+    margin: 0;
     font-family: var(--mono);
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    line-height: 1;
-    color: var(--ink-mute);
-  }
-  .site .aud-head {
-    font-size: 0.9375rem;
-    line-height: 1.45;
-    color: var(--ink);
-    /* The summaries are full sentences; they wrap rather than clip. */
-    overflow-wrap: break-word;
-  }
-
-  .site .aud-chip {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    padding: 8px 12px;
-    border: 1px solid var(--hairline);
-    border-radius: 10px;
-  }
-  .site .aud-chip b {
-    font-size: 1.25rem;
-    font-weight: 500;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
-  /*
-     The chip is a number on its own now; see the note in AuditShapes for
-     why its caption came off. Kept as a rule rather than deleted, because
-     a one-line qualifier may well come back once there is an honest one.
-  */
-  .site .aud-chip span { font-size: 0.8125rem; line-height: 1; color: var(--ink-faint); }
-
-  /* Names the bar, so it is not read as a drawing of the figure above. */
-  .site .aud-bar-h {
-    font-family: var(--mono);
-    margin: 10px 0 -4px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.6875rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--ink-faint);
   }
 
-  .site .aud-arrow { color: var(--ink-faint); display: grid; place-items: center; }
-  .site .aud-arrow svg { width: 20px; height: 20px; }
-  .site .aud-row.on .aud-arrow { color: var(--accent-ink); }
-
-  /* ---------------------------------------------------------- the panel */
-  .site .aud-panel {
+  /*
+     The bars. A fixed-height box so the axis is the box: a bar's height is
+     its share of CHART_MAX, and the empty space above a short bar is the
+     argument.
+  */
+  .site .aud-bars {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    align-items: end;
+    gap: 10px;
+    height: 220px;
+    margin: 4px 0 0;
+  }
+  .site .aud-bar {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 28px;
-    border: 1px solid var(--hairline);
-    border-radius: 16px;
-    background: var(--card);
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
     min-width: 0;
-    /* Keyed on the shape in the component, so this runs on every pick. */
-    animation: aud-in 220ms ease both;
+    gap: 8px;
   }
-  @keyframes aud-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: none; }
-  }
-  .site .aud-panel-head { display: flex; flex-direction: column; gap: 8px; }
-  .site .aud-panel-n {
-    font-family: var(--mono);
-    font-size: 0.875rem;
+  .site .aud-bar-pct {
+    font-size: 1rem;
     font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
     line-height: 1;
-    color: var(--accent-ink);
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
   }
-  /*
-     500, not 700. .shapes-h — the heading on the section nine screens
-     down that shows these same three shapes — is 1.5rem / 500 / -0.015em,
-     and so is every other heading on this site. 700 was editlobby's.
-  */
-  .site .aud-panel h3 {
-    font-size: 1.375rem;
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-    margin: 0;
-    color: var(--ink);
+  .site .aud-bar-fill {
+    display: block;
+    width: 100%;
+    border-radius: 8px 8px 0 0;
+    background: color-mix(in srgb, var(--accent-ink) 26%, transparent);
+    /* Grows into the new value when the tab changes rather than cutting. */
+    transition: height 420ms cubic-bezier(0.22, 1, 0.36, 1), background-color 300ms ease;
+  }
+  /* The largest holding is the one the shape is about. */
+  .site .aud-bar-fill[data-lead="true"] { background: var(--accent); }
+  .site .aud-bar:first-child .aud-bar-pct { color: var(--ink); }
+  .site .aud-bar-label {
+    font-size: 0.75rem;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--ink-faint);
+    overflow-wrap: break-word;
+    min-width: 0;
   }
 
-  /*
-     68px is theirs. Ours clamps down to 44 on a phone, because the caption
-     beside it is a full clause rather than the word "before" and the two
-     have to share a line somewhere.
-  */
-  .site .aud-fig { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0 0; }
-  /*
-     500 and -0.03em are .shapes-fig's, which is the SAME NUMBER rendered
-     further down this page. Two sections printing 51% in two weights would
-     have been the clearest possible sign that one of them was pasted in
-     from somewhere else. Only the size is ours, because theirs is 68px and
-     the sibling's is 48.
-
-     Not var(--mono): .shapes-fig is not mono either, and these two have to
-     agree before either agrees with .price-one-fig.
-  */
+  .site .aud-fig {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin: 10px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+  }
   .site .aud-fig b {
     font-size: clamp(2.75rem, 7vw, 4.25rem);
     font-weight: 500;
@@ -6700,48 +6648,8 @@
     padding-bottom: 4px;
   }
 
-  .site .aud-bar {
-    height: 6px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--ink) 16%, transparent);
-    overflow: hidden;
-  }
-  .site .aud-bar > span {
-    display: block;
-    height: 100%;
-    border-radius: 999px;
-    background: var(--accent-ink);
-  }
-  .site .aud-bar-key {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 0;
-    font-size: 0.8125rem;
-    color: var(--ink-mute);
-  }
-  .site .aud-bar-key i {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--accent-ink);
-    margin-right: 6px;
-  }
-
-  /*
-     The expert's voice, and it is set differently from the member's on
-     purpose — Instrument Serif italic here, the sans upright in the strip
-     below. One page, two people, told apart without being labelled.
-  */
   .site .aud-ask {
-    margin: 6px 0 0;
-    padding-top: 16px;
-    border-top: 1px solid var(--hairline);
-    /* var(--display), not the string. The site declares the display serif
-       once on .site and this section had been naming the family itself —
-       which works until the day the serif changes and one blockquote on
-       the home page does not come with it. */
+    margin: 0;
     font-family: var(--display);
     font-style: italic;
     font-size: 1.25rem;
@@ -6749,7 +6657,7 @@
     color: var(--ink);
   }
 
-  .site .aud-get { margin: 4px 0 0; font-size: 0.875rem; }
+  .site .aud-get { margin: 0; font-size: 0.875rem; }
   .site .aud-get a {
     display: inline-flex;
     align-items: center;
@@ -6761,29 +6669,21 @@
   .site .aud-get a:hover { text-decoration: underline; }
   .site .aud-get svg { width: 16px; height: 16px; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .site .aud-panel { animation: none; }
-    .site .aud-row, .site .aud-ico { transition: none; }
-  }
-
   /*
-     ONE COLUMN BELOW 900, and the chip is the thing that goes.
-
-     At 390 the row has to hold a 48px icon, a two-line sentence, a stat
-     box and an arrow across the width of a phone. The chip is the first
-     casualty by choice: its number is the headline of the panel directly
-     below it, so dropping it loses nothing a reader cannot see one scroll
-     later, where it is set at 44px instead of 20.
+     The chart is the content, so it does not move; only the easing goes.
+     A bar that jumps to its new height is still a bar at the right height.
   */
-  @media (max-width: 900px) {
-    .site .aud-grid { grid-template-columns: minmax(0, 1fr); }
+  @media (prefers-reduced-motion: reduce) {
+    .site .aud-toggle-pill, .site .aud-bar-fill, .site .aud-tab { transition: none; }
   }
-  @media (max-width: 560px) {
-    .site .aud-row { padding: 16px; gap: 12px; grid-template-columns: auto minmax(0, 1fr) auto; }
-    .site .aud-chip { display: none; }
-    .site .aud-ico { width: 40px; height: 40px; border-radius: 10px; }
-    .site .aud-ico svg { width: 20px; height: 20px; }
+
+  @media (max-width: 640px) {
+    .site .aud-toggle { height: 42px; }
+    .site .aud-tab { min-height: 42px; font-size: 0.8125rem; padding: 0 6px; }
     .site .aud-panel { padding: 20px; }
+    .site .aud-bars { height: 170px; gap: 6px; }
+    .site .aud-bar-pct { font-size: 0.8125rem; }
+    .site .aud-bar-label { font-size: 0.625rem; }
     .site .aud-ask { font-size: 1.125rem; }
   }
 
