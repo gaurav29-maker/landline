@@ -73,10 +73,6 @@ export default function BookShapes() {
             <span className="said">&ldquo;{shape.expertAsks}&rdquo;</span>
           </p>
           <p className="shapes-ask-who">What your expert opens with.</p>
-
-          <Link className="b b-fill" href="/experts">
-            Find an expert
-          </Link>
         </div>
 
         {/*
@@ -123,6 +119,16 @@ export default function BookShapes() {
             security is named.
           </p>
         </div>
+
+        {/*
+          The action, under the media rather than beside the copy. Their
+          section runs headline, line, media — and anything that follows
+          follows all three, because a button halfway up a centred column
+          is a reason to stop reading it.
+        */}
+        <Link className="b b-fill" href="/experts">
+          Find an expert
+        </Link>
       </div>
     </div>
   );

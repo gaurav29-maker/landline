@@ -518,7 +518,8 @@ export default async function Home() {
       */}
       <section className="band" id="shapes">
         <div className="wrap">
-          <div className="band-head idx">
+          {/* Centred, not idx — their section centres the whole column. */}
+          <div className="band-head">
             <span className="eyebrow">Before you pay</span>
             <h2>
               Find the one that looks like <span className="said">yours</span>.

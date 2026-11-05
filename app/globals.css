@@ -6094,6 +6094,27 @@
      not copying the pattern. So the media is the book itself, drawn from the
      sample record, which is the only artefact this product has.
   */
+  /*
+     Their headline weight, on this band's own heading: 72 / 400 / lh 78 /
+     -2px. 400 is the signature — the same weight as their body copy, just
+     large. The -0.05em this inherits is a bold-sans number and closes a
+     400 face up too far.
+
+     Scoped to #shapes. #audit took the serif for the same reason two
+     commits ago; the other five band heads keep the sans at 500.
+  */
+  .site #shapes .band-head h2 {
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+  }
+  /* Their line is full strength and tightly led — one sentence doing a
+     job, not a paragraph of supporting text. */
+  .site #shapes .band-head p {
+    color: var(--ink-body);
+    line-height: 1.35;
+  }
+
   .site .shapes { display: flex; flex-direction: column; align-items: center; gap: 40px; }
 
   /*
@@ -6148,38 +6169,80 @@
     color: var(--ink);
   }
 
+  /*
+     ROBINHOOD'S CENTRED SECTION, measured on their banking page at 1280:
+
+       wrap       flex column, justify center, align center
+       headline   72px / 400 / lh 78 / -2px, centred
+       gap        30px head to line
+       line       16px / 400 / lh 19.2 / -0.25px, centred, FULL strength
+       gap        50px line to media
+       media      the width of the section
+
+     WHAT THIS REPLACED: a two-column grid, copy left and book right,
+     which had to decide which half came first on a phone and answered it
+     with a DOM order that disagreed with the visual order on desktop. A
+     single centred column has no such question to answer.
+
+     Their body line is white, not muted — it is one short sentence doing
+     a job, not a paragraph of supporting text, and the 1.2 line-height
+     says so too.
+  */
   .site .shapes-body {
-    display: grid;
-    grid-template-columns: 1fr 1.15fr;
-    gap: 48px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100%;
+    gap: 50px;
   }
 
-  .site .shapes-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+  .site .shapes-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* Their line runs the width of the section; ours is a question and
+       wants a measure. */
+    max-width: 48rem;
+    gap: 14px;
+  }
+  /*
+     400, theirs, and bigger than the 1.5rem it was. Their headline is 72
+     at 400 — the weight is the signature, and this is the one line in the
+     section that changes when a tab is pressed, so it carries the size.
+  */
   .site .shapes-h {
     margin: 0;
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 500;
-    letter-spacing: -0.015em;
+    font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+    line-height: 1.12;
+    font-weight: 400;
+    letter-spacing: -0.028em;
     color: var(--ink);
     text-wrap: balance;
   }
   .site .shapes-ask { margin: 0; font-size: 1.1875rem; line-height: 1.75rem; color: var(--ink); }
   .site .shapes-ask-who {
-    margin: -10px 0 0;
+    margin: -6px 0 0;
     font-size: 0.8125rem;
     color: var(--ink-mute);
   }
 
   /* The book. A panel, because it is one object. */
+  /*
+     The media. Centred and capped rather than a grid column — theirs runs
+     the width of the section, ours is a panel of numbers and stops being
+     readable long before 1140.
+  */
   .site .shapes-book {
     min-width: 0;
+    width: 100%;
+    max-width: 44rem;
     border: 1px solid var(--rule);
     border-radius: 14px;
     padding: 28px 26px 22px;
     background: var(--bg-alt);
+    text-align: left;
   }
   .site .shapes-fig {
     margin: 0;
