@@ -25,10 +25,25 @@ export default function SiteNav({ onLanding = false }: { onLanding?: boolean }) 
    * Packages third and the page put it first — so following the nav jumped
    * you backwards past two sections you had not read.
    */
+  /*
+     "How it works" POINTS AT A PAGE NOW, not at a section.
+
+     /services carries the same three steps with the same three
+     illustrations, and then everything the home page has no room for:
+     what the expert does in the 45 minutes, the six things out of scope,
+     the record you keep, and the cancellation rule. The anchor went
+     rather than being added alongside, because five items is what makes
+     this capsule overflow — it was measured at 940 once already — and a
+     nav entry leading to the shorter version of the same thing is the
+     one worth losing.
+
+     The #how section stays on the home page and is still scrolled
+     through; only the nav stops pointing at it.
+  */
   const links: NavLink[] = [
     { href: "/experts", label: "Find an expert" },
     { href: to("#audit"), label: "Audit my portfolio" },
-    { href: to("#how"), label: "How it works" },
+    { href: "/services", label: "What a call covers" },
     { href: to("#ways"), label: "What it costs" },
   ];
 
