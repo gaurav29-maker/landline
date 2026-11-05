@@ -30,7 +30,7 @@ import { FREE_CANCEL_HOURS, MAX_RESCHEDULES } from "@/lib/cancellation";
 export default function ConsolePeek() {
   return (
     <>
-      <div className="os-peek" role="img" aria-label="The Landline console: a bar with Your console, Receipts, Your details and Help; a Coming up section showing a booked session with Move and Cancel; and a Past sessions section with a record to download.">
+      <div className="os-peek" role="img" aria-label="The Landline console: a bar with the member’s name, Receipts, Your details, Help and Sign out; a Coming up section showing a booked session with Move and Cancel; and a Past sessions section with a record to download.">
         <div className="os-peek-bar" aria-hidden="true">
           {/*
              THE MARK COMES FROM components/Wordmark, NOT FROM HERE.
@@ -47,11 +47,29 @@ export default function ConsolePeek() {
              a screen reader. as="span" keeps it inert.
           */}
           <Wordmark className="os-peek-mark" sub="os" as="span" />
+          {/*
+             THE BAR AS IT ACTUALLY RENDERS ON /member, which is not what
+             this said first. Opening the console found two errors:
+
+             "Your console" is in MemberBar behind
+             `current !== "console"` — it is the link BACK to the page,
+             so it never appears while you are on it, and this panel
+             depicts exactly that page. It was showing a link the real
+             console hides.
+
+             "Sign out" is unconditional and was missing entirely.
+
+             The leading slot is the member's own name — a plain span,
+             "context, not navigation", per the comment in MemberBar.
+             Here it says what the slot is rather than inventing a
+             customer to fill it.
+          */}
           <ul className="os-peek-nav">
-            <li className="on">Your console</li>
+            <li className="on">Your name</li>
             <li>Receipts</li>
             <li>Your details</li>
             <li>Help</li>
+            <li>Sign out</li>
           </ul>
         </div>
 
